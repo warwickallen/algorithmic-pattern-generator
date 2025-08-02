@@ -785,7 +785,7 @@ class AlgorithmicPatternGenerator {
         // Update the display value
         const config = ConfigurationManager.getConfig('termite');
         if (config) {
-            const termiteControl = config.controls.termites;
+            const termiteControl = config.controls.termiteCount;
             if (termiteControl) {
                 const valueElement = document.getElementById(`${termiteControl.id}-value`);
                 if (valueElement && termiteControl.format) {
