@@ -271,6 +271,8 @@ class BaseSimulation {
     }
 }
 
+
+
 // Conway's Game of Life
 class ConwayGameOfLife extends BaseSimulation {
     constructor(canvas, ctx) {
@@ -283,11 +285,10 @@ class ConwayGameOfLife extends BaseSimulation {
     
     init() {
         super.init();
-        this.initGrids();
+        this.initData();
     }
     
-    resize() {
-        super.resize();
+    initData() {
         this.initGrids();
     }
     
@@ -295,16 +296,22 @@ class ConwayGameOfLife extends BaseSimulation {
         this.grids = this.createGrids(this.rows, this.cols, false);
     }
     
+    // Override lifecycle methods
     reset() {
         super.reset();
-        this.initGrids();
+        this.initData();
         this.draw();
     }
     
     clear() {
         super.clear();
-        this.initGrids();
+        this.initData();
         this.draw();
+    }
+    
+    resize() {
+        super.resize();
+        this.initData();
     }
     
     update() {
@@ -373,12 +380,10 @@ class TermiteAlgorithm extends BaseSimulation {
     
     init() {
         super.init();
-        this.initTermites();
-        this.initWoodChips();
+        this.initData();
     }
     
-    resize() {
-        super.resize();
+    initData() {
         this.initTermites();
         this.initWoodChips();
     }
@@ -406,10 +411,10 @@ class TermiteAlgorithm extends BaseSimulation {
         }
     }
     
+    // Override lifecycle methods
     reset() {
         super.reset();
-        this.initTermites();
-        this.initWoodChips();
+        this.initData();
         this.draw();
     }
     
@@ -418,6 +423,11 @@ class TermiteAlgorithm extends BaseSimulation {
         this.woodChips.clear();
         this.termites.forEach(termite => termite.carrying = false);
         this.draw();
+    }
+    
+    resize() {
+        super.resize();
+        this.initData();
     }
     
     update() {
@@ -517,12 +527,10 @@ class LangtonsAnt extends BaseSimulation {
     
     init() {
         super.init();
-        this.initGrid();
-        this.resetAnts();
+        this.initData();
     }
     
-    resize() {
-        super.resize();
+    initData() {
         this.initGrid();
         this.resetAnts();
     }
@@ -539,18 +547,22 @@ class LangtonsAnt extends BaseSimulation {
         }];
     }
     
+    // Override lifecycle methods
     reset() {
         super.reset();
-        this.initGrid();
-        this.resetAnts();
+        this.initData();
         this.draw();
     }
     
     clear() {
         super.clear();
-        this.initGrid();
-        this.resetAnts();
+        this.initData();
         this.draw();
+    }
+    
+    resize() {
+        super.resize();
+        this.initData();
     }
     
     update() {

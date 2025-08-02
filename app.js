@@ -99,6 +99,177 @@ class ModalManager {
     }
 }
 
+// Configuration Factory for simulation configs
+class SimulationConfigFactory {
+    static createConfig(simType, overrides = {}) {
+        const baseConfig = {
+            controlsId: `${simType}-controls`,
+            speedSliderId: `${simType}-speed-slider`,
+            speedValueId: `${simType}-speed-value`,
+            randomBtnId: `${simType}-random-btn`,
+            learnBtnId: `${simType}-learn-btn`,
+            modalId: `${simType}-modal`,
+            modalCloseId: `${simType}-modal-close`
+        };
+        
+        return { ...baseConfig, ...overrides };
+    }
+    
+    static getSimulationConfigs() {
+        return {
+            conway: this.createConfig('conway', {
+                speedSliderId: 'speed-slider',
+                speedValueId: 'speed-value',
+                randomBtnId: 'random-btn',
+                learnBtnId: 'learn-btn',
+                speedFormat: (value) => `${value} FPS`,
+                speedRange: { min: 1, max: 60, step: 1, default: 30 }
+            }),
+            termite: this.createConfig('termite', {
+                speedFormat: (value) => `${value}x`,
+                speedRange: { min: 0.5, max: 3, step: 0.1, default: 1 },
+                additionalControls: {
+                    termiteCountSliderId: 'termites-slider',
+                    termiteCountValueId: 'termites-value'
+                }
+            }),
+            langton: this.createConfig('langton', {
+                speedFormat: (value) => `${value} steps/s`,
+                speedRange: { min: 1, max: 60, step: 1, default: 30 },
+                additionalControls: {
+                    addAntBtnId: 'add-ant-btn'
+                }
+            })
+        };
+    }
+}
+
+// Event Listener Factory for setting up simulation controls
+class EventListenerFactory {
+    static setupSimulationControls(config, handlers) {
+        const elements = {
+            speedSlider: document.getElementById(config.speedSliderId),
+            randomBtn: document.getElementById(config.randomBtnId),
+            learnBtn: document.getElementById(config.learnBtnId)
+        };
+        
+        // Speed slider
+        if (elements.speedSlider) {
+            elements.speedSlider.addEventListener('input', handlers.speedChange);
+        }
+        
+        // Random button
+        if (elements.randomBtn) {
+            elements.randomBtn.addEventListener('click', handlers.randomPattern);
+        }
+        
+        // Learn button
+        if (elements.learnBtn) {
+            elements.learnBtn.addEventListener('click', handlers.showLearnModal);
+        }
+        
+        // Additional controls
+        if (config.additionalControls) {
+            Object.entries(config.additionalControls).forEach(([controlType, elementId]) => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    if (element.tagName === 'INPUT') {
+                        element.addEventListener('input', (e) => {
+                            handlers.additionalControl(controlType, e.target.value);
+                        });
+                    } else if (element.tagName === 'BUTTON') {
+                        element.addEventListener('click', () => {
+                            handlers.additionalControl(controlType);
+                        });
+                    }
+                }
+            });
+        }
+    }
+}
+
+// HTML Generator for dynamic HTML generation
+class HTMLGenerator {
+    static generateSimulationControls(config) {
+        const speedRange = config.speedRange;
+        const speedValue = config.speedFormat ? config.speedFormat(speedRange.default) : speedRange.default;
+        
+        let additionalControlsHTML = '';
+        
+        if (config.additionalControls) {
+            Object.entries(config.additionalControls).forEach(([controlType, elementId]) => {
+                if (controlType.includes('Slider')) {
+                    const label = this.getControlLabel(controlType);
+                    const range = this.getControlRange(controlType);
+                    additionalControlsHTML += `
+                        <div class="control-group">
+                            <label for="${elementId}">${label}:</label>
+                            <input type="range" id="${elementId}" min="${range.min}" max="${range.max}" 
+                                   step="${range.step}" value="${range.default}" class="slider">
+                            <span id="${config.additionalControls[controlType.replace('SliderId', 'ValueId')]}">${range.default}</span>
+                        </div>
+                    `;
+                } else if (controlType.includes('Btn')) {
+                    const label = this.getControlLabel(controlType);
+                    additionalControlsHTML += `
+                        <div class="control-group">
+                            <button id="${elementId}" class="btn secondary">${label}</button>
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        return `
+            <div id="${config.controlsId}" class="simulation-controls" style="display: none;">
+                <div class="control-group">
+                    <label for="${config.speedSliderId}">Speed:</label>
+                    <input type="range" id="${config.speedSliderId}" 
+                           min="${speedRange.min}" max="${speedRange.max}" 
+                           step="${speedRange.step}" value="${speedRange.default}" class="slider">
+                    <span id="${config.speedValueId}">${speedValue}</span>
+                </div>
+                ${additionalControlsHTML}
+                <div class="control-group">
+                    <button id="${config.randomBtnId}" class="btn secondary">Random</button>
+                    <button id="${config.learnBtnId}" class="btn secondary">Learn</button>
+                </div>
+            </div>
+        `;
+    }
+    
+    static getControlLabel(controlType) {
+        const labelMap = {
+            'termiteCountSliderId': 'Termites',
+            'addAntBtnId': 'Add Ant'
+        };
+        return labelMap[controlType] || controlType;
+    }
+    
+    static getControlRange(controlType) {
+        const rangeMap = {
+            'termiteCountSliderId': { min: 10, max: 100, step: 1, default: 50 }
+        };
+        return rangeMap[controlType] || { min: 0, max: 100, step: 1, default: 50 };
+    }
+    
+    static generateModalContent(config, content) {
+        return `
+            <div id="${config.modalId}" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>${content.title}</h2>
+                        <button class="modal-close" id="${config.modalCloseId}">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        ${content.body}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
 // Main application class
 class AlgorithmicPatternGenerator {
     constructor() {
@@ -111,49 +282,8 @@ class AlgorithmicPatternGenerator {
         // Initialize modal manager
         this.modalManager = new ModalManager();
         
-        // Configuration for simulation-specific controls
-        this.simulationConfigs = {
-            conway: {
-                controlsId: 'conway-controls',
-                speedSliderId: 'speed-slider',
-                speedValueId: 'speed-value',
-                speedFormat: (value) => `${value} FPS`,
-                speedRange: { min: 1, max: 60, step: 1 },
-                randomBtnId: 'random-btn',
-                learnBtnId: 'learn-btn',
-                modalId: 'conway-modal',
-                modalCloseId: 'conway-modal-close'
-            },
-            termite: {
-                controlsId: 'termite-controls',
-                speedSliderId: 'termite-speed-slider',
-                speedValueId: 'termite-speed-value',
-                speedFormat: (value) => `${value}x`,
-                speedRange: { min: 0.5, max: 3, step: 0.1 },
-                randomBtnId: 'termite-random-btn',
-                learnBtnId: 'termite-learn-btn',
-                modalId: 'termite-modal',
-                modalCloseId: 'termite-modal-close',
-                additionalControls: {
-                    termiteCountSliderId: 'termites-slider',
-                    termiteCountValueId: 'termites-value'
-                }
-            },
-            langton: {
-                controlsId: 'langton-controls',
-                speedSliderId: 'langton-speed-slider',
-                speedValueId: 'langton-speed-value',
-                speedFormat: (value) => `${value} steps/s`,
-                speedRange: { min: 1, max: 60, step: 1 },
-                randomBtnId: 'langton-random-btn',
-                learnBtnId: 'langton-learn-btn',
-                modalId: 'langton-modal',
-                modalCloseId: 'langton-modal-close',
-                additionalControls: {
-                    addAntBtnId: 'add-ant-btn'
-                }
-            }
-        };
+        // Get simulation configs from factory
+        this.simulationConfigs = SimulationConfigFactory.getSimulationConfigs();
         
         this.init();
     }
@@ -235,49 +365,16 @@ class AlgorithmicPatternGenerator {
     }
     
     setupSimulationControls() {
-        // Setup controls for each simulation type
+        // Setup controls for each simulation type using the factory
         Object.entries(this.simulationConfigs).forEach(([simType, config]) => {
-            // Speed slider
-            const speedSlider = document.getElementById(config.speedSliderId);
-            if (speedSlider) {
-                speedSlider.addEventListener('input', (e) => {
-                    this.handleSpeedChange(simType, e.target.value);
-                });
-            }
+            const handlers = {
+                speedChange: (e) => this.handleSpeedChange(simType, e.target.value),
+                randomPattern: () => this.handleRandomPattern(simType),
+                showLearnModal: () => this.showLearnModal(simType),
+                additionalControl: (controlType, value) => this.handleAdditionalControl(simType, controlType, value)
+            };
             
-            // Random button
-            const randomBtn = document.getElementById(config.randomBtnId);
-            if (randomBtn) {
-                randomBtn.addEventListener('click', () => {
-                    this.handleRandomPattern(simType);
-                });
-            }
-            
-            // Learn button
-            const learnBtn = document.getElementById(config.learnBtnId);
-            if (learnBtn) {
-                learnBtn.addEventListener('click', () => {
-                    this.showLearnModal(simType);
-                });
-            }
-            
-            // Additional controls (like termite count or add ant button)
-            if (config.additionalControls) {
-                Object.entries(config.additionalControls).forEach(([controlType, elementId]) => {
-                    const element = document.getElementById(elementId);
-                    if (element) {
-                        if (element.tagName === 'INPUT') {
-                            element.addEventListener('input', (e) => {
-                                this.handleAdditionalControl(simType, controlType, e.target.value);
-                            });
-                        } else if (element.tagName === 'BUTTON') {
-                            element.addEventListener('click', () => {
-                                this.handleAdditionalControl(simType, controlType);
-                            });
-                        }
-                    }
-                });
-            }
+            EventListenerFactory.setupSimulationControls(config, handlers);
         });
     }
     
