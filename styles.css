@@ -148,6 +148,13 @@ body {
     margin-left: 1rem;
 }
 
+.brightness-control {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-left: 1rem;
+}
+
 .control-group {
     display: flex;
     align-items: center;
@@ -196,7 +203,8 @@ body {
 
 #speed-value,
 #termite-speed-value,
-#langton-speed-value {
+#langton-speed-value,
+#brightness-value {
     font-size: 0.8rem;
     color: #cccccc;
     min-width: 50px;
@@ -380,6 +388,13 @@ body {
     }
     
     .simulation-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+    
+    .brightness-control {
         flex-direction: column;
         gap: 0.5rem;
         margin-left: 0;

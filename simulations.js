@@ -10,6 +10,7 @@ class BaseSimulation {
         this.lastTime = 0;
         this.frameCount = 0;
         this.fpsUpdateInterval = 30; // Update FPS every 30 frames
+        this.brightness = 1.0; // Default brightness
     }
     
     init() {
@@ -85,6 +86,50 @@ class BaseSimulation {
             cellCount: this.cellCount,
             fps: this.fps
         };
+    }
+    
+    setBrightness(value) {
+        this.brightness = Math.max(0.1, Math.min(2.0, value));
+    }
+    
+    applyBrightness(color) {
+        // Parse the color (supports rgb, rgba, and hex formats)
+        let r, g, b, a = 1;
+        
+        if (color.startsWith('rgb')) {
+            // Handle rgb(r, g, b) or rgba(r, g, b, a) format
+            const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+                r = parseInt(match[1]);
+                g = parseInt(match[2]);
+                b = parseInt(match[3]);
+                a = match[4] ? parseFloat(match[4]) : 1;
+            }
+        } else if (color.startsWith('#')) {
+            // Handle hex format
+            const hex = color.slice(1);
+            if (hex.length === 3) {
+                r = parseInt(hex[0] + hex[0], 16);
+                g = parseInt(hex[1] + hex[1], 16);
+                b = parseInt(hex[2] + hex[2], 16);
+            } else if (hex.length === 6) {
+                r = parseInt(hex.slice(0, 2), 16);
+                g = parseInt(hex.slice(2, 4), 16);
+                b = parseInt(hex.slice(4, 6), 16);
+            }
+        }
+        
+        if (r !== undefined && g !== undefined && b !== undefined) {
+            // Apply brightness
+            r = Math.min(255, Math.max(0, Math.round(r * this.brightness)));
+            g = Math.min(255, Math.max(0, Math.round(g * this.brightness)));
+            b = Math.min(255, Math.max(0, Math.round(b * this.brightness)));
+            
+            return `rgba(${r}, ${g}, ${b}, ${a})`;
+        }
+        
+        // Return original color if parsing failed
+        return color;
     }
     
     // Common grid utilities
@@ -233,8 +278,11 @@ class BaseSimulation {
             color = this.getGradientColor(x, y, '#00ff00', '#4a90e2');
         }
         
+        // Apply brightness to the color
+        color = this.applyBrightness(color);
+        
         this.ctx.fillStyle = color;
-        this.setGlowEffect(color, 20);
+        this.setGlowEffect(color, 20 * this.brightness);
         
         this.ctx.fillRect(x, y, this.cellSize - 1, this.cellSize - 1);
         
@@ -247,8 +295,11 @@ class BaseSimulation {
             color = this.getGradientColor(x, y, '#ff6b35', '#ff4757');
         }
         
+        // Apply brightness to the color
+        color = this.applyBrightness(color);
+        
         this.ctx.fillStyle = color;
-        this.setGlowEffect(color, 25);
+        this.setGlowEffect(color, 25 * this.brightness);
         
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, Math.PI * 2);

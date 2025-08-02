@@ -278,6 +278,7 @@ class AlgorithmicPatternGenerator {
         this.currentSimulation = null;
         this.currentType = 'conway';
         this.isImmersive = false;
+        this.brightness = 1.0; // Default brightness
         
         // Initialize modal manager
         this.modalManager = new ModalManager();
@@ -353,6 +354,9 @@ class AlgorithmicPatternGenerator {
         // Setup simulation-specific controls
         this.setupSimulationControls();
         
+        // Setup brightness controls
+        this.setupBrightnessControls();
+        
         // Canvas interactions
         this.canvas.addEventListener('click', (e) => {
             this.handleCanvasClick(e);
@@ -378,6 +382,29 @@ class AlgorithmicPatternGenerator {
         });
     }
     
+    setupBrightnessControls() {
+        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessValue = document.getElementById('brightness-value');
+        const brightnessResetBtn = document.getElementById('brightness-reset-btn');
+        
+        // Brightness slider
+        if (brightnessSlider) {
+            brightnessSlider.addEventListener('input', (e) => {
+                this.setBrightness(parseFloat(e.target.value));
+            });
+        }
+        
+        // Brightness reset button
+        if (brightnessResetBtn) {
+            brightnessResetBtn.addEventListener('click', () => {
+                this.resetBrightness();
+            });
+        }
+        
+        // Initialize brightness display
+        this.updateBrightnessDisplay();
+    }
+    
     createSimulation(type) {
         if (this.currentSimulation) {
             this.currentSimulation.pause();
@@ -386,6 +413,12 @@ class AlgorithmicPatternGenerator {
         this.currentType = type;
         this.currentSimulation = SimulationFactory.createSimulation(type, this.canvas, this.ctx);
         this.currentSimulation.init();
+        
+        // Set brightness on the new simulation
+        if (this.currentSimulation.setBrightness) {
+            this.currentSimulation.setBrightness(this.brightness);
+        }
+        
         this.updateUI();
     }
     
@@ -530,6 +563,20 @@ class AlgorithmicPatternGenerator {
                     this.currentSimulation.addAnt();
                 }
                 break;
+            case '[':
+                e.preventDefault();
+                this.adjustBrightness(-0.1);
+                break;
+            case ']':
+                e.preventDefault();
+                this.adjustBrightness(0.1);
+                break;
+            case 'r':
+                if (!e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    this.resetBrightness();
+                }
+                break;
         }
     }
     
@@ -668,6 +715,47 @@ class AlgorithmicPatternGenerator {
             if (valueElement) {
                 valueElement.textContent = value;
             }
+        }
+    }
+    
+    // Brightness control methods
+    setBrightness(value) {
+        this.brightness = Math.max(0.1, Math.min(2.0, value));
+        this.updateBrightnessDisplay();
+        
+        // Update current simulation if it exists
+        if (this.currentSimulation && this.currentSimulation.setBrightness) {
+            this.currentSimulation.setBrightness(this.brightness);
+            // Force a redraw to show brightness changes immediately, even when paused
+            this.currentSimulation.draw();
+        }
+    }
+    
+    resetBrightness() {
+        this.setBrightness(1.0);
+        
+        // Update slider position
+        const brightnessSlider = document.getElementById('brightness-slider');
+        if (brightnessSlider) {
+            brightnessSlider.value = 1.0;
+        }
+    }
+    
+    adjustBrightness(delta) {
+        const brightnessSlider = document.getElementById('brightness-slider');
+        if (brightnessSlider) {
+            const currentValue = parseFloat(brightnessSlider.value);
+            const newValue = Math.max(0.1, Math.min(2.0, currentValue + delta));
+            brightnessSlider.value = newValue;
+            this.setBrightness(newValue);
+        }
+    }
+    
+    updateBrightnessDisplay() {
+        const brightnessValue = document.getElementById('brightness-value');
+        if (brightnessValue) {
+            const percentage = Math.round(this.brightness * 100);
+            brightnessValue.textContent = `${percentage}%`;
         }
     }
     
