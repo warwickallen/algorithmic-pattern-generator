@@ -56,7 +56,16 @@ class BaseSimulation {
             this.lastTime = currentTime;
         }
         
-        this.update();
+        // For Conway's Game of Life, control update frequency based on speed
+        if (this.constructor.name === 'ConwayGameOfLife') {
+            if (currentTime - this.lastUpdateTime >= this.updateInterval) {
+                this.update();
+                this.lastUpdateTime = currentTime;
+            }
+        } else {
+            this.update();
+        }
+        
         this.draw();
         
         requestAnimationFrame((time) => this.animate(time));
@@ -161,6 +170,9 @@ class ConwayGameOfLife extends BaseSimulation {
         super(canvas, ctx);
         this.grid = [];
         this.nextGrid = [];
+        this.speed = 30; // FPS for simulation speed
+        this.lastUpdateTime = 0;
+        this.updateInterval = 1000 / this.speed; // milliseconds between updates
     }
     
     init() {
@@ -255,6 +267,29 @@ class ConwayGameOfLife extends BaseSimulation {
             this.cellCount = this.grid.flat().filter(cell => cell).length;
             this.draw();
         }
+    }
+    
+    setSpeed(fps) {
+        this.speed = Math.max(1, Math.min(60, fps));
+        this.updateInterval = 1000 / this.speed;
+    }
+    
+    randomize() {
+        // Clear existing pattern
+        this.initGrids();
+        
+        // Fill with random cells (30% density)
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                if (Math.random() < 0.3) {
+                    this.grid[row][col] = true;
+                }
+            }
+        }
+        
+        this.cellCount = this.grid.flat().filter(cell => cell).length;
+        this.generation = 0;
+        this.draw();
     }
 }
 

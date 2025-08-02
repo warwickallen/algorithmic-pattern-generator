@@ -55,6 +55,24 @@ class AlgorithmicPatternGenerator {
             this.toggleImmersiveMode();
         });
         
+        // Conway's Game of Life specific controls
+        document.getElementById('speed-slider').addEventListener('input', (e) => {
+            this.handleSpeedChange(e.target.value);
+        });
+        
+        document.getElementById('random-btn').addEventListener('click', () => {
+            this.handleRandomPattern();
+        });
+        
+        document.getElementById('learn-btn').addEventListener('click', () => {
+            this.showLearnModal();
+        });
+        
+        // Modal close button
+        document.getElementById('conway-modal-close').addEventListener('click', () => {
+            this.hideLearnModal();
+        });
+        
         // Canvas interactions
         this.canvas.addEventListener('click', (e) => {
             this.handleCanvasClick(e);
@@ -199,6 +217,20 @@ class AlgorithmicPatternGenerator {
             case 'Escape':
                 if (this.isImmersive) {
                     this.toggleImmersiveMode();
+                } else if (document.getElementById('conway-modal').classList.contains('show')) {
+                    this.hideLearnModal();
+                }
+                break;
+            case ',':
+                if (this.currentType === 'conway') {
+                    e.preventDefault();
+                    this.decreaseSpeed();
+                }
+                break;
+            case '.':
+                if (this.currentType === 'conway') {
+                    e.preventDefault();
+                    this.increaseSpeed();
                 }
                 break;
         }
@@ -221,6 +253,53 @@ class AlgorithmicPatternGenerator {
         
         // Update simulation selector
         document.getElementById('simulation-select').value = this.currentType;
+        
+        // Show/hide Conway's Game of Life specific controls
+        const conwayControls = document.getElementById('conway-controls');
+        if (this.currentType === 'conway') {
+            conwayControls.style.display = 'flex';
+        } else {
+            conwayControls.style.display = 'none';
+        }
+    }
+    
+    // Conway's Game of Life specific methods
+    handleSpeedChange(value) {
+        if (this.currentType === 'conway' && this.currentSimulation) {
+            this.currentSimulation.setSpeed(parseInt(value));
+            document.getElementById('speed-value').textContent = `${value} FPS`;
+        }
+    }
+    
+    decreaseSpeed() {
+        const slider = document.getElementById('speed-slider');
+        const newValue = Math.max(1, parseInt(slider.value) - 1);
+        slider.value = newValue;
+        this.handleSpeedChange(newValue);
+    }
+    
+    increaseSpeed() {
+        const slider = document.getElementById('speed-slider');
+        const newValue = Math.min(60, parseInt(slider.value) + 1);
+        slider.value = newValue;
+        this.handleSpeedChange(newValue);
+    }
+    
+    handleRandomPattern() {
+        if (this.currentType === 'conway' && this.currentSimulation) {
+            this.currentSimulation.randomize();
+            this.updateUI();
+        }
+    }
+    
+    showLearnModal() {
+        const modal = document.getElementById('conway-modal');
+        modal.classList.add('show');
+    }
+    
+    hideLearnModal() {
+        const modal = document.getElementById('conway-modal');
+        modal.classList.remove('show');
     }
     
     // Update stats continuously

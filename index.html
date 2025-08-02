@@ -30,6 +30,19 @@
                         <button id="clear-btn" class="btn secondary">Clear</button>
                         <button id="immersive-btn" class="btn secondary">Immersive Mode</button>
                     </div>
+                    
+                    <!-- Conway's Game of Life specific controls -->
+                    <div id="conway-controls" class="simulation-controls" style="display: none;">
+                        <div class="control-group">
+                            <label for="speed-slider">Speed:</label>
+                            <input type="range" id="speed-slider" min="1" max="60" value="30" class="slider">
+                            <span id="speed-value">30 FPS</span>
+                        </div>
+                        <div class="control-group">
+                            <button id="random-btn" class="btn secondary">Random</button>
+                            <button id="learn-btn" class="btn secondary">Learn</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -65,6 +78,35 @@
     <!-- Immersive mode exit hint -->
     <div id="immersive-hint" class="immersive-hint">
         <span>Press <kbd>Escape</kbd> to exit immersive mode</span>
+    </div>
+
+    <!-- Conway's Game of Life Learn Modal -->
+    <div id="conway-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Conway's Game of Life</h2>
+                <button class="modal-close" id="conway-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Rules</h3>
+                <p>Conway's Game of Life is a cellular automaton with simple rules:</p>
+                <ul>
+                    <li><strong>Birth:</strong> A dead cell with exactly 3 live neighbours becomes alive</li>
+                    <li><strong>Survival:</strong> A live cell with 2 or 3 live neighbours stays alive</li>
+                    <li><strong>Death:</strong> A live cell with fewer than 2 or more than 3 neighbours dies</li>
+                </ul>
+                
+                <h3>Common Patterns</h3>
+                <ul>
+                    <li><strong>Still Life:</strong> Patterns that don't change (e.g., Block, Beehive)</li>
+                    <li><strong>Oscillators:</strong> Patterns that repeat after a few generations (e.g., Blinker, Toad)</li>
+                    <li><strong>Spaceships:</strong> Patterns that move across the grid (e.g., Glider)</li>
+                </ul>
+                
+                <h3>How to Use</h3>
+                <p>Click on the grid to toggle cells between alive and dead states. Use the controls to start, pause, and reset the simulation.</p>
+            </div>
+        </div>
     </div>
 
     <script src="i18n.js"></script>
