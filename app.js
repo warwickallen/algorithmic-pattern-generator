@@ -22,6 +22,9 @@ class AlgorithmicPatternGenerator {
                 this.currentSimulation.draw();
             }
         });
+        
+        // Start title fade animation after 5 seconds
+        this.startTitleFade();
     }
     
     setupEventListeners() {
@@ -141,6 +144,14 @@ class AlgorithmicPatternGenerator {
     hideImmersiveHint() {
         const hint = document.getElementById('immersive-hint');
         hint.classList.remove('show');
+    }
+    
+    startTitleFade() {
+        // Start fade animation after 5 seconds
+        setTimeout(() => {
+            const title = document.getElementById('title');
+            title.classList.add('fade-out');
+        }, 5000);
     }
     
     handleCanvasClick(e) {

@@ -51,6 +51,12 @@ body {
     background-clip: text;
     text-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
     letter-spacing: 1px;
+    opacity: 1;
+    transition: opacity 2.5s ease;
+}
+
+#title.fade-out {
+    opacity: 0.1;
 }
 
 .controls {
