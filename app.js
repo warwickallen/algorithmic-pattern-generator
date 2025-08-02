@@ -113,8 +113,10 @@ class AlgorithmicPatternGenerator {
         const btn = document.getElementById('immersive-btn');
         if (this.isImmersive) {
             btn.textContent = 'Exit Immersive';
+            this.showImmersiveHint();
         } else {
             btn.textContent = i18n.t('immersive-btn');
+            this.hideImmersiveHint();
         }
         
         // Resize canvas when toggling immersive mode
@@ -124,6 +126,21 @@ class AlgorithmicPatternGenerator {
                 this.currentSimulation.draw();
             }
         }, 300);
+    }
+    
+    showImmersiveHint() {
+        const hint = document.getElementById('immersive-hint');
+        hint.classList.add('show');
+        
+        // Hide hint after 3 seconds
+        setTimeout(() => {
+            this.hideImmersiveHint();
+        }, 3000);
+    }
+    
+    hideImmersiveHint() {
+        const hint = document.getElementById('immersive-hint');
+        hint.classList.remove('show');
     }
     
     handleCanvasClick(e) {

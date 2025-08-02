@@ -239,6 +239,38 @@ This document outlines the requirements for enhancing the Algorithmic Pattern Ge
 - Click Random and verify random pattern
 - Open Learn modal and verify content
 
+### 3.4 Brightness Control
+**Priority**: Medium
+**Description**: Add user control to adjust the brightness of activated cells across all simulations.
+
+**Requirements**:
+- **Brightness Slider**: Control the visual intensity of activated cells
+  - Range: 0.1 to 2.0 (10% to 200% brightness)
+  - Default: 1.0 (100% brightness)
+  - Real-time adjustment without simulation restart
+  - Keyboard shortcuts: "[" (decrease), "]" (increase)
+- **Reset Button**: Return brightness to default value
+  - Button click resets to 100% brightness
+  - Keyboard shortcut "r" also resets brightness
+- **Visual Feedback**: Display current brightness value
+  - Show percentage or multiplier value
+  - Update in real-time as slider moves
+
+**Acceptance Criteria**:
+- [ ] Brightness slider affects all activated cells
+- [ ] Real-time adjustment without simulation interruption
+- [ ] Keyboard shortcuts work for brightness control
+- [ ] Reset button returns to default brightness
+- [ ] Visual feedback shows current brightness value
+- [ ] Control appears for all simulations
+
+**Test Cases**:
+- Adjust brightness slider and verify cell intensity changes
+- Test "[" and "]" keyboard shortcuts
+- Click Reset button and verify brightness returns to default
+- Verify brightness control works across all three simulations
+- Check that brightness changes are applied immediately
+
 ## Phase 4: Modal System and Educational Content
 
 ### 4.1 Modal System Implementation
