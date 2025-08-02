@@ -3,128 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Algorithmic Pattern Generator</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Educational Content Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .test-button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #00cc00;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Header with controls -->
-        <header id="header">
-            <div class="header-content">
-                <h1 id="title">Algorithmic Pattern Generator</h1>
+    <h1>Educational Content Test</h1>
+    
+    <div class="test-section">
+        <h2>Conway's Game of Life Modal Test</h2>
+        <button class="test-button" onclick="testConwayModal()">Test Conway Modal</button>
+        <div id="conway-status" class="status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Termite Algorithm Modal Test</h2>
+        <button class="test-button" onclick="testTermiteModal()">Test Termite Modal</button>
+        <div id="termite-status" class="status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Langton's Ant Modal Test</h2>
+        <button class="test-button" onclick="testLangtonModal()">Test Langton Modal</button>
+        <div id="langton-status" class="status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Content Verification</h2>
+        <button class="test-button" onclick="verifyContent()">Verify All Content</button>
+        <div id="content-status" class="status"></div>
+    </div>
+
+    <script>
+        function testConwayModal() {
+            const modal = document.getElementById('conway-modal');
+            const status = document.getElementById('conway-status');
+            
+            if (modal) {
+                modal.classList.add('show');
+                status.innerHTML = '<span class="success">✓ Conway modal opened successfully</span>';
                 
-                <div class="controls">
-                    <div class="simulation-selector">
-                        <label for="simulation-select" id="simulation-label">Simulation:</label>
-                        <select id="simulation-select">
-                            <option value="conway" id="conway-option">Conway's Game of Life</option>
-                            <option value="termite" id="termite-option">Termite Algorithm</option>
-                            <option value="langton" id="langton-option">Langton's Ant</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-buttons">
-                        <button id="start-btn" class="btn primary">Start</button>
-                        <button id="pause-btn" class="btn secondary" disabled>Pause</button>
-                        <button id="reset-btn" class="btn secondary">Reset</button>
-                        <button id="clear-btn" class="btn secondary">Clear</button>
-                        <button id="immersive-btn" class="btn secondary">Immersive Mode</button>
-                    </div>
-                    
-                    <!-- Brightness Control -->
-                    <div class="brightness-control">
-                        <div class="control-group">
-                            <label for="brightness-slider">Brightness:</label>
-                            <input type="range" id="brightness-slider" min="0.1" max="2.0" step="0.1" value="1.0" class="slider">
-                            <span id="brightness-value">100%</span>
-                        </div>
-                        <div class="control-group">
-                            <button id="brightness-reset-btn" class="btn secondary">Reset</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Conway's Game of Life specific controls -->
-                    <div id="conway-controls" class="simulation-controls" style="display: none;">
-                        <div class="control-group">
-                            <label for="speed-slider">Speed:</label>
-                            <input type="range" id="speed-slider" min="1" max="60" value="30" class="slider">
-                            <span id="speed-value">30 FPS</span>
-                        </div>
-                        <div class="control-group">
-                            <button id="random-btn" class="btn secondary">Random</button>
-                            <button id="learn-btn" class="btn secondary">Learn</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Termite Algorithm specific controls -->
-                    <div id="termite-controls" class="simulation-controls" style="display: none;">
-                        <div class="control-group">
-                            <label for="termite-speed-slider">Speed:</label>
-                            <input type="range" id="termite-speed-slider" min="0.5" max="3" step="0.1" value="1" class="slider">
-                            <span id="termite-speed-value">1x</span>
-                        </div>
-                        <div class="control-group">
-                            <label for="termites-slider">Termites:</label>
-                            <input type="range" id="termites-slider" min="10" max="100" value="50" class="slider">
-                            <span id="termites-value">50</span>
-                        </div>
-                        <div class="control-group">
-                            <button id="termite-random-btn" class="btn secondary">Random</button>
-                            <button id="termite-learn-btn" class="btn secondary">Learn</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Langton's Ant specific controls -->
-                    <div id="langton-controls" class="simulation-controls" style="display: none;">
-                        <div class="control-group">
-                            <label for="langton-speed-slider">Speed:</label>
-                            <input type="range" id="langton-speed-slider" min="1" max="60" value="30" class="slider">
-                            <span id="langton-speed-value">30 steps/s</span>
-                        </div>
-                        <div class="control-group">
-                            <button id="add-ant-btn" class="btn secondary">Add Ant</button>
-                            <button id="langton-random-btn" class="btn secondary">Random</button>
-                            <button id="langton-learn-btn" class="btn secondary">Learn</button>
-                        </div>
-                    </div>
+                setTimeout(() => {
+                    modal.classList.remove('show');
+                }, 3000);
+            } else {
+                status.innerHTML = '<span class="error">✗ Conway modal not found</span>';
+            }
+        }
+        
+        function testTermiteModal() {
+            const modal = document.getElementById('termite-modal');
+            const status = document.getElementById('termite-status');
+            
+            if (modal) {
+                modal.classList.add('show');
+                status.innerHTML = '<span class="success">✓ Termite modal opened successfully</span>';
+                
+                setTimeout(() => {
+                    modal.classList.remove('show');
+                }, 3000);
+            } else {
+                status.innerHTML = '<span class="error">✗ Termite modal not found</span>';
+            }
+        }
+        
+        function testLangtonModal() {
+            const modal = document.getElementById('langton-modal');
+            const status = document.getElementById('langton-status');
+            
+            if (modal) {
+                modal.classList.add('show');
+                status.innerHTML = '<span class="success">✓ Langton modal opened successfully</span>';
+                
+                setTimeout(() => {
+                    modal.classList.remove('show');
+                }, 3000);
+            } else {
+                status.innerHTML = '<span class="error">✗ Langton modal not found</span>';
+            }
+        }
+        
+        function verifyContent() {
+            const status = document.getElementById('content-status');
+            const requiredContent = {
+                conway: ['Rules', 'Common Patterns', 'Historical Context', 'How to Use'],
+                termite: ['How It Works', 'Emergent Behaviour', 'Real-World Applications', 'Controls'],
+                langton: ['Rules', 'Highway Formation', 'Mathematical Significance', 'Controls']
+            };
+            
+            let allContentPresent = true;
+            let results = [];
+            
+            Object.entries(requiredContent).forEach(([simType, sections]) => {
+                const modal = document.getElementById(`${simType}-modal`);
+                if (modal) {
+                    const content = modal.textContent;
+                    sections.forEach(section => {
+                        if (content.includes(section)) {
+                            results.push(`✓ ${simType}: ${section}`);
+                        } else {
+                            results.push(`✗ ${simType}: ${section} (missing)`);
+                            allContentPresent = false;
+                        }
+                    });
+                } else {
+                    results.push(`✗ ${simType}: Modal not found`);
+                    allContentPresent = false;
+                }
+            });
+            
+            status.innerHTML = `
+                <div class="${allContentPresent ? 'success' : 'error'}">
+                    <strong>${allContentPresent ? '✓ All content verified' : '✗ Some content missing'}</strong><br>
+                    ${results.join('<br>')}
                 </div>
-            </div>
-        </header>
-
-        <!-- Canvas container -->
-        <main id="main">
-            <canvas id="canvas"></canvas>
-        </main>
-
-        <!-- Status bar -->
-        <footer id="footer">
-            <div class="status-content">
-                <div class="status-info">
-                    <span id="generation-label">Generation:</span>
-                    <span id="generation-count">0</span>
-                    <span id="cell-count-label">Cells:</span>
-                    <span id="cell-count">0</span>
-                </div>
-                <div class="status-info">
-                    <span id="fps-label">FPS:</span>
-                    <span id="fps">0</span>
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <!-- Language selector (hidden in immersive mode) -->
-    <div id="language-selector">
-        <button id="lang-en-gb" class="lang-btn active" data-lang="en-gb">🇬🇧</button>
-        <button id="lang-en-us" class="lang-btn" data-lang="en-us">🇺🇸</button>
-    </div>
-
-    <!-- Immersive mode exit hint -->
-    <div id="immersive-hint" class="immersive-hint">
-        <span>Press <kbd>Escape</kbd> to exit immersive mode</span>
-    </div>
-
-    <!-- Conway's Game of Life Learn Modal -->
+            `;
+        }
+    </script>
+    
+    <!-- Include the modals from the main app -->
     <div id="conway-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -162,7 +196,6 @@
         </div>
     </div>
 
-    <!-- Termite Algorithm Learn Modal -->
     <div id="termite-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -201,7 +234,6 @@
         </div>
     </div>
 
-    <!-- Langton's Ant Learn Modal -->
     <div id="langton-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -239,9 +271,5 @@
             </div>
         </div>
     </div>
-
-    <script src="i18n.js"></script>
-    <script src="simulations.js"></script>
-    <script src="app.js"></script>
 </body>
 </html> 
