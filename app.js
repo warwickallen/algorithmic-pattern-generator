@@ -1,3 +1,104 @@
+// Modal Manager for handling all modals
+class ModalManager {
+    constructor() {
+        this.activeModal = null;
+        this.modals = new Map();
+        this.init();
+    }
+    
+    init() {
+        // Set up global modal event listeners
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.activeModal) {
+                this.hide(this.activeModal);
+            }
+        });
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.activeModal && e.target.classList.contains('modal')) {
+                this.hide(this.activeModal);
+            }
+        });
+    }
+    
+    register(modalId, config = {}) {
+        const modal = document.getElementById(modalId);
+        if (!modal) {
+            console.warn(`Modal with ID '${modalId}' not found`);
+            return;
+        }
+        
+        const modalConfig = {
+            id: modalId,
+            element: modal,
+            closeBtn: modal.querySelector('.modal-close'),
+            ...config
+        };
+        
+        // Set up close button event listener
+        if (modalConfig.closeBtn) {
+            modalConfig.closeBtn.addEventListener('click', () => {
+                this.hide(modalId);
+            });
+        }
+        
+        this.modals.set(modalId, modalConfig);
+        return modalConfig;
+    }
+    
+    show(modalId) {
+        const modalConfig = this.modals.get(modalId);
+        if (!modalConfig) {
+            console.warn(`Modal '${modalId}' not registered`);
+            return;
+        }
+        
+        // Hide any currently active modal
+        if (this.activeModal) {
+            this.hide(this.activeModal);
+        }
+        
+        modalConfig.element.classList.add('show');
+        this.activeModal = modalId;
+        
+        // Trigger custom show callback
+        if (modalConfig.onShow) {
+            modalConfig.onShow();
+        }
+    }
+    
+    hide(modalId) {
+        const modalConfig = this.modals.get(modalId);
+        if (!modalConfig) {
+            console.warn(`Modal '${modalId}' not registered`);
+            return;
+        }
+        
+        modalConfig.element.classList.remove('show');
+        
+        if (this.activeModal === modalId) {
+            this.activeModal = null;
+        }
+        
+        // Trigger custom hide callback
+        if (modalConfig.onHide) {
+            modalConfig.onHide();
+        }
+    }
+    
+    hideAll() {
+        this.modals.forEach((config, id) => {
+            this.hide(id);
+        });
+    }
+    
+    isVisible(modalId) {
+        const modalConfig = this.modals.get(modalId);
+        return modalConfig ? modalConfig.element.classList.contains('show') : false;
+    }
+}
+
 // Main application class
 class AlgorithmicPatternGenerator {
     constructor() {
@@ -6,6 +107,9 @@ class AlgorithmicPatternGenerator {
         this.currentSimulation = null;
         this.currentType = 'conway';
         this.isImmersive = false;
+        
+        // Initialize modal manager
+        this.modalManager = new ModalManager();
         
         // Configuration for simulation-specific controls
         this.simulationConfigs = {
@@ -42,6 +146,7 @@ class AlgorithmicPatternGenerator {
     
     init() {
         this.setupEventListeners();
+        this.setupModals();
         this.createSimulation(this.currentType);
         this.updateUI();
         
@@ -55,6 +160,22 @@ class AlgorithmicPatternGenerator {
         
         // Start title fade animation after 5 seconds
         this.startTitleFade();
+    }
+    
+    setupModals() {
+        // Register all modals with the modal manager
+        Object.entries(this.simulationConfigs).forEach(([simType, config]) => {
+            this.modalManager.register(config.modalId, {
+                onShow: () => {
+                    // Add any simulation-specific modal show logic here
+                    console.log(`${simType} modal opened`);
+                },
+                onHide: () => {
+                    // Add any simulation-specific modal hide logic here
+                    console.log(`${simType} modal closed`);
+                }
+            });
+        });
     }
     
     setupEventListeners() {
@@ -123,14 +244,6 @@ class AlgorithmicPatternGenerator {
             if (learnBtn) {
                 learnBtn.addEventListener('click', () => {
                     this.showLearnModal(simType);
-                });
-            }
-            
-            // Modal close button
-            const modalCloseBtn = document.getElementById(config.modalCloseId);
-            if (modalCloseBtn) {
-                modalCloseBtn.addEventListener('click', () => {
-                    this.hideLearnModal(simType);
                 });
             }
             
@@ -282,13 +395,8 @@ class AlgorithmicPatternGenerator {
                 if (this.isImmersive) {
                     this.toggleImmersiveMode();
                 } else {
-                    // Close any open modal
-                    Object.keys(this.simulationConfigs).forEach(simType => {
-                        const modal = document.getElementById(this.simulationConfigs[simType].modalId);
-                        if (modal && modal.classList.contains('show')) {
-                            this.hideLearnModal(simType);
-                        }
-                    });
+                    // Close any open modal using modal manager
+                    this.modalManager.hideAll();
                 }
                 break;
             case ',':
@@ -392,25 +500,19 @@ class AlgorithmicPatternGenerator {
         }
     }
     
-    // Generic modal handlers
+    // Generic modal handlers using modal manager
     showLearnModal(simType) {
         const config = this.simulationConfigs[simType];
         if (!config) return;
         
-        const modal = document.getElementById(config.modalId);
-        if (modal) {
-            modal.classList.add('show');
-        }
+        this.modalManager.show(config.modalId);
     }
     
     hideLearnModal(simType) {
         const config = this.simulationConfigs[simType];
         if (!config) return;
         
-        const modal = document.getElementById(config.modalId);
-        if (modal) {
-            modal.classList.remove('show');
-        }
+        this.modalManager.hide(config.modalId);
     }
     
     // Generic additional control handler
