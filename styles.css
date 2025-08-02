@@ -79,6 +79,16 @@ body {
     border-color: #007acc;
 }
 
+#simulation-select option {
+    background: #2a2a2a;
+    color: #ffffff;
+    padding: 0.5rem;
+}
+
+#simulation-select option:hover {
+    background: #3a3a3a;
+}
+
 .control-buttons {
     display: flex;
     gap: 0.5rem;
