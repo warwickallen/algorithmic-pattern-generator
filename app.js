@@ -1,3 +1,335 @@
+// Shared Components and Utilities
+class SharedComponents {
+    // Common slider component
+    static createSlider(config) {
+        const { id, min, max, step, value, label, format } = config;
+        return {
+            element: document.getElementById(id),
+            valueElement: document.getElementById(`${id}-value`),
+            label,
+            format: format || ((val) => val.toString()),
+            range: { min, max, step, default: value }
+        };
+    }
+    
+    // Common button component
+    static createButton(id, label, className = 'btn secondary') {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = label;
+            element.className = className;
+        }
+        return element;
+    }
+    
+    // Common control group wrapper
+    static createControlGroup(controls) {
+        return controls.map(control => {
+            if (control.type === 'slider') {
+                return this.createSlider(control);
+            } else if (control.type === 'button') {
+                return this.createButton(control.id, control.label, control.className);
+            }
+            return null;
+        }).filter(Boolean);
+    }
+}
+
+// Unified Configuration Manager
+class ConfigurationManager {
+    static simulationConfigs = {
+        conway: {
+            name: "Conway's Game of Life",
+            controls: {
+                speed: {
+                    type: 'slider',
+                    id: 'speed-slider',
+                    min: 1,
+                    max: 60,
+                    step: 1,
+                    value: 30,
+                    label: 'Speed',
+                    format: (value) => `${value} FPS`
+                },
+                random: {
+                    type: 'button',
+                    id: 'random-btn',
+                    label: 'Random'
+                },
+                learn: {
+                    type: 'button',
+                    id: 'learn-btn',
+                    label: 'Learn'
+                }
+            },
+            modal: {
+                id: 'conway-modal',
+                closeId: 'conway-modal-close'
+            }
+        },
+        termite: {
+            name: 'Termite Algorithm',
+            controls: {
+                speed: {
+                    type: 'slider',
+                    id: 'termite-speed-slider',
+                    min: 0.5,
+                    max: 3,
+                    step: 0.1,
+                    value: 1,
+                    label: 'Speed',
+                    format: (value) => `${value}x`
+                },
+                termiteCount: {
+                    type: 'slider',
+                    id: 'termites-slider',
+                    min: 10,
+                    max: 100,
+                    step: 1,
+                    value: 50,
+                    label: 'Termites',
+                    format: (value) => value.toString()
+                },
+                random: {
+                    type: 'button',
+                    id: 'termite-random-btn',
+                    label: 'Random'
+                },
+                learn: {
+                    type: 'button',
+                    id: 'termite-learn-btn',
+                    label: 'Learn'
+                }
+            },
+            modal: {
+                id: 'termite-modal',
+                closeId: 'termite-modal-close'
+            }
+        },
+        langton: {
+            name: "Langton's Ant",
+            controls: {
+                speed: {
+                    type: 'slider',
+                    id: 'langton-speed-slider',
+                    min: 1,
+                    max: 60,
+                    step: 1,
+                    value: 30,
+                    label: 'Speed',
+                    format: (value) => `${value} steps/s`
+                },
+                addAnt: {
+                    type: 'button',
+                    id: 'add-ant-btn',
+                    label: 'Add Ant'
+                },
+                random: {
+                    type: 'button',
+                    id: 'langton-random-btn',
+                    label: 'Random'
+                },
+                learn: {
+                    type: 'button',
+                    id: 'langton-learn-btn',
+                    label: 'Learn'
+                }
+            },
+            modal: {
+                id: 'langton-modal',
+                closeId: 'langton-modal-close'
+            }
+        }
+    };
+    
+    static getConfig(simType) {
+        return this.simulationConfigs[simType];
+    }
+    
+    static getAllConfigs() {
+        return this.simulationConfigs;
+    }
+}
+
+// Unified Event Handler
+class EventHandler {
+    constructor(app) {
+        this.app = app;
+        this.handlers = new Map();
+    }
+    
+    // Register event handlers for a simulation type
+    registerSimulationHandlers(simType) {
+        const config = ConfigurationManager.getConfig(simType);
+        if (!config) return;
+        
+        const handlers = {
+            speedChange: (value) => this.app.handleSpeedChange(simType, value),
+            randomPattern: () => this.app.handleRandomPattern(simType),
+            showLearnModal: () => this.app.showLearnModal(simType),
+            addAnt: () => this.app.handleAddAnt(simType)
+        };
+        
+        this.handlers.set(simType, handlers);
+        this.setupControls(simType, handlers);
+    }
+    
+    // Setup controls for a simulation type
+    setupControls(simType, handlers) {
+        const config = ConfigurationManager.getConfig(simType);
+        if (!config) return;
+        
+        Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
+            if (controlConfig.type === 'slider') {
+                this.setupSlider(controlConfig, handlers);
+            } else if (controlConfig.type === 'button') {
+                this.setupButton(controlConfig, handlers);
+            }
+        });
+    }
+    
+    // Setup slider control
+    setupSlider(config, handlers) {
+        const slider = document.getElementById(config.id);
+        const valueElement = document.getElementById(`${config.id}-value`);
+        
+        if (slider) {
+            slider.addEventListener('input', (e) => {
+                const value = config.format ? config.format(e.target.value) : e.target.value;
+                if (valueElement) {
+                    valueElement.textContent = value;
+                }
+                
+                if (config.id.includes('speed')) {
+                    handlers.speedChange(parseFloat(e.target.value));
+                } else if (config.id.includes('termites')) {
+                    this.app.handleTermiteCountChange(parseInt(e.target.value));
+                }
+            });
+        }
+    }
+    
+    // Setup button control
+    setupButton(config, handlers) {
+        const button = document.getElementById(config.id);
+        
+        if (button) {
+            button.addEventListener('click', () => {
+                if (config.id.includes('random')) {
+                    handlers.randomPattern();
+                } else if (config.id.includes('learn')) {
+                    handlers.showLearnModal();
+                } else if (config.id.includes('add-ant')) {
+                    handlers.addAnt();
+                }
+            });
+        }
+    }
+    
+    // Register all simulation handlers
+    registerAllHandlers() {
+        Object.keys(ConfigurationManager.getAllConfigs()).forEach(simType => {
+            this.registerSimulationHandlers(simType);
+        });
+    }
+}
+
+// Unified Control Manager
+class ControlManager {
+    constructor() {
+        this.activeControls = null;
+    }
+    
+    // Show controls for a specific simulation type
+    showControls(simType) {
+        // Hide all simulation controls
+        this.hideAllControls();
+        
+        // Show controls for current simulation
+        const controlsElement = document.getElementById(`${simType}-controls`);
+        if (controlsElement) {
+            controlsElement.style.display = 'flex';
+            this.activeControls = simType;
+        }
+    }
+    
+    // Hide all simulation controls
+    hideAllControls() {
+        Object.keys(ConfigurationManager.getAllConfigs()).forEach(simType => {
+            const controlsElement = document.getElementById(`${simType}-controls`);
+            if (controlsElement) {
+                controlsElement.style.display = 'none';
+            }
+        });
+        this.activeControls = null;
+    }
+    
+    // Update control values
+    updateControlValues(simType, values) {
+        const config = ConfigurationManager.getConfig(simType);
+        if (!config) return;
+        
+        Object.entries(values).forEach(([controlName, value]) => {
+            const controlConfig = config.controls[controlName];
+            if (controlConfig && controlConfig.type === 'slider') {
+                const slider = document.getElementById(controlConfig.id);
+                const valueElement = document.getElementById(`${controlConfig.id}-value`);
+                
+                if (slider) {
+                    slider.value = value;
+                }
+                if (valueElement && controlConfig.format) {
+                    valueElement.textContent = controlConfig.format(value);
+                }
+            }
+        });
+    }
+}
+
+// Unified Keyboard Handler
+class KeyboardHandler {
+    constructor(app) {
+        this.app = app;
+        this.shortcuts = new Map();
+        this.setupShortcuts();
+    }
+    
+    setupShortcuts() {
+        this.shortcuts.set(' ', () => this.app.toggleSimulation());
+        this.shortcuts.set('r', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                this.app.resetSimulation();
+            } else {
+                this.app.resetBrightness();
+            }
+        });
+        this.shortcuts.set('c', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                this.app.clearSimulation();
+            }
+        });
+        this.shortcuts.set('i', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                this.app.toggleImmersiveMode();
+            }
+        });
+        this.shortcuts.set('Escape', () => this.app.handleEscape());
+        this.shortcuts.set(',', () => this.app.adjustSpeed(this.app.currentType, -1));
+        this.shortcuts.set('.', () => this.app.adjustSpeed(this.app.currentType, 1));
+        this.shortcuts.set('a', () => this.app.handleAddAnt(this.app.currentType));
+        this.shortcuts.set('[', () => this.app.adjustBrightness(-0.1));
+        this.shortcuts.set(']', () => this.app.adjustBrightness(0.1));
+    }
+    
+    handleKeydown(e) {
+        const handler = this.shortcuts.get(e.key);
+        if (handler) {
+            e.preventDefault();
+            handler(e);
+        }
+    }
+}
+
 // Modal Manager for handling all modals
 class ModalManager {
     constructor() {
@@ -99,177 +431,6 @@ class ModalManager {
     }
 }
 
-// Configuration Factory for simulation configs
-class SimulationConfigFactory {
-    static createConfig(simType, overrides = {}) {
-        const baseConfig = {
-            controlsId: `${simType}-controls`,
-            speedSliderId: `${simType}-speed-slider`,
-            speedValueId: `${simType}-speed-value`,
-            randomBtnId: `${simType}-random-btn`,
-            learnBtnId: `${simType}-learn-btn`,
-            modalId: `${simType}-modal`,
-            modalCloseId: `${simType}-modal-close`
-        };
-        
-        return { ...baseConfig, ...overrides };
-    }
-    
-    static getSimulationConfigs() {
-        return {
-            conway: this.createConfig('conway', {
-                speedSliderId: 'speed-slider',
-                speedValueId: 'speed-value',
-                randomBtnId: 'random-btn',
-                learnBtnId: 'learn-btn',
-                speedFormat: (value) => `${value} FPS`,
-                speedRange: { min: 1, max: 60, step: 1, default: 30 }
-            }),
-            termite: this.createConfig('termite', {
-                speedFormat: (value) => `${value}x`,
-                speedRange: { min: 0.5, max: 3, step: 0.1, default: 1 },
-                additionalControls: {
-                    termiteCountSliderId: 'termites-slider',
-                    termiteCountValueId: 'termites-value'
-                }
-            }),
-            langton: this.createConfig('langton', {
-                speedFormat: (value) => `${value} steps/s`,
-                speedRange: { min: 1, max: 60, step: 1, default: 30 },
-                additionalControls: {
-                    addAntBtnId: 'add-ant-btn'
-                }
-            })
-        };
-    }
-}
-
-// Event Listener Factory for setting up simulation controls
-class EventListenerFactory {
-    static setupSimulationControls(config, handlers) {
-        const elements = {
-            speedSlider: document.getElementById(config.speedSliderId),
-            randomBtn: document.getElementById(config.randomBtnId),
-            learnBtn: document.getElementById(config.learnBtnId)
-        };
-        
-        // Speed slider
-        if (elements.speedSlider) {
-            elements.speedSlider.addEventListener('input', handlers.speedChange);
-        }
-        
-        // Random button
-        if (elements.randomBtn) {
-            elements.randomBtn.addEventListener('click', handlers.randomPattern);
-        }
-        
-        // Learn button
-        if (elements.learnBtn) {
-            elements.learnBtn.addEventListener('click', handlers.showLearnModal);
-        }
-        
-        // Additional controls
-        if (config.additionalControls) {
-            Object.entries(config.additionalControls).forEach(([controlType, elementId]) => {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    if (element.tagName === 'INPUT') {
-                        element.addEventListener('input', (e) => {
-                            handlers.additionalControl(controlType, e.target.value);
-                        });
-                    } else if (element.tagName === 'BUTTON') {
-                        element.addEventListener('click', () => {
-                            handlers.additionalControl(controlType);
-                        });
-                    }
-                }
-            });
-        }
-    }
-}
-
-// HTML Generator for dynamic HTML generation
-class HTMLGenerator {
-    static generateSimulationControls(config) {
-        const speedRange = config.speedRange;
-        const speedValue = config.speedFormat ? config.speedFormat(speedRange.default) : speedRange.default;
-        
-        let additionalControlsHTML = '';
-        
-        if (config.additionalControls) {
-            Object.entries(config.additionalControls).forEach(([controlType, elementId]) => {
-                if (controlType.includes('Slider')) {
-                    const label = this.getControlLabel(controlType);
-                    const range = this.getControlRange(controlType);
-                    additionalControlsHTML += `
-                        <div class="control-group">
-                            <label for="${elementId}">${label}:</label>
-                            <input type="range" id="${elementId}" min="${range.min}" max="${range.max}" 
-                                   step="${range.step}" value="${range.default}" class="slider">
-                            <span id="${config.additionalControls[controlType.replace('SliderId', 'ValueId')]}">${range.default}</span>
-                        </div>
-                    `;
-                } else if (controlType.includes('Btn')) {
-                    const label = this.getControlLabel(controlType);
-                    additionalControlsHTML += `
-                        <div class="control-group">
-                            <button id="${elementId}" class="btn secondary">${label}</button>
-                        </div>
-                    `;
-                }
-            });
-        }
-        
-        return `
-            <div id="${config.controlsId}" class="simulation-controls" style="display: none;">
-                <div class="control-group">
-                    <label for="${config.speedSliderId}">Speed:</label>
-                    <input type="range" id="${config.speedSliderId}" 
-                           min="${speedRange.min}" max="${speedRange.max}" 
-                           step="${speedRange.step}" value="${speedRange.default}" class="slider">
-                    <span id="${config.speedValueId}">${speedValue}</span>
-                </div>
-                ${additionalControlsHTML}
-                <div class="control-group">
-                    <button id="${config.randomBtnId}" class="btn secondary">Random</button>
-                    <button id="${config.learnBtnId}" class="btn secondary">Learn</button>
-                </div>
-            </div>
-        `;
-    }
-    
-    static getControlLabel(controlType) {
-        const labelMap = {
-            'termiteCountSliderId': 'Termites',
-            'addAntBtnId': 'Add Ant'
-        };
-        return labelMap[controlType] || controlType;
-    }
-    
-    static getControlRange(controlType) {
-        const rangeMap = {
-            'termiteCountSliderId': { min: 10, max: 100, step: 1, default: 50 }
-        };
-        return rangeMap[controlType] || { min: 0, max: 100, step: 1, default: 50 };
-    }
-    
-    static generateModalContent(config, content) {
-        return `
-            <div id="${config.modalId}" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>${content.title}</h2>
-                        <button class="modal-close" id="${config.modalCloseId}">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        ${content.body}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-}
-
 // Main application class
 class AlgorithmicPatternGenerator {
     constructor() {
@@ -280,11 +441,11 @@ class AlgorithmicPatternGenerator {
         this.isImmersive = false;
         this.brightness = 1.0; // Default brightness
         
-        // Initialize modal manager
+        // Initialize managers
         this.modalManager = new ModalManager();
-        
-        // Get simulation configs from factory
-        this.simulationConfigs = SimulationConfigFactory.getSimulationConfigs();
+        this.controlManager = new ControlManager();
+        this.eventHandler = new EventHandler(this);
+        this.keyboardHandler = new KeyboardHandler(this);
         
         this.init();
     }
@@ -292,6 +453,7 @@ class AlgorithmicPatternGenerator {
     init() {
         this.setupEventListeners();
         this.setupModals();
+        this.eventHandler.registerAllHandlers();
         this.createSimulation(this.currentType);
         this.updateUI();
         
@@ -309,14 +471,12 @@ class AlgorithmicPatternGenerator {
     
     setupModals() {
         // Register all modals with the modal manager
-        Object.entries(this.simulationConfigs).forEach(([simType, config]) => {
-            this.modalManager.register(config.modalId, {
+        Object.entries(ConfigurationManager.getAllConfigs()).forEach(([simType, config]) => {
+            this.modalManager.register(config.modal.id, {
                 onShow: () => {
-                    // Add any simulation-specific modal show logic here
                     console.log(`${simType} modal opened`);
                 },
                 onHide: () => {
-                    // Add any simulation-specific modal hide logic here
                     console.log(`${simType} modal closed`);
                 }
             });
@@ -351,9 +511,6 @@ class AlgorithmicPatternGenerator {
             this.toggleImmersiveMode();
         });
         
-        // Setup simulation-specific controls
-        this.setupSimulationControls();
-        
         // Setup brightness controls
         this.setupBrightnessControls();
         
@@ -364,21 +521,7 @@ class AlgorithmicPatternGenerator {
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            this.handleKeyboard(e);
-        });
-    }
-    
-    setupSimulationControls() {
-        // Setup controls for each simulation type using the factory
-        Object.entries(this.simulationConfigs).forEach(([simType, config]) => {
-            const handlers = {
-                speedChange: (e) => this.handleSpeedChange(simType, e.target.value),
-                randomPattern: () => this.handleRandomPattern(simType),
-                showLearnModal: () => this.showLearnModal(simType),
-                additionalControl: (controlType, value) => this.handleAdditionalControl(simType, controlType, value)
-            };
-            
-            EventListenerFactory.setupSimulationControls(config, handlers);
+            this.keyboardHandler.handleKeydown(e);
         });
     }
     
@@ -437,6 +580,14 @@ class AlgorithmicPatternGenerator {
         if (this.currentSimulation) {
             this.currentSimulation.pause();
             this.updateUI();
+        }
+    }
+    
+    toggleSimulation() {
+        if (this.currentSimulation?.isRunning) {
+            this.pauseSimulation();
+        } else {
+            this.startSimulation();
         }
     }
     
@@ -513,70 +664,12 @@ class AlgorithmicPatternGenerator {
         }
     }
     
-    handleKeyboard(e) {
-        switch (e.key) {
-            case ' ':
-                e.preventDefault();
-                if (this.currentSimulation?.isRunning) {
-                    this.pauseSimulation();
-                } else {
-                    this.startSimulation();
-                }
-                break;
-            case 'r':
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    this.resetSimulation();
-                }
-                break;
-            case 'c':
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    this.clearSimulation();
-                }
-                break;
-            case 'i':
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    this.toggleImmersiveMode();
-                }
-                break;
-            case 'Escape':
-                if (this.isImmersive) {
-                    this.toggleImmersiveMode();
-                } else {
-                    // Close any open modal using modal manager
-                    this.modalManager.hideAll();
-                }
-                break;
-            case ',':
-                e.preventDefault();
-                this.adjustSpeed(this.currentType, -1);
-                break;
-            case '.':
-                e.preventDefault();
-                this.adjustSpeed(this.currentType, 1);
-                break;
-            case 'a':
-                if (this.currentType === 'langton' && this.currentSimulation?.addAnt) {
-                    e.preventDefault();
-                    this.currentSimulation.addAnt();
-                }
-                break;
-            case '[':
-                e.preventDefault();
-                this.adjustBrightness(-0.1);
-                break;
-            case ']':
-                e.preventDefault();
-                this.adjustBrightness(0.1);
-                break;
-            case 'r':
-                if (!e.ctrlKey && !e.metaKey) {
-                    e.preventDefault();
-                    this.resetBrightness();
-                }
-                break;
+    handleEscape() {
+        if (this.isImmersive) {
+            this.toggleImmersiveMode();
+        } else {
+            // Close any open modal using modal manager
+            this.modalManager.hideAll();
         }
     }
     
@@ -599,33 +692,14 @@ class AlgorithmicPatternGenerator {
         document.getElementById('simulation-select').value = this.currentType;
         
         // Show/hide simulation-specific controls
-        this.updateSimulationControls();
-    }
-    
-    updateSimulationControls() {
-        // Hide all simulation controls first
-        Object.values(this.simulationConfigs).forEach(config => {
-            const controlsElement = document.getElementById(config.controlsId);
-            if (controlsElement) {
-                controlsElement.style.display = 'none';
-            }
-        });
-        
-        // Show controls for current simulation
-        const currentConfig = this.simulationConfigs[this.currentType];
-        if (currentConfig) {
-            const controlsElement = document.getElementById(currentConfig.controlsId);
-            if (controlsElement) {
-                controlsElement.style.display = 'flex';
-            }
-        }
+        this.controlManager.showControls(this.currentType);
     }
     
     // Generic speed change handler
     handleSpeedChange(simType, value) {
         if (this.currentType !== simType || !this.currentSimulation) return;
         
-        const config = this.simulationConfigs[simType];
+        const config = ConfigurationManager.getConfig(simType);
         if (!config) return;
         
         // Parse value based on simulation type
@@ -633,27 +707,24 @@ class AlgorithmicPatternGenerator {
         
         // Set speed on simulation
         this.currentSimulation.setSpeed(parsedValue);
-        
-        // Update display
-        const valueElement = document.getElementById(config.speedValueId);
-        if (valueElement) {
-            valueElement.textContent = config.speedFormat(parsedValue);
-        }
     }
     
     // Generic speed adjustment handler
     adjustSpeed(simType, direction) {
-        const config = this.simulationConfigs[simType];
+        const config = ConfigurationManager.getConfig(simType);
         if (!config) return;
         
-        const slider = document.getElementById(config.speedSliderId);
+        const speedControl = config.controls.speed;
+        if (!speedControl) return;
+        
+        const slider = document.getElementById(speedControl.id);
         if (!slider) return;
         
         const currentValue = parseFloat(slider.value);
-        const step = config.speedRange.step;
+        const step = speedControl.step;
         const newValue = Math.max(
-            config.speedRange.min,
-            Math.min(config.speedRange.max, currentValue + (direction * step))
+            speedControl.min,
+            Math.min(speedControl.max, currentValue + (direction * step))
         );
         
         slider.value = newValue;
@@ -672,49 +743,34 @@ class AlgorithmicPatternGenerator {
     
     // Generic modal handlers using modal manager
     showLearnModal(simType) {
-        const config = this.simulationConfigs[simType];
+        const config = ConfigurationManager.getConfig(simType);
         if (!config) return;
         
-        this.modalManager.show(config.modalId);
+        this.modalManager.show(config.modal.id);
     }
     
     hideLearnModal(simType) {
-        const config = this.simulationConfigs[simType];
+        const config = ConfigurationManager.getConfig(simType);
         if (!config) return;
         
-        this.modalManager.hide(config.modalId);
+        this.modalManager.hide(config.modal.id);
     }
     
-    // Generic additional control handler
-    handleAdditionalControl(simType, controlType, value) {
+    // Generic add ant handler
+    handleAddAnt(simType) {
         if (this.currentType !== simType || !this.currentSimulation) return;
         
-        const config = this.simulationConfigs[simType];
-        if (!config || !config.additionalControls) return;
-        
-        const valueElementId = config.additionalControls[controlType];
-        if (!valueElementId) return;
-        
-        // Handle specific control types
-        switch (controlType) {
-            case 'termiteCountSliderId':
-                if (this.currentSimulation.setTermiteCount) {
-                    this.currentSimulation.setTermiteCount(parseInt(value));
-                }
-                break;
-            case 'addAntBtnId':
-                if (this.currentSimulation.addAnt) {
-                    this.currentSimulation.addAnt();
-                }
-                break;
+        if (this.currentSimulation.addAnt) {
+            this.currentSimulation.addAnt();
         }
+    }
+    
+    // Generic termite count change handler
+    handleTermiteCountChange(count) {
+        if (this.currentType !== 'termite' || !this.currentSimulation) return;
         
-        // Update display for slider controls
-        if (value && valueElementId) {
-            const valueElement = document.getElementById(valueElementId);
-            if (valueElement) {
-                valueElement.textContent = value;
-            }
+        if (this.currentSimulation.setTermiteCount) {
+            this.currentSimulation.setTermiteCount(count);
         }
     }
     
