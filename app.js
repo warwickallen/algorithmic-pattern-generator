@@ -49,7 +49,7 @@ class ConfigurationManager {
                     step: 1,
                     value: 30,
                     label: 'Speed',
-                    format: (value) => `${value} FPS`
+                    format: (value) => `${value} steps/s`
                 },
                 random: {
                     type: 'button',
@@ -73,12 +73,12 @@ class ConfigurationManager {
                 speed: {
                     type: 'slider',
                     id: 'termite-speed-slider',
-                    min: 0.5,
-                    max: 3,
-                    step: 0.1,
-                    value: 1,
+                    min: 1,
+                    max: 60,
+                    step: 1,
+                    value: 30,
                     label: 'Speed',
-                    format: (value) => `${value}x`
+                    format: (value) => `${value} steps/s`
                 },
                 termiteCount: {
                     type: 'slider',
@@ -702,11 +702,20 @@ class AlgorithmicPatternGenerator {
         const config = ConfigurationManager.getConfig(simType);
         if (!config) return;
         
-        // Parse value based on simulation type
-        const parsedValue = simType === 'conway' ? parseInt(value) : parseFloat(value);
+        // Parse value as integer for all simulations (steps per second)
+        const parsedValue = parseInt(value);
         
         // Set speed on simulation
         this.currentSimulation.setSpeed(parsedValue);
+        
+        // Update the display value
+        const speedControl = config.controls.speed;
+        if (speedControl) {
+            const valueElement = document.getElementById(`${speedControl.id}-value`);
+            if (valueElement && speedControl.format) {
+                valueElement.textContent = speedControl.format(parsedValue);
+            }
+        }
     }
     
     // Generic speed adjustment handler
@@ -771,6 +780,18 @@ class AlgorithmicPatternGenerator {
         
         if (this.currentSimulation.setTermiteCount) {
             this.currentSimulation.setTermiteCount(count);
+        }
+        
+        // Update the display value
+        const config = ConfigurationManager.getConfig('termite');
+        if (config) {
+            const termiteControl = config.controls.termites;
+            if (termiteControl) {
+                const valueElement = document.getElementById(`${termiteControl.id}-value`);
+                if (valueElement && termiteControl.format) {
+                    valueElement.textContent = termiteControl.format(count);
+                }
+            }
         }
     }
     

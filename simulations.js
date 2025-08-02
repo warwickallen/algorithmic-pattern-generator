@@ -57,14 +57,10 @@ class BaseSimulation {
             this.lastTime = currentTime;
         }
         
-        // For Conway's Game of Life and Langton's Ant, control update frequency based on speed
-        if (this.constructor.name === 'ConwayGameOfLife' || this.constructor.name === 'LangtonsAnt') {
-            if (currentTime - this.lastUpdateTime >= this.updateInterval) {
-                this.update();
-                this.lastUpdateTime = currentTime;
-            }
-        } else {
+        // For all simulations, control update frequency based on speed
+        if (currentTime - this.lastUpdateTime >= this.updateInterval) {
             this.update();
+            this.lastUpdateTime = currentTime;
         }
         
         this.draw();
@@ -402,8 +398,8 @@ class ConwayGameOfLife extends BaseSimulation {
         }
     }
     
-    setSpeed(fps) {
-        this.speed = Math.max(1, Math.min(60, fps));
+    setSpeed(stepsPerSecond) {
+        this.speed = Math.max(1, Math.min(60, stepsPerSecond));
         this.updateInterval = 1000 / this.speed;
     }
     
@@ -425,8 +421,9 @@ class TermiteAlgorithm extends BaseSimulation {
         this.termites = [];
         this.woodChips = new Set();
         this.maxTermites = 50;
-        this.speedMultiplier = 1.0;
-        this.baseSpeed = 2;
+        this.speed = 30; // steps per second
+        this.lastUpdateTime = 0;
+        this.updateInterval = 1000 / this.speed; // milliseconds between updates
     }
     
     init() {
@@ -487,7 +484,7 @@ class TermiteAlgorithm extends BaseSimulation {
         
         this.termites.forEach(termite => {
             // Move termite
-            const speed = this.baseSpeed * this.speedMultiplier;
+            const speed = 2; // Base movement speed
             termite.x += Math.cos(termite.angle) * speed;
             termite.y += Math.sin(termite.angle) * speed;
             
@@ -537,8 +534,9 @@ class TermiteAlgorithm extends BaseSimulation {
         });
     }
     
-    setSpeed(multiplier) {
-        this.speedMultiplier = multiplier;
+    setSpeed(stepsPerSecond) {
+        this.speed = Math.max(1, Math.min(60, stepsPerSecond));
+        this.updateInterval = 1000 / this.speed;
     }
     
     setTermiteCount(count) {
