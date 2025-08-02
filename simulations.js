@@ -77,6 +77,82 @@ class BaseSimulation {
             fps: this.fps
         };
     }
+    
+    // Gradient colour utilities
+    getGradientColor(x, y, startColor, endColor) {
+        const maxX = this.canvas.width;
+        const maxY = this.canvas.height;
+        
+        // Normalize position (0 to 1)
+        const normX = x / maxX;
+        const normY = y / maxY;
+        
+        // Combine X and Y for diagonal gradient effect
+        const factor = (normX + normY) / 2;
+        
+        return this.interpolateColor(startColor, endColor, factor);
+    }
+    
+    interpolateColor(color1, color2, factor) {
+        const r1 = parseInt(color1.slice(1, 3), 16);
+        const g1 = parseInt(color1.slice(3, 5), 16);
+        const b1 = parseInt(color1.slice(5, 7), 16);
+        
+        const r2 = parseInt(color2.slice(1, 3), 16);
+        const g2 = parseInt(color2.slice(3, 5), 16);
+        const b2 = parseInt(color2.slice(5, 7), 16);
+        
+        const r = Math.round(r1 + (r2 - r1) * factor);
+        const g = Math.round(g1 + (g2 - g1) * factor);
+        const b = Math.round(b1 + (b2 - b1) * factor);
+        
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+    
+    // Glow effect utility
+    setGlowEffect(color, intensity = 15) {
+        this.ctx.shadowColor = color;
+        this.ctx.shadowBlur = intensity;
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+    }
+    
+    clearGlowEffect() {
+        this.ctx.shadowColor = 'transparent';
+        this.ctx.shadowBlur = 0;
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+    }
+    
+    // Common cell rendering method
+    drawCell(x, y, color = null) {
+        if (!color) {
+            color = this.getGradientColor(x, y, '#00ff00', '#4a90e2');
+        }
+        
+        this.ctx.fillStyle = color;
+        this.setGlowEffect(color, 20);
+        
+        this.ctx.fillRect(x, y, this.cellSize - 1, this.cellSize - 1);
+        
+        this.clearGlowEffect();
+    }
+    
+    // Common actor rendering method (for termites and ants)
+    drawActor(x, y, radius, color = null) {
+        if (!color) {
+            color = this.getGradientColor(x, y, '#ff6b35', '#ff4757');
+        }
+        
+        this.ctx.fillStyle = color;
+        this.setGlowEffect(color, 25);
+        
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        this.clearGlowEffect();
+    }
 }
 
 // Conway's Game of Life
@@ -159,16 +235,12 @@ class ConwayGameOfLife extends BaseSimulation {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        this.ctx.fillStyle = '#00ff00';
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
                 if (this.grid[row][col]) {
-                    this.ctx.fillRect(
-                        col * this.cellSize,
-                        row * this.cellSize,
-                        this.cellSize - 1,
-                        this.cellSize - 1
-                    );
+                    const x = col * this.cellSize;
+                    const y = row * this.cellSize;
+                    this.drawCell(x, y);
                 }
             }
         }
@@ -288,21 +360,17 @@ class TermiteAlgorithm extends BaseSimulation {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw wood chips
-        this.ctx.fillStyle = '#8B4513';
         this.woodChips.forEach(chipKey => {
             const [x, y] = chipKey.split(',').map(Number);
-            this.ctx.fillRect(x, y, this.cellSize - 1, this.cellSize - 1);
+            this.drawCell(x, y);
         });
         
         // Draw termites
-        this.ctx.fillStyle = '#FF0000';
         this.termites.forEach(termite => {
-            this.ctx.beginPath();
-            this.ctx.arc(termite.x, termite.y, 3, 0, Math.PI * 2);
-            this.ctx.fill();
+            this.drawActor(termite.x, termite.y, 3);
             
             // Draw direction indicator
-            this.ctx.strokeStyle = '#FFFFFF';
+            this.ctx.strokeStyle = '#ffffff';
             this.ctx.lineWidth = 1;
             this.ctx.beginPath();
             this.ctx.moveTo(termite.x, termite.y);
@@ -393,47 +461,33 @@ class LangtonsAnt extends BaseSimulation {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw grid
-        this.ctx.fillStyle = '#FFFFFF';
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
                 if (this.grid[row][col]) {
-                    this.ctx.fillRect(
-                        col * this.cellSize,
-                        row * this.cellSize,
-                        this.cellSize - 1,
-                        this.cellSize - 1
-                    );
+                    const x = col * this.cellSize;
+                    const y = row * this.cellSize;
+                    this.drawCell(x, y);
                 }
             }
         }
         
         // Draw ant
-        this.ctx.fillStyle = '#FF0000';
-        this.ctx.beginPath();
-        this.ctx.arc(
-            this.ant.x * this.cellSize + this.cellSize / 2,
-            this.ant.y * this.cellSize + this.cellSize / 2,
-            this.cellSize / 3,
-            0,
-            Math.PI * 2
-        );
-        this.ctx.fill();
+        const antX = this.ant.x * this.cellSize + this.cellSize / 2;
+        const antY = this.ant.y * this.cellSize + this.cellSize / 2;
+        this.drawActor(antX, antY, this.cellSize / 3);
         
         // Draw direction indicator
-        this.ctx.strokeStyle = '#000000';
+        this.ctx.strokeStyle = '#ffffff';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
-        this.ctx.moveTo(
-            this.ant.x * this.cellSize + this.cellSize / 2,
-            this.ant.y * this.cellSize + this.cellSize / 2
-        );
+        this.ctx.moveTo(antX, antY);
         
         const directionX = Math.cos(this.ant.direction * Math.PI / 2) * this.cellSize / 2;
         const directionY = Math.sin(this.ant.direction * Math.PI / 2) * this.cellSize / 2;
         
         this.ctx.lineTo(
-            this.ant.x * this.cellSize + this.cellSize / 2 + directionX,
-            this.ant.y * this.cellSize + this.cellSize / 2 + directionY
+            antX + directionX,
+            antY + directionY
         );
         this.ctx.stroke();
     }

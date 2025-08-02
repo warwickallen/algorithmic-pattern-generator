@@ -3,6 +3,10 @@
 ## Overview
 This document outlines the requirements for enhancing the Algorithmic Pattern Generator web application. Requirements are ordered to ensure testable increments and clean code implementation.
 
+## Design Principles
+- The apps must be aesthetically pleasing.
+- Aim for DRY code.
+
 ## Phase 1: Core Layout and Visual Foundation
 
 ### 1.1 Full-Window Simulation Display
@@ -73,7 +77,11 @@ This document outlines the requirements for enhancing the Algorithmic Pattern Ge
 **Description**: Update colours and styling to match the original applications.
 
 **Requirements**:
-- Research and document original app colour schemes
+- Research and document original app colour schemes.
+  The original apps are:
+  1. [Conway's Game of Life](https://claude.ai/public/artifacts/8b6755f3-4d39-4750-9ef6-b0c55ee558b2)
+  2. [Termite Algorithm](https://claude.ai/public/artifacts/bf273c2c-1feb-4695-96b4-f901c5db55e7)
+  3. [Langton's Ant](https://claude.ai/public/artifacts/0335d57c-dfc7-429f-94a5-c8bdbb75fd39)
 - Update CSS to match original visual design
 - Maintain accessibility standards
 - Ensure consistency across all three simulations
