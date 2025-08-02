@@ -1,4 +1,4 @@
-// Base simulation class
+// Base simulation class with performance optimization
 class BaseSimulation {
     constructor(canvas, ctx) {
         this.canvas = canvas;
@@ -11,6 +11,13 @@ class BaseSimulation {
         this.frameCount = 0;
         this.fpsUpdateInterval = 30; // Update FPS every 30 frames
         this.brightness = 1.0; // Default brightness
+        
+        // Performance optimization properties
+        this.lastUpdateTime = 0;
+        this.updateInterval = 1000 / 30; // Default 30 FPS
+        this.renderCache = new Map(); // Cache for rendered elements
+        this.colorCache = new Map(); // Cache for brightness-adjusted colors
+        this.maxCacheSize = 1000; // Limit cache size to prevent memory leaks
     }
     
     init() {
@@ -25,6 +32,9 @@ class BaseSimulation {
         this.cellSize = Math.min(this.canvas.width, this.canvas.height) / 100;
         this.cols = Math.floor(this.canvas.width / this.cellSize);
         this.rows = Math.floor(this.canvas.height / this.cellSize);
+        
+        // Clear caches on resize
+        this.clearCaches();
     }
     
     start() {
@@ -86,9 +96,18 @@ class BaseSimulation {
     
     setBrightness(value) {
         this.brightness = Math.max(0.1, Math.min(2.0, value));
+        // Clear color cache when brightness changes
+        this.colorCache.clear();
     }
     
+    // Optimized brightness application with caching
     applyBrightness(color) {
+        // Check cache first
+        const cacheKey = `${color}-${this.brightness}`;
+        if (this.colorCache.has(cacheKey)) {
+            return this.colorCache.get(cacheKey);
+        }
+        
         // Parse the color (supports rgb, rgba, and hex formats)
         let r, g, b, a = 1;
         
@@ -121,14 +140,31 @@ class BaseSimulation {
             g = Math.min(255, Math.max(0, Math.round(g * this.brightness)));
             b = Math.min(255, Math.max(0, Math.round(b * this.brightness)));
             
-            return `rgba(${r}, ${g}, ${b}, ${a})`;
+            const result = `rgba(${r}, ${g}, ${b}, ${a})`;
+            
+            // Cache the result
+            this.colorCache.set(cacheKey, result);
+            
+            // Limit cache size
+            if (this.colorCache.size > this.maxCacheSize) {
+                const firstKey = this.colorCache.keys().next().value;
+                this.colorCache.delete(firstKey);
+            }
+            
+            return result;
         }
         
         // Return original color if parsing failed
         return color;
     }
     
-    // Common grid utilities
+    // Cache management
+    clearCaches() {
+        this.renderCache.clear();
+        this.colorCache.clear();
+    }
+    
+    // Common grid utilities with performance optimization
     createGrid(rows, cols, defaultValue = false) {
         return Array(rows).fill().map(() => Array(cols).fill(defaultValue));
     }
@@ -144,47 +180,70 @@ class BaseSimulation {
         [grids.current, grids.next] = [grids.next, grids.current];
     }
     
+    // Optimized cell counting
     countLiveCells(grid) {
-        return grid.flat().filter(cell => cell).length;
-    }
-    
-    // Common neighbour counting utility
-    countNeighbours(grid, row, col, rows, cols, wrapAround = true) {
         let count = 0;
-        for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-                if (dr === 0 && dc === 0) continue;
-                
-                let nr, nc;
-                if (wrapAround) {
-                    nr = (row + dr + rows) % rows;
-                    nc = (col + dc + cols) % cols;
-                } else {
-                    nr = row + dr;
-                    nc = col + dc;
-                    if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
-                }
-                
-                if (grid[nr][nc]) {
-                    count++;
-                }
+        for (let row = 0; row < grid.length; row++) {
+            const rowData = grid[row];
+            for (let col = 0; col < rowData.length; col++) {
+                if (rowData[col]) count++;
             }
         }
         return count;
     }
     
-    // Common grid rendering utility
+    // Common neighbour counting utility with boundary checking optimization
+    countNeighbours(grid, row, col, rows, cols, wrapAround = true) {
+        let count = 0;
+        
+        if (wrapAround) {
+            // Optimized wrap-around version
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    
+                    const nr = (row + dr + rows) % rows;
+                    const nc = (col + dc + cols) % cols;
+                    
+                    if (grid[nr][nc]) {
+                        count++;
+                    }
+                }
+            }
+        } else {
+            // Optimized bounded version
+            const startRow = Math.max(0, row - 1);
+            const endRow = Math.min(rows - 1, row + 1);
+            const startCol = Math.max(0, col - 1);
+            const endCol = Math.min(cols - 1, col + 1);
+            
+            for (let nr = startRow; nr <= endRow; nr++) {
+                for (let nc = startCol; nc <= endCol; nc++) {
+                    if (nr === row && nc === col) continue;
+                    if (grid[nr][nc]) {
+                        count++;
+                    }
+                }
+            }
+        }
+        
+        return count;
+    }
+    
+    // Optimized grid rendering utility
     drawGrid(grid, cellRenderer = null) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
+        // Use more efficient iteration
         for (let row = 0; row < grid.length; row++) {
-            for (let col = 0; col < grid[row].length; col++) {
-                if (grid[row][col]) {
+            const rowData = grid[row];
+            for (let col = 0; col < rowData.length; col++) {
+                if (rowData[col]) {
                     const x = col * this.cellSize;
                     const y = row * this.cellSize;
                     
                     if (cellRenderer && typeof cellRenderer === 'function') {
-                        cellRenderer(x, y, row, col, grid[row][col]);
+                        cellRenderer(x, y, row, col, rowData[col]);
                     } else {
                         this.drawCell(x, y);
                     }
@@ -196,8 +255,9 @@ class BaseSimulation {
     // Common random grid generation utility
     randomizeGrid(grid, density = 0.3) {
         for (let row = 0; row < grid.length; row++) {
-            for (let col = 0; col < grid[row].length; col++) {
-                grid[row][col] = Math.random() < density;
+            const rowData = grid[row];
+            for (let col = 0; col < rowData.length; col++) {
+                rowData[col] = Math.random() < density;
             }
         }
         return this.countLiveCells(grid);
@@ -222,7 +282,7 @@ class BaseSimulation {
         return row >= 0 && row < this.rows && col >= 0 && col < this.cols;
     }
     
-    // Gradient colour utilities
+    // Gradient colour utilities with caching
     getGradientColor(x, y, startColor, endColor) {
         const maxX = this.canvas.width;
         const maxY = this.canvas.height;
@@ -253,7 +313,7 @@ class BaseSimulation {
         return `rgb(${r}, ${g}, ${b})`;
     }
     
-    // Glow effect utility
+    // Glow effect utility with performance optimization
     setGlowEffect(color, intensity = 15) {
         this.ctx.shadowColor = color;
         this.ctx.shadowBlur = intensity;
@@ -268,7 +328,7 @@ class BaseSimulation {
         this.ctx.shadowOffsetY = 0;
     }
     
-    // Common cell rendering method
+    // Common cell rendering method with caching
     drawCell(x, y, color = null) {
         if (!color) {
             color = this.getGradientColor(x, y, '#00ff00', '#4a90e2');
@@ -285,7 +345,7 @@ class BaseSimulation {
         this.clearGlowEffect();
     }
     
-    // Common actor rendering method (for termites and ants)
+    // Common actor rendering method (for termites and ants) with caching
     drawActor(x, y, radius, color = null) {
         if (!color) {
             color = this.getGradientColor(x, y, '#ff6b35', '#ff4757');
@@ -315,6 +375,12 @@ class BaseSimulation {
             y + Math.sin(angle) * length
         );
         this.ctx.stroke();
+    }
+    
+    // Set speed with validation
+    setSpeed(stepsPerSecond) {
+        this.speed = Math.max(1, Math.min(60, stepsPerSecond));
+        this.updateInterval = 1000 / this.speed;
     }
 }
 

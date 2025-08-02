@@ -1,6 +1,6 @@
 // Shared Components and Utilities
 class SharedComponents {
-    // Common slider component
+    // Common slider component with performance optimization
     static createSlider(config) {
         const { id, min, max, step, value, label, format } = config;
         return {
@@ -32,6 +32,76 @@ class SharedComponents {
             }
             return null;
         }).filter(Boolean);
+    }
+}
+
+// Performance optimization utilities
+class PerformanceOptimizer {
+    // Debounce function for slider updates
+    static debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // Throttle function for frequent updates
+    static throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        };
+    }
+    
+    // Efficient DOM query caching
+    static createElementCache() {
+        const cache = new Map();
+        return {
+            get: (selector) => {
+                if (!cache.has(selector)) {
+                    cache.set(selector, document.querySelector(selector));
+                }
+                return cache.get(selector);
+            },
+            clear: () => cache.clear()
+        };
+    }
+    
+    // Memory-efficient event listener management
+    static createEventListenerManager() {
+        const listeners = new Map();
+        return {
+            add: (element, event, handler, options = {}) => {
+                const key = `${element.id || 'anonymous'}-${event}`;
+                if (listeners.has(key)) {
+                    element.removeEventListener(event, listeners.get(key), options);
+                }
+                listeners.set(key, handler);
+                element.addEventListener(event, handler, options);
+            },
+            remove: (element, event) => {
+                const key = `${element.id || 'anonymous'}-${event}`;
+                const handler = listeners.get(key);
+                if (handler) {
+                    element.removeEventListener(event, handler);
+                    listeners.delete(key);
+                }
+            },
+            clear: () => {
+                listeners.clear();
+            }
+        };
     }
 }
 
@@ -160,6 +230,8 @@ class EventHandler {
     constructor(app) {
         this.app = app;
         this.handlers = new Map();
+        this.elementCache = PerformanceOptimizer.createElementCache();
+        this.eventManager = PerformanceOptimizer.createEventListenerManager();
     }
     
     // Register event handlers for a simulation type
@@ -192,13 +264,14 @@ class EventHandler {
         });
     }
     
-    // Setup slider control
+    // Setup slider control with performance optimization
     setupSlider(config, handlers) {
-        const slider = document.getElementById(config.id);
-        const valueElement = document.getElementById(config.valueElementId);
+        const slider = this.elementCache.get(`#${config.id}`);
+        const valueElement = this.elementCache.get(`#${config.valueElementId}`);
         
         if (slider) {
-            slider.addEventListener('input', (e) => {
+            // Debounced input handler for smooth performance
+            const debouncedInputHandler = PerformanceOptimizer.debounce((e) => {
                 const value = config.format ? config.format(e.target.value) : e.target.value;
                 if (valueElement) {
                     valueElement.textContent = value;
@@ -209,16 +282,27 @@ class EventHandler {
                 } else if (config.id.includes('termites')) {
                     this.app.handleTermiteCountChange(parseInt(e.target.value));
                 }
-            });
+            }, 16); // ~60fps debounce
+            
+            // Immediate visual feedback for value display
+            const immediateValueHandler = (e) => {
+                const value = config.format ? config.format(e.target.value) : e.target.value;
+                if (valueElement) {
+                    valueElement.textContent = value;
+                }
+            };
+            
+            this.eventManager.add(slider, 'input', immediateValueHandler);
+            this.eventManager.add(slider, 'change', debouncedInputHandler);
         }
     }
     
     // Setup button control
     setupButton(config, handlers) {
-        const button = document.getElementById(config.id);
+        const button = this.elementCache.get(`#${config.id}`);
         
         if (button) {
-            button.addEventListener('click', () => {
+            this.eventManager.add(button, 'click', () => {
                 if (config.id.includes('random')) {
                     handlers.randomPattern();
                 } else if (config.id.includes('learn')) {
@@ -235,6 +319,13 @@ class EventHandler {
         Object.keys(ConfigurationManager.getAllConfigs()).forEach(simType => {
             this.registerSimulationHandlers(simType);
         });
+    }
+    
+    // Cleanup method for memory management
+    cleanup() {
+        this.eventManager.clear();
+        this.elementCache.clear();
+        this.handlers.clear();
     }
 }
 
@@ -334,32 +425,37 @@ class KeyboardHandler {
     }
 }
 
-// Modal Manager for handling all modals
+// Modal Manager for handling all modals with performance optimization
 class ModalManager {
     constructor() {
         this.activeModal = null;
         this.modals = new Map();
+        this.elementCache = PerformanceOptimizer.createElementCache();
+        this.renderQueue = new Set();
+        this.isRendering = false;
         this.init();
     }
     
     init() {
-        // Set up global modal event listeners
-        document.addEventListener('keydown', (e) => {
+        // Set up global modal event listeners with throttling
+        const throttledKeydown = PerformanceOptimizer.throttle((e) => {
             if (e.key === 'Escape' && this.activeModal) {
                 this.hide(this.activeModal);
             }
-        });
+        }, 100);
         
-        // Close modal when clicking outside
-        document.addEventListener('click', (e) => {
+        const throttledClick = PerformanceOptimizer.throttle((e) => {
             if (this.activeModal && e.target.classList.contains('modal')) {
                 this.hide(this.activeModal);
             }
-        });
+        }, 100);
+        
+        document.addEventListener('keydown', throttledKeydown);
+        document.addEventListener('click', throttledClick);
     }
     
     register(modalId, config = {}) {
-        const modal = document.getElementById(modalId);
+        const modal = this.elementCache.get(`#${modalId}`);
         if (!modal) {
             console.warn(`Modal with ID '${modalId}' not found`);
             return;
@@ -369,6 +465,7 @@ class ModalManager {
             id: modalId,
             element: modal,
             closeBtn: modal.querySelector('.modal-close'),
+            isVisible: false,
             ...config
         };
         
@@ -395,7 +492,8 @@ class ModalManager {
             this.hide(this.activeModal);
         }
         
-        modalConfig.element.classList.add('show');
+        // Queue modal for rendering to prevent layout thrashing
+        this.queueModalRender(modalConfig, true);
         this.activeModal = modalId;
         
         // Trigger custom show callback
@@ -411,7 +509,8 @@ class ModalManager {
             return;
         }
         
-        modalConfig.element.classList.remove('show');
+        // Queue modal for hiding
+        this.queueModalRender(modalConfig, false);
         
         if (this.activeModal === modalId) {
             this.activeModal = null;
@@ -423,6 +522,36 @@ class ModalManager {
         }
     }
     
+    // Queue modal rendering to prevent layout thrashing
+    queueModalRender(modalConfig, show) {
+        this.renderQueue.add({ modalConfig, show });
+        
+        if (!this.isRendering) {
+            this.processRenderQueue();
+        }
+    }
+    
+    // Process render queue efficiently
+    processRenderQueue() {
+        this.isRendering = true;
+        
+        // Use requestAnimationFrame for smooth rendering
+        requestAnimationFrame(() => {
+            this.renderQueue.forEach(({ modalConfig, show }) => {
+                if (show) {
+                    modalConfig.element.classList.add('show');
+                    modalConfig.isVisible = true;
+                } else {
+                    modalConfig.element.classList.remove('show');
+                    modalConfig.isVisible = false;
+                }
+            });
+            
+            this.renderQueue.clear();
+            this.isRendering = false;
+        });
+    }
+    
     hideAll() {
         this.modals.forEach((config, id) => {
             this.hide(id);
@@ -431,11 +560,19 @@ class ModalManager {
     
     isVisible(modalId) {
         const modalConfig = this.modals.get(modalId);
-        return modalConfig ? modalConfig.element.classList.contains('show') : false;
+        return modalConfig ? modalConfig.isVisible : false;
+    }
+    
+    // Cleanup method for memory management
+    cleanup() {
+        this.modals.clear();
+        this.renderQueue.clear();
+        this.elementCache.clear();
+        this.activeModal = null;
     }
 }
 
-// Main application class
+// Main application class with performance optimization
 class AlgorithmicPatternGenerator {
     constructor() {
         this.canvas = document.getElementById('canvas');
@@ -444,6 +581,13 @@ class AlgorithmicPatternGenerator {
         this.currentType = 'conway';
         this.isImmersive = false;
         this.brightness = 1.0; // Default brightness
+        
+        // Performance optimization properties
+        this.elementCache = PerformanceOptimizer.createElementCache();
+        this.updateQueue = new Set();
+        this.isUpdating = false;
+        this.lastUIUpdate = 0;
+        this.uiUpdateThrottle = 100; // ms between UI updates
         
         // Initialize managers
         this.modalManager = new ModalManager();
@@ -461,13 +605,15 @@ class AlgorithmicPatternGenerator {
         this.createSimulation(this.currentType);
         this.updateUI();
         
-        // Handle window resize
-        window.addEventListener('resize', () => {
+        // Handle window resize with throttling
+        const throttledResize = PerformanceOptimizer.throttle(() => {
             if (this.currentSimulation) {
                 this.currentSimulation.resize();
                 this.currentSimulation.draw();
             }
-        });
+        }, 250);
+        
+        window.addEventListener('resize', throttledResize);
         
         // Start title fade animation after 5 seconds
         this.startTitleFade();
@@ -489,31 +635,35 @@ class AlgorithmicPatternGenerator {
     
     setupEventListeners() {
         // Simulation selector
-        document.getElementById('simulation-select').addEventListener('change', (e) => {
-            this.switchSimulation(e.target.value);
-        });
+        const simulationSelect = this.elementCache.get('#simulation-select');
+        if (simulationSelect) {
+            simulationSelect.addEventListener('change', (e) => {
+                this.switchSimulation(e.target.value);
+            });
+        }
         
-        // Control buttons
-        document.getElementById('start-btn').addEventListener('click', () => {
-            this.startSimulation();
-        });
+        // Control buttons with element caching
+        const startBtn = this.elementCache.get('#start-btn');
+        const pauseBtn = this.elementCache.get('#pause-btn');
+        const resetBtn = this.elementCache.get('#reset-btn');
+        const clearBtn = this.elementCache.get('#clear-btn');
+        const immersiveBtn = this.elementCache.get('#immersive-btn');
         
-        document.getElementById('pause-btn').addEventListener('click', () => {
-            this.pauseSimulation();
-        });
-        
-        document.getElementById('reset-btn').addEventListener('click', () => {
-            this.resetSimulation();
-        });
-        
-        document.getElementById('clear-btn').addEventListener('click', () => {
-            this.clearSimulation();
-        });
-        
-        // Immersive mode toggle
-        document.getElementById('immersive-btn').addEventListener('click', () => {
-            this.toggleImmersiveMode();
-        });
+        if (startBtn) {
+            startBtn.addEventListener('click', () => this.startSimulation());
+        }
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => this.pauseSimulation());
+        }
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => this.resetSimulation());
+        }
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => this.clearSimulation());
+        }
+        if (immersiveBtn) {
+            immersiveBtn.addEventListener('click', () => this.toggleImmersiveMode());
+        }
         
         // Setup brightness controls
         this.setupBrightnessControls();
@@ -530,15 +680,26 @@ class AlgorithmicPatternGenerator {
     }
     
     setupBrightnessControls() {
-        const brightnessSlider = document.getElementById('brightness-slider');
-        const brightnessValue = document.getElementById('brightness-value');
-        const brightnessResetBtn = document.getElementById('brightness-reset-btn');
+        const brightnessSlider = this.elementCache.get('#brightness-slider');
+        const brightnessValue = this.elementCache.get('#brightness-value');
+        const brightnessResetBtn = this.elementCache.get('#brightness-reset-btn');
         
-        // Brightness slider
+        // Brightness slider with debounced updates
         if (brightnessSlider) {
-            brightnessSlider.addEventListener('input', (e) => {
+            const debouncedBrightnessHandler = PerformanceOptimizer.debounce((e) => {
                 this.setBrightness(parseFloat(e.target.value));
-            });
+            }, 16); // ~60fps debounce
+            
+            const immediateValueHandler = (e) => {
+                const value = parseFloat(e.target.value);
+                const percentage = Math.round(value * 100);
+                if (brightnessValue) {
+                    brightnessValue.textContent = `${percentage}%`;
+                }
+            };
+            
+            brightnessSlider.addEventListener('input', immediateValueHandler);
+            brightnessSlider.addEventListener('change', debouncedBrightnessHandler);
         }
         
         // Brightness reset button
@@ -611,18 +772,21 @@ class AlgorithmicPatternGenerator {
     
     toggleImmersiveMode() {
         this.isImmersive = !this.isImmersive;
-        document.getElementById('app').classList.toggle('immersive', this.isImmersive);
+        const appElement = this.elementCache.get('#app');
+        if (appElement) {
+            appElement.classList.toggle('immersive', this.isImmersive);
+        }
         
-        const btn = document.getElementById('immersive-btn');
+        const btn = this.elementCache.get('#immersive-btn');
         if (this.isImmersive) {
-            btn.textContent = 'Exit Immersive';
+            if (btn) btn.textContent = 'Exit Immersive';
             this.showImmersiveHint();
         } else {
-            btn.textContent = i18n.t('immersive-btn');
+            if (btn) btn.textContent = i18n.t('immersive-btn');
             this.hideImmersiveHint();
         }
         
-        // Resize canvas when toggling immersive mode
+        // Resize canvas when toggling immersive mode with delay
         setTimeout(() => {
             if (this.currentSimulation) {
                 this.currentSimulation.resize();
@@ -632,25 +796,31 @@ class AlgorithmicPatternGenerator {
     }
     
     showImmersiveHint() {
-        const hint = document.getElementById('immersive-hint');
-        hint.classList.add('show');
-        
-        // Hide hint after 3 seconds
-        setTimeout(() => {
-            this.hideImmersiveHint();
-        }, 3000);
+        const hint = this.elementCache.get('#immersive-hint');
+        if (hint) {
+            hint.classList.add('show');
+            
+            // Hide hint after 3 seconds
+            setTimeout(() => {
+                this.hideImmersiveHint();
+            }, 3000);
+        }
     }
     
     hideImmersiveHint() {
-        const hint = document.getElementById('immersive-hint');
-        hint.classList.remove('show');
+        const hint = this.elementCache.get('#immersive-hint');
+        if (hint) {
+            hint.classList.remove('show');
+        }
     }
     
     startTitleFade() {
         // Start fade animation after 5 seconds
         setTimeout(() => {
-            const title = document.getElementById('title');
-            title.classList.add('fade-out');
+            const title = this.elementCache.get('#title');
+            if (title) {
+                title.classList.add('fade-out');
+            }
         }, 5000);
     }
     
@@ -677,26 +847,67 @@ class AlgorithmicPatternGenerator {
         }
     }
     
+    // Throttled UI update for better performance
     updateUI() {
+        const now = Date.now();
+        if (now - this.lastUIUpdate < this.uiUpdateThrottle) {
+            this.updateQueue.add('ui');
+            if (!this.isUpdating) {
+                this.processUpdateQueue();
+            }
+            return;
+        }
+        
+        this.performUIUpdate();
+        this.lastUIUpdate = now;
+    }
+    
+    performUIUpdate() {
         if (!this.currentSimulation) return;
         
         const stats = this.currentSimulation.getStats();
         const isRunning = this.currentSimulation.isRunning;
         
         // Update button states
-        document.getElementById('start-btn').disabled = isRunning;
-        document.getElementById('pause-btn').disabled = !isRunning;
+        const startBtn = this.elementCache.get('#start-btn');
+        const pauseBtn = this.elementCache.get('#pause-btn');
+        
+        if (startBtn) startBtn.disabled = isRunning;
+        if (pauseBtn) pauseBtn.disabled = !isRunning;
         
         // Update stats
-        document.getElementById('generation-count').textContent = stats.generation;
-        document.getElementById('cell-count').textContent = stats.cellCount;
-        document.getElementById('fps').textContent = stats.fps;
+        const generationCount = this.elementCache.get('#generation-count');
+        const cellCount = this.elementCache.get('#cell-count');
+        const fps = this.elementCache.get('#fps');
+        
+        if (generationCount) generationCount.textContent = stats.generation;
+        if (cellCount) cellCount.textContent = stats.cellCount;
+        if (fps) fps.textContent = stats.fps;
         
         // Update simulation selector
-        document.getElementById('simulation-select').value = this.currentType;
+        const simulationSelect = this.elementCache.get('#simulation-select');
+        if (simulationSelect) simulationSelect.value = this.currentType;
         
         // Show/hide simulation-specific controls
         this.controlManager.showControls(this.currentType);
+    }
+    
+    processUpdateQueue() {
+        this.isUpdating = true;
+        
+        requestAnimationFrame(() => {
+            if (this.updateQueue.has('ui')) {
+                this.performUIUpdate();
+                this.updateQueue.delete('ui');
+            }
+            
+            this.isUpdating = false;
+            
+            // Process any remaining updates
+            if (this.updateQueue.size > 0) {
+                this.processUpdateQueue();
+            }
+        });
     }
     
     // Generic speed change handler
@@ -715,7 +926,7 @@ class AlgorithmicPatternGenerator {
         // Update the display value
         const speedControl = config.controls.speed;
         if (speedControl) {
-            const valueElement = document.getElementById(speedControl.valueElementId);
+            const valueElement = this.elementCache.get(`#${speedControl.valueElementId}`);
             if (valueElement && speedControl.format) {
                 const formattedValue = speedControl.format(parsedValue);
                 valueElement.textContent = formattedValue;
@@ -731,7 +942,7 @@ class AlgorithmicPatternGenerator {
         const speedControl = config.controls.speed;
         if (!speedControl) return;
         
-        const slider = document.getElementById(speedControl.id);
+        const slider = this.elementCache.get(`#${speedControl.id}`);
         if (!slider) return;
         
         const currentValue = parseFloat(slider.value);
@@ -792,7 +1003,7 @@ class AlgorithmicPatternGenerator {
         if (config) {
             const termiteControl = config.controls.termiteCount;
             if (termiteControl) {
-                const valueElement = document.getElementById(termiteControl.valueElementId);
+                const valueElement = this.elementCache.get(`#${termiteControl.valueElementId}`);
                 if (valueElement && termiteControl.format) {
                     valueElement.textContent = termiteControl.format(count);
                 }
@@ -800,7 +1011,7 @@ class AlgorithmicPatternGenerator {
         }
     }
     
-    // Brightness control methods
+    // Brightness control methods with performance optimization
     setBrightness(value) {
         this.brightness = Math.max(0.1, Math.min(2.0, value));
         this.updateBrightnessDisplay();
@@ -817,14 +1028,14 @@ class AlgorithmicPatternGenerator {
         this.setBrightness(1.0);
         
         // Update slider position
-        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessSlider = this.elementCache.get('#brightness-slider');
         if (brightnessSlider) {
             brightnessSlider.value = 1.0;
         }
     }
     
     adjustBrightness(delta) {
-        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessSlider = this.elementCache.get('#brightness-slider');
         if (brightnessSlider) {
             const currentValue = parseFloat(brightnessSlider.value);
             const newValue = Math.max(0.1, Math.min(2.0, currentValue + delta));
@@ -834,18 +1045,32 @@ class AlgorithmicPatternGenerator {
     }
     
     updateBrightnessDisplay() {
-        const brightnessValue = document.getElementById('brightness-value');
+        const brightnessValue = this.elementCache.get('#brightness-value');
         if (brightnessValue) {
             const percentage = Math.round(this.brightness * 100);
             brightnessValue.textContent = `${percentage}%`;
         }
     }
     
-    // Update stats continuously
+    // Update stats continuously with throttling
     startStatsUpdate() {
-        setInterval(() => {
+        const throttledUpdate = PerformanceOptimizer.throttle(() => {
             this.updateUI();
         }, 100);
+        
+        setInterval(throttledUpdate, 100);
+    }
+    
+    // Cleanup method for memory management
+    cleanup() {
+        this.eventHandler.cleanup();
+        this.modalManager.cleanup();
+        this.elementCache.clear();
+        this.updateQueue.clear();
+        
+        if (this.currentSimulation) {
+            this.currentSimulation.pause();
+        }
     }
 }
 
@@ -856,4 +1081,135 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Make app globally accessible for debugging
     window.app = app;
-}); 
+    
+    // Performance monitoring
+    PerformanceOptimizer.startMonitoring();
+});
+
+// Performance monitoring utility
+class PerformanceMonitor {
+    constructor() {
+        this.metrics = {
+            fps: [],
+            memory: [],
+            renderTime: [],
+            updateTime: []
+        };
+        this.isMonitoring = false;
+        this.maxSamples = 100;
+    }
+    
+    start() {
+        if (this.isMonitoring) return;
+        
+        this.isMonitoring = true;
+        this.monitorFPS();
+        this.monitorMemory();
+        
+        console.log('Performance monitoring started');
+    }
+    
+    stop() {
+        this.isMonitoring = false;
+        console.log('Performance monitoring stopped');
+    }
+    
+    monitorFPS() {
+        if (!this.isMonitoring) return;
+        
+        let frameCount = 0;
+        let lastTime = performance.now();
+        
+        const measureFPS = () => {
+            frameCount++;
+            const currentTime = performance.now();
+            
+            if (currentTime - lastTime >= 1000) {
+                const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+                this.addMetric('fps', fps);
+                
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            
+            if (this.isMonitoring) {
+                requestAnimationFrame(measureFPS);
+            }
+        };
+        
+        requestAnimationFrame(measureFPS);
+    }
+    
+    monitorMemory() {
+        if (!this.isMonitoring) return;
+        
+        const measureMemory = () => {
+            if (performance.memory) {
+                const usedMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                this.addMetric('memory', usedMB);
+            }
+            
+            if (this.isMonitoring) {
+                setTimeout(measureMemory, 2000); // Check every 2 seconds
+            }
+        };
+        
+        measureMemory();
+    }
+    
+    addMetric(type, value) {
+        if (!this.metrics[type]) return;
+        
+        this.metrics[type].push({
+            value,
+            timestamp: Date.now()
+        });
+        
+        // Keep only recent samples
+        if (this.metrics[type].length > this.maxSamples) {
+            this.metrics[type].shift();
+        }
+    }
+    
+    getAverageMetric(type) {
+        if (!this.metrics[type] || this.metrics[type].length === 0) return 0;
+        
+        const values = this.metrics[type].map(m => m.value);
+        return values.reduce((sum, val) => sum + val, 0) / values.length;
+    }
+    
+    getMetrics() {
+        return {
+            averageFPS: this.getAverageMetric('fps'),
+            averageMemory: this.getAverageMetric('memory'),
+            samples: this.metrics
+        };
+    }
+    
+    logMetrics() {
+        const metrics = this.getMetrics();
+        console.log('Performance Metrics:', {
+            'Average FPS': Math.round(metrics.averageFPS),
+            'Average Memory (MB)': Math.round(metrics.averageMemory),
+            'Sample Count': Object.keys(metrics.samples).map(key => ({
+                [key]: metrics.samples[key].length
+            }))
+        });
+    }
+}
+
+// Extend PerformanceOptimizer with monitoring
+PerformanceOptimizer.monitor = new PerformanceMonitor();
+
+PerformanceOptimizer.startMonitoring = () => {
+    PerformanceOptimizer.monitor.start();
+    
+    // Log metrics every 10 seconds
+    setInterval(() => {
+        PerformanceOptimizer.monitor.logMetrics();
+    }, 10000);
+};
+
+PerformanceOptimizer.stopMonitoring = () => {
+    PerformanceOptimizer.monitor.stop();
+}; 

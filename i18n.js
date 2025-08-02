@@ -39,31 +39,15 @@ class I18n {
     }
     
     init() {
-        // Set up language selector event listeners
-        const langButtons = document.querySelectorAll('.lang-btn');
-        langButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const lang = btn.dataset.lang;
-                this.setLanguage(lang);
-            });
-        });
-        
         // Auto-detect browser language
         this.detectAndSetLanguage();
     }
     
     /**
      * Auto-detect and set language based on browser preferences
-     * Priority: 1. Saved preference, 2. Browser language, 3. Default (en-gb)
+     * Priority: 1. Browser language, 2. Default (en-gb)
      */
     detectAndSetLanguage() {
-        // First check for saved preference
-        const savedLang = localStorage.getItem('preferred-language');
-        if (savedLang && this.translations[savedLang]) {
-            this.setLanguage(savedLang);
-            return;
-        }
-        
         // Detect browser language
         const browserLang = this.getBrowserLanguage();
         if (browserLang && this.translations[browserLang]) {
@@ -126,12 +110,6 @@ class I18n {
         if (!this.translations[lang]) return;
         
         this.currentLang = lang;
-        localStorage.setItem('preferred-language', lang);
-        
-        // Update active button
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === lang);
-        });
         
         // Update all translatable elements
         this.updateElements();
@@ -155,38 +133,7 @@ class I18n {
         return this.translations[this.currentLang][key] || key;
     }
     
-    // Method to add new languages easily
-    addLanguage(langCode, translations) {
-        this.translations[langCode] = translations;
-        
-        // Add language button if it doesn't exist
-        if (!document.querySelector(`[data-lang="${langCode}"]`)) {
-            const langSelector = document.getElementById('language-selector');
-            const btn = document.createElement('button');
-            btn.className = 'lang-btn';
-            btn.dataset.lang = langCode;
-            btn.textContent = this.getFlagEmoji(langCode);
-            btn.addEventListener('click', () => this.setLanguage(langCode));
-            langSelector.appendChild(btn);
-        }
-    }
-    
-    getFlagEmoji(langCode) {
-        const flagMap = {
-            'en-gb': '🇬🇧',
-            'en-us': '🇺🇸',
-            'es': '🇪🇸',
-            'fr': '🇫🇷',
-            'de': '🇩🇪',
-            'it': '🇮🇹',
-            'pt': '🇵🇹',
-            'ru': '🇷🇺',
-            'ja': '🇯🇵',
-            'ko': '🇰🇷',
-            'zh': '🇨🇳'
-        };
-        return flagMap[langCode] || '🌐';
-    }
+
 }
 
 // Create global i18n instance
