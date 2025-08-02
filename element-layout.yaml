@@ -1,0 +1,53 @@
+- border: none
+  background:
+    opacity: 0%
+  position: top-left
+  children:
+    - title text
+
+- border: default
+  background: default
+  position: top
+  children:
+    - simulation chooser drop-down and label
+
+- border: default
+  background: default
+  position: top
+  children:
+    - "Start/Pause" toggle button
+    - speed slider and label
+
+- border: default
+  background: default
+  position: top
+  children:
+    - "Reset" button
+    - "Clear" button
+    - "Random" button
+
+- border: default
+  background: default
+  position: top
+  children:
+    - "Immersive Mode" button
+    - brightness slider and label
+
+- border: default
+  background: default
+  position: top-right
+  children:
+    - "Learn" button
+
+- border: default
+  background: default
+  position: bottom-left
+  children:
+    - "Generation" display
+    - "Cells" display
+
+- border: default
+  background: default
+  position: bottom-right
+  children:
+    - "FPS" display

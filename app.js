@@ -346,6 +346,9 @@ class ControlManager {
             controlsElement.style.display = 'flex';
             this.activeControls = simType;
         }
+        
+        // Show/hide action buttons based on simulation type
+        this.showActionButtons(simType);
     }
     
     // Hide all simulation controls
@@ -357,6 +360,37 @@ class ControlManager {
             }
         });
         this.activeControls = null;
+    }
+    
+    // Show/hide action buttons based on simulation type
+    showActionButtons(simType) {
+        // Hide all action buttons first
+        const actionButtons = [
+            'random-btn',
+            'termite-random-btn', 
+            'langton-random-btn',
+            'add-ant-btn'
+        ];
+        
+        actionButtons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.style.display = 'none';
+            }
+        });
+        
+        // Show buttons for current simulation
+        const config = ConfigurationManager.getConfig(simType);
+        if (config) {
+            Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
+                if (controlConfig.type === 'button' && controlConfig.id) {
+                    const button = document.getElementById(controlConfig.id);
+                    if (button) {
+                        button.style.display = 'inline-block';
+                    }
+                }
+            });
+        }
     }
     
     // Update control values
@@ -643,17 +677,13 @@ class AlgorithmicPatternGenerator {
         }
         
         // Control buttons with element caching
-        const startBtn = this.elementCache.get('#start-btn');
-        const pauseBtn = this.elementCache.get('#pause-btn');
+        const startPauseBtn = this.elementCache.get('#start-pause-btn');
         const resetBtn = this.elementCache.get('#reset-btn');
         const clearBtn = this.elementCache.get('#clear-btn');
         const immersiveBtn = this.elementCache.get('#immersive-btn');
         
-        if (startBtn) {
-            startBtn.addEventListener('click', () => this.startSimulation());
-        }
-        if (pauseBtn) {
-            pauseBtn.addEventListener('click', () => this.pauseSimulation());
+        if (startPauseBtn) {
+            startPauseBtn.addEventListener('click', () => this.toggleSimulation());
         }
         if (resetBtn) {
             resetBtn.addEventListener('click', () => this.resetSimulation());
@@ -682,7 +712,6 @@ class AlgorithmicPatternGenerator {
     setupBrightnessControls() {
         const brightnessSlider = this.elementCache.get('#brightness-slider');
         const brightnessValue = this.elementCache.get('#brightness-value');
-        const brightnessResetBtn = this.elementCache.get('#brightness-reset-btn');
         
         // Brightness slider with debounced updates
         if (brightnessSlider) {
@@ -700,13 +729,6 @@ class AlgorithmicPatternGenerator {
             
             brightnessSlider.addEventListener('input', immediateValueHandler);
             brightnessSlider.addEventListener('change', debouncedBrightnessHandler);
-        }
-        
-        // Brightness reset button
-        if (brightnessResetBtn) {
-            brightnessResetBtn.addEventListener('click', () => {
-                this.resetBrightness();
-            });
         }
         
         // Initialize brightness display
@@ -869,11 +891,12 @@ class AlgorithmicPatternGenerator {
         const isRunning = this.currentSimulation.isRunning;
         
         // Update button states
-        const startBtn = this.elementCache.get('#start-btn');
-        const pauseBtn = this.elementCache.get('#pause-btn');
+        const startPauseBtn = this.elementCache.get('#start-pause-btn');
         
-        if (startBtn) startBtn.disabled = isRunning;
-        if (pauseBtn) pauseBtn.disabled = !isRunning;
+        if (startPauseBtn) {
+            startPauseBtn.textContent = isRunning ? 'Pause' : 'Start';
+            startPauseBtn.disabled = false;
+        }
         
         // Update stats
         const generationCount = this.elementCache.get('#generation-count');

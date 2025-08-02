@@ -5,115 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorithmic Pattern Generator</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="dynamic-layout.js"></script>
 </head>
 <body>
     <div id="app">
-        <!-- Header with controls -->
-        <header id="header">
-            <div class="header-content">
-                <h1 id="title">Algorithmic Pattern Generator</h1>
-                
-                <div class="controls">
-                    <div class="simulation-selector">
-                        <label for="simulation-select" id="simulation-label">Simulation:</label>
-                        <select id="simulation-select">
-                            <option value="conway" id="conway-option">Conway's Game of Life</option>
-                            <option value="termite" id="termite-option">Termite Algorithm</option>
-                            <option value="langton" id="langton-option">Langton's Ant</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-buttons">
-                        <button id="start-btn" class="btn primary">Start</button>
-                        <button id="pause-btn" class="btn secondary" disabled>Pause</button>
-                        <button id="reset-btn" class="btn secondary">Reset</button>
-                        <button id="clear-btn" class="btn secondary">Clear</button>
-                        <button id="immersive-btn" class="btn secondary">Immersive Mode</button>
-                    </div>
-                    
-                    <!-- Brightness Control -->
-                    <div class="brightness-control">
-                        <div class="control-group">
-                            <label for="brightness-slider">Brightness:</label>
-                            <input type="range" id="brightness-slider" min="0.1" max="2.0" step="0.1" value="1.0" class="slider">
-                            <span id="brightness-value">100%</span>
-                        </div>
-                        <div class="control-group">
-                            <button id="brightness-reset-btn" class="btn secondary">Reset</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Conway's Game of Life specific controls -->
-                    <div id="conway-controls" class="simulation-controls" style="display: none;">
-                        <div class="control-group">
-                            <label for="speed-slider">Speed:</label>
-                            <input type="range" id="speed-slider" min="1" max="60" value="30" class="slider">
-                            <span id="speed-value">30 steps/s</span>
-                        </div>
-                        <div class="control-group">
-                            <button id="random-btn" class="btn secondary">Random</button>
-                            <button id="learn-btn" class="btn secondary">Learn</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Termite Algorithm specific controls -->
-                    <div id="termite-controls" class="simulation-controls" style="display: none;">
-                        <div class="control-group">
-                            <label for="termite-speed-slider">Speed:</label>
-                            <input type="range" id="termite-speed-slider" min="1" max="60" value="30" class="slider">
-                            <span id="termite-speed-value">30 steps/s</span>
-                        </div>
-                        <div class="control-group">
-                            <label for="termites-slider">Termites:</label>
-                            <input type="range" id="termites-slider" min="10" max="100" value="50" class="slider">
-                            <span id="termites-value">50</span>
-                        </div>
-                        <div class="control-group">
-                            <button id="termite-random-btn" class="btn secondary">Random</button>
-                            <button id="termite-learn-btn" class="btn secondary">Learn</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Langton's Ant specific controls -->
-                    <div id="langton-controls" class="simulation-controls" style="display: none;">
-                        <div class="control-group">
-                            <label for="langton-speed-slider">Speed:</label>
-                            <input type="range" id="langton-speed-slider" min="1" max="60" value="30" class="slider">
-                            <span id="langton-speed-value">30 steps/s</span>
-                        </div>
-                        <div class="control-group">
-                            <button id="add-ant-btn" class="btn secondary">Add Ant</button>
-                            <button id="langton-random-btn" class="btn secondary">Random</button>
-                            <button id="langton-learn-btn" class="btn secondary">Learn</button>
-                        </div>
-                    </div>
+        <!-- Title (top-left, no border/background) -->
+        <div id="title-container" class="control-group top-left">
+            <h1 id="title">Algorithmic Pattern Generator</h1>
+        </div>
+
+        <!-- Simulation selector (top) -->
+        <div id="simulation-container" class="control-group dynamic-position">
+            <div class="simulation-selector">
+                <label for="simulation-select" id="simulation-label">Simulation:</label>
+                <select id="simulation-select">
+                    <option value="conway" id="conway-option">Conway's Game of Life</option>
+                    <option value="termite" id="termite-option">Termite Algorithm</option>
+                    <option value="langton" id="langton-option">Langton's Ant</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Start/Pause and Speed controls (top) -->
+        <div id="playback-container" class="control-group dynamic-position">
+            <button id="start-pause-btn" class="btn primary">Start</button>
+            
+            <!-- Conway's Game of Life specific controls -->
+            <div id="conway-controls" class="simulation-controls" style="display: none;">
+                <div class="control-group">
+                    <label for="speed-slider">Speed:</label>
+                    <input type="range" id="speed-slider" min="1" max="60" value="30" class="slider">
+                    <span id="speed-value">30 steps/s</span>
                 </div>
             </div>
-        </header>
+            
+            <!-- Termite Algorithm specific controls -->
+            <div id="termite-controls" class="simulation-controls" style="display: none;">
+                <div class="control-group">
+                    <label for="termite-speed-slider">Speed:</label>
+                    <input type="range" id="termite-speed-slider" min="1" max="60" value="30" class="slider">
+                    <span id="termite-speed-value">30 steps/s</span>
+                </div>
+            </div>
+            
+            <!-- Langton's Ant specific controls -->
+            <div id="langton-controls" class="simulation-controls" style="display: none;">
+                <div class="control-group">
+                    <label for="langton-speed-slider">Speed:</label>
+                    <input type="range" id="langton-speed-slider" min="1" max="60" value="30" class="slider">
+                    <span id="langton-speed-value">30 steps/s</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reset, Clear, Random buttons (top) -->
+        <div id="action-container" class="control-group dynamic-position">
+            <button id="reset-btn" class="btn secondary">Reset</button>
+            <button id="clear-btn" class="btn secondary">Clear</button>
+            
+            <!-- Conway's Game of Life specific buttons -->
+            <button id="random-btn" class="btn secondary" style="display: none;">Random</button>
+            
+            <!-- Termite Algorithm specific buttons -->
+            <button id="termite-random-btn" class="btn secondary" style="display: none;">Random</button>
+            
+            <!-- Langton's Ant specific buttons -->
+            <button id="langton-random-btn" class="btn secondary" style="display: none;">Random</button>
+            <button id="add-ant-btn" class="btn secondary" style="display: none;">Add Ant</button>
+        </div>
+
+        <!-- Immersive Mode and Brightness controls (top) -->
+        <div id="display-container" class="control-group dynamic-position">
+            <button id="immersive-btn" class="btn secondary">Immersive Mode</button>
+            
+            <!-- Brightness Control -->
+            <div class="brightness-control">
+                <div class="control-group">
+                    <label for="brightness-slider">Brightness:</label>
+                    <input type="range" id="brightness-slider" min="0.1" max="2.0" step="0.1" value="1.0" class="slider">
+                    <span id="brightness-value">100%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learn button (top-right) -->
+        <div id="learn-container" class="control-group top-right">
+            <button id="learn-btn" class="btn secondary" style="display: none;">Learn</button>
+        </div>
+
+        <!-- Generation and Cells display (bottom-left) -->
+        <div id="stats-container" class="control-group bottom-left">
+            <div class="status-info">
+                <span id="generation-label">Generation:</span>
+                <span id="generation-count">0</span>
+                <span id="cell-count-label">Cells:</span>
+                <span id="cell-count">0</span>
+            </div>
+        </div>
+
+        <!-- FPS display (bottom-right) -->
+        <div id="fps-container" class="control-group bottom-right">
+            <div class="status-info">
+                <span id="fps-label">FPS:</span>
+                <span id="fps">0</span>
+            </div>
+        </div>
 
         <!-- Canvas container -->
         <main id="main">
             <canvas id="canvas"></canvas>
         </main>
-
-        <!-- Status bar -->
-        <footer id="footer">
-            <div class="status-content">
-                <div class="status-info">
-                    <span id="generation-label">Generation:</span>
-                    <span id="generation-count">0</span>
-                    <span id="cell-count-label">Cells:</span>
-                    <span id="cell-count">0</span>
-                </div>
-                <div class="status-info">
-                    <span id="fps-label">FPS:</span>
-                    <span id="fps">0</span>
-                </div>
-            </div>
-        </footer>
     </div>
-
-
 
     <!-- Immersive mode exit hint -->
     <div id="immersive-hint" class="immersive-hint">
