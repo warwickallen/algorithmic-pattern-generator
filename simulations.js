@@ -300,6 +300,8 @@ class TermiteAlgorithm extends BaseSimulation {
         this.termites = [];
         this.woodChips = new Set();
         this.maxTermites = 50;
+        this.speedMultiplier = 1.0;
+        this.baseSpeed = 2;
     }
     
     init() {
@@ -357,7 +359,7 @@ class TermiteAlgorithm extends BaseSimulation {
         
         this.termites.forEach(termite => {
             // Move termite
-            const speed = 2;
+            const speed = this.baseSpeed * this.speedMultiplier;
             termite.x += Math.cos(termite.angle) * speed;
             termite.y += Math.sin(termite.angle) * speed;
             
@@ -415,6 +417,32 @@ class TermiteAlgorithm extends BaseSimulation {
             );
             this.ctx.stroke();
         });
+    }
+    
+    setSpeed(multiplier) {
+        this.speedMultiplier = multiplier;
+    }
+    
+    setTermiteCount(count) {
+        this.maxTermites = count;
+        this.initTermites();
+    }
+    
+    randomize() {
+        this.woodChips.clear();
+        const numChips = Math.floor((this.cols * this.rows) * 0.3);
+        
+        for (let i = 0; i < numChips; i++) {
+            const x = Math.floor(Math.random() * this.cols) * this.cellSize;
+            const y = Math.floor(Math.random() * this.rows) * this.cellSize;
+            this.woodChips.add(`${x},${y}`);
+        }
+        
+        // Reset termites to not carrying anything
+        this.termites.forEach(termite => termite.carrying = false);
+        
+        // Redraw to show the new random pattern
+        this.draw();
     }
 }
 

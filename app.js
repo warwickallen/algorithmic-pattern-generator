@@ -68,9 +68,30 @@ class AlgorithmicPatternGenerator {
             this.showLearnModal();
         });
         
-        // Modal close button
+        // Termite Algorithm specific controls
+        document.getElementById('termite-speed-slider').addEventListener('input', (e) => {
+            this.handleTermiteSpeedChange(e.target.value);
+        });
+        
+        document.getElementById('termites-slider').addEventListener('input', (e) => {
+            this.handleTermiteCountChange(e.target.value);
+        });
+        
+        document.getElementById('termite-random-btn').addEventListener('click', () => {
+            this.handleTermiteRandomPattern();
+        });
+        
+        document.getElementById('termite-learn-btn').addEventListener('click', () => {
+            this.showTermiteLearnModal();
+        });
+        
+        // Modal close buttons
         document.getElementById('conway-modal-close').addEventListener('click', () => {
             this.hideLearnModal();
+        });
+        
+        document.getElementById('termite-modal-close').addEventListener('click', () => {
+            this.hideTermiteLearnModal();
         });
         
         // Canvas interactions
@@ -225,12 +246,18 @@ class AlgorithmicPatternGenerator {
                 if (this.currentType === 'conway') {
                     e.preventDefault();
                     this.decreaseSpeed();
+                } else if (this.currentType === 'termite') {
+                    e.preventDefault();
+                    this.decreaseTermiteSpeed();
                 }
                 break;
             case '.':
                 if (this.currentType === 'conway') {
                     e.preventDefault();
                     this.increaseSpeed();
+                } else if (this.currentType === 'termite') {
+                    e.preventDefault();
+                    this.increaseTermiteSpeed();
                 }
                 break;
         }
@@ -254,12 +281,19 @@ class AlgorithmicPatternGenerator {
         // Update simulation selector
         document.getElementById('simulation-select').value = this.currentType;
         
-        // Show/hide Conway's Game of Life specific controls
+        // Show/hide simulation-specific controls
         const conwayControls = document.getElementById('conway-controls');
+        const termiteControls = document.getElementById('termite-controls');
+        
+        // Hide all controls first
+        conwayControls.style.display = 'none';
+        termiteControls.style.display = 'none';
+        
+        // Show appropriate controls based on current simulation
         if (this.currentType === 'conway') {
             conwayControls.style.display = 'flex';
-        } else {
-            conwayControls.style.display = 'none';
+        } else if (this.currentType === 'termite') {
+            termiteControls.style.display = 'flex';
         }
     }
     
@@ -285,6 +319,20 @@ class AlgorithmicPatternGenerator {
         this.handleSpeedChange(newValue);
     }
     
+    decreaseTermiteSpeed() {
+        const slider = document.getElementById('termite-speed-slider');
+        const newValue = Math.max(0.5, parseFloat(slider.value) - 0.1);
+        slider.value = newValue;
+        this.handleTermiteSpeedChange(newValue);
+    }
+    
+    increaseTermiteSpeed() {
+        const slider = document.getElementById('termite-speed-slider');
+        const newValue = Math.min(3, parseFloat(slider.value) + 0.1);
+        slider.value = newValue;
+        this.handleTermiteSpeedChange(newValue);
+    }
+    
     handleRandomPattern() {
         if (this.currentType === 'conway' && this.currentSimulation) {
             this.currentSimulation.randomize();
@@ -299,6 +347,38 @@ class AlgorithmicPatternGenerator {
     
     hideLearnModal() {
         const modal = document.getElementById('conway-modal');
+        modal.classList.remove('show');
+    }
+    
+    // Termite Algorithm specific methods
+    handleTermiteSpeedChange(value) {
+        if (this.currentType === 'termite' && this.currentSimulation) {
+            this.currentSimulation.setSpeed(parseFloat(value));
+            document.getElementById('termite-speed-value').textContent = `${value}x`;
+        }
+    }
+    
+    handleTermiteCountChange(value) {
+        if (this.currentType === 'termite' && this.currentSimulation) {
+            this.currentSimulation.setTermiteCount(parseInt(value));
+            document.getElementById('termites-value').textContent = value;
+        }
+    }
+    
+    handleTermiteRandomPattern() {
+        if (this.currentType === 'termite' && this.currentSimulation) {
+            this.currentSimulation.randomize();
+            this.updateUI();
+        }
+    }
+    
+    showTermiteLearnModal() {
+        const modal = document.getElementById('termite-modal');
+        modal.classList.add('show');
+    }
+    
+    hideTermiteLearnModal() {
+        const modal = document.getElementById('termite-modal');
         modal.classList.remove('show');
     }
     

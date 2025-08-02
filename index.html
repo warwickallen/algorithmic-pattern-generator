@@ -43,6 +43,24 @@
                             <button id="learn-btn" class="btn secondary">Learn</button>
                         </div>
                     </div>
+                    
+                    <!-- Termite Algorithm specific controls -->
+                    <div id="termite-controls" class="simulation-controls" style="display: none;">
+                        <div class="control-group">
+                            <label for="termite-speed-slider">Speed:</label>
+                            <input type="range" id="termite-speed-slider" min="0.5" max="3" step="0.1" value="1" class="slider">
+                            <span id="termite-speed-value">1x</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="termites-slider">Termites:</label>
+                            <input type="range" id="termites-slider" min="10" max="100" value="50" class="slider">
+                            <span id="termites-value">50</span>
+                        </div>
+                        <div class="control-group">
+                            <button id="termite-random-btn" class="btn secondary">Random</button>
+                            <button id="termite-learn-btn" class="btn secondary">Learn</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -105,6 +123,45 @@
                 
                 <h3>How to Use</h3>
                 <p>Click on the grid to toggle cells between alive and dead states. Use the controls to start, pause, and reset the simulation.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Termite Algorithm Learn Modal -->
+    <div id="termite-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Termite Algorithm</h2>
+                <button class="modal-close" id="termite-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>How It Works</h3>
+                <p>The Termite Algorithm demonstrates emergent behaviour through simple rules:</p>
+                <ul>
+                    <li><strong>Movement:</strong> Termites move randomly across the grid</li>
+                    <li><strong>Pick Up:</strong> If a termite encounters a wood chip and isn't carrying one, it picks it up</li>
+                    <li><strong>Drop:</strong> If a termite is carrying a chip and encounters an empty space, it drops the chip</li>
+                    <li><strong>Direction:</strong> Termites occasionally change direction randomly</li>
+                </ul>
+                
+                <h3>Emergent Behaviour</h3>
+                <p>Despite simple individual rules, termites collectively create organised patterns:</p>
+                <ul>
+                    <li><strong>Clustering:</strong> Wood chips gradually form clusters</li>
+                    <li><strong>Self-Organisation:</strong> Random distribution becomes structured over time</li>
+                    <li><strong>Stability:</strong> Once clusters form, they tend to remain stable</li>
+                </ul>
+                
+                <h3>Real-World Applications</h3>
+                <p>This algorithm has inspired research in:</p>
+                <ul>
+                    <li>Swarm robotics and collective behaviour</li>
+                    <li>Resource distribution and optimisation</li>
+                    <li>Self-organising systems and emergent intelligence</li>
+                </ul>
+                
+                <h3>Controls</h3>
+                <p>Use the speed slider to control termite movement speed, the termites slider to adjust the number of termites, and the random button to create a new random distribution of wood chips.</p>
             </div>
         </div>
     </div>
