@@ -642,7 +642,7 @@ class AlgorithmicPatternGenerator {
         // Handle window resize with throttling
         const throttledResize = PerformanceOptimizer.throttle(() => {
             if (this.currentSimulation) {
-                this.currentSimulation.resize();
+                this.currentSimulation.resizePreserveState();
                 this.currentSimulation.draw();
             }
         }, 250);
@@ -811,7 +811,7 @@ class AlgorithmicPatternGenerator {
         // Resize canvas when toggling immersive mode with delay
         setTimeout(() => {
             if (this.currentSimulation) {
-                this.currentSimulation.resize();
+                this.currentSimulation.resizePreserveState();
                 this.currentSimulation.draw();
             }
         }, 300);

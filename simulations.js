@@ -37,6 +37,35 @@ class BaseSimulation {
         this.clearCaches();
     }
     
+    // New method for preserving state during resize
+    resizePreserveState() {
+        // Store current state before resize
+        const preservedState = this.getState();
+        
+        // Perform resize
+        this.resize();
+        
+        // Restore state after resize
+        this.setState(preservedState);
+    }
+    
+    // Override these methods in subclasses to preserve specific state
+    getState() {
+        // Default implementation - override in subclasses
+        return {
+            generation: this.generation,
+            cellCount: this.cellCount,
+            isRunning: this.isRunning
+        };
+    }
+    
+    setState(state) {
+        // Default implementation - override in subclasses
+        this.generation = state.generation || 0;
+        this.cellCount = state.cellCount || 0;
+        this.isRunning = state.isRunning || false;
+    }
+    
     start() {
         this.isRunning = true;
         this.animate();
@@ -427,6 +456,56 @@ class ConwayGameOfLife extends BaseSimulation {
         this.initData();
     }
     
+    // Override to preserve grid state during resize
+    resizePreserveState() {
+        // Store current grid state before resize
+        const preservedState = this.getState();
+        
+        // Perform resize
+        this.resize();
+        
+        // Restore grid state after resize
+        this.setState(preservedState);
+    }
+    
+    // Override to preserve grid data
+    getState() {
+        const state = super.getState();
+        if (this.grids) {
+            state.grids = {
+                current: this.grids.current.map(row => [...row]),
+                next: this.grids.next.map(row => [...row])
+            };
+        }
+        return state;
+    }
+    
+    setState(state) {
+        super.setState(state);
+        if (state.grids && this.grids) {
+            // Copy the preserved grid data to the new grid dimensions
+            const oldCurrent = state.grids.current;
+            const oldNext = state.grids.next;
+            
+            // Clear the new grids
+            this.initGrids();
+            
+            // Copy data from old grids to new grids, handling size differences
+            const minRows = Math.min(oldCurrent.length, this.rows);
+            const minCols = Math.min(oldCurrent[0]?.length || 0, this.cols);
+            
+            for (let row = 0; row < minRows; row++) {
+                for (let col = 0; col < minCols; col++) {
+                    this.grids.current[row][col] = oldCurrent[row][col];
+                    this.grids.next[row][col] = oldNext[row][col];
+                }
+            }
+            
+            // Update cell count
+            this.cellCount = this.countLiveCells(this.grids.current);
+        }
+    }
+    
     update() {
         this.generation++;
         
@@ -678,6 +757,63 @@ class LangtonsAnt extends BaseSimulation {
     resize() {
         super.resize();
         this.initData();
+    }
+    
+    // Override to preserve grid and ant state during resize
+    resizePreserveState() {
+        // Store current state before resize
+        const preservedState = this.getState();
+        
+        // Perform resize
+        this.resize();
+        
+        // Restore state after resize
+        this.setState(preservedState);
+    }
+    
+    // Override to preserve grid and ant data
+    getState() {
+        const state = super.getState();
+        if (this.grid) {
+            state.grid = this.grid.map(row => [...row]);
+        }
+        if (this.ants) {
+            state.ants = this.ants.map(ant => ({ ...ant }));
+        }
+        return state;
+    }
+    
+    setState(state) {
+        super.setState(state);
+        if (state.grid && this.grid) {
+            // Copy the preserved grid data to the new grid dimensions
+            const oldGrid = state.grid;
+            
+            // Clear the new grid
+            this.initGrid();
+            
+            // Copy data from old grid to new grid, handling size differences
+            const minRows = Math.min(oldGrid.length, this.rows);
+            const minCols = Math.min(oldGrid[0]?.length || 0, this.cols);
+            
+            for (let row = 0; row < minRows; row++) {
+                for (let col = 0; col < minCols; col++) {
+                    this.grid[row][col] = oldGrid[row][col];
+                }
+            }
+        }
+        
+        if (state.ants && this.ants) {
+            // Restore ant positions, adjusting for new grid size
+            this.ants = state.ants.map(ant => ({
+                x: Math.min(ant.x, this.cols - 1),
+                y: Math.min(ant.y, this.rows - 1),
+                direction: ant.direction
+            }));
+        }
+        
+        // Update cell count
+        this.cellCount = this.countLiveCells(this.grid);
     }
     
     update() {

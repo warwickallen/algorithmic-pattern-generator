@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resize State Preservation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        canvas {
+            border: 1px solid #444;
+            background: #000;
+            margin: 10px 0;
+        }
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        .instructions {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #2d5a2d;
+            border: 1px solid #4a7c4a;
+        }
+        .error {
+            background: #5a2d2d;
+            border: 1px solid #7c4a4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Resize State Preservation Test</h1>
+        
+        <div class="instructions">
+            <h3>Test Instructions:</h3>
+            <ol>
+                <li>Start a simulation (Conway's Game of Life or Langton's Ant)</li>
+                <li>Let it run for a few seconds to create some patterns</li>
+                <li>Click "Test Resize" to trigger a canvas resize</li>
+                <li>Verify that the simulation state is preserved (patterns continue, ants remain in position)</li>
+                <li>Try the "Toggle Immersive" button to test immersive mode resize</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>Conway's Game of Life Test</h2>
+            <canvas id="conway-canvas" width="400" height="300"></canvas>
+            <br>
+            <button onclick="startConway()">Start Conway</button>
+            <button onclick="testConwayResize()">Test Resize</button>
+            <button onclick="toggleConwayImmersive()">Toggle Immersive</button>
+            <div id="conway-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Langton's Ant Test</h2>
+            <canvas id="langton-canvas" width="400" height="300"></canvas>
+            <br>
+            <button onclick="startLangton()">Start Langton</button>
+            <button onclick="testLangtonResize()">Test Resize</button>
+            <button onclick="toggleLangtonImmersive()">Toggle Immersive</button>
+            <div id="langton-status" class="status"></div>
+        </div>
+    </div>
+
+    <script src="simulations.js"></script>
+    <script>
+        let conwaySim = null;
+        let langtonSim = null;
+        let conwayImmersive = false;
+        let langtonImmersive = false;
+
+        function startConway() {
+            const canvas = document.getElementById('conway-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            if (conwaySim) {
+                conwaySim.pause();
+            }
+            
+            conwaySim = new ConwayGameOfLife(canvas, ctx);
+            conwaySim.init();
+            conwaySim.randomize();
+            conwaySim.start();
+            
+            updateStatus('conway-status', 'Conway simulation started with random pattern', 'success');
+        }
+
+        function startLangton() {
+            const canvas = document.getElementById('langton-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            if (langtonSim) {
+                langtonSim.pause();
+            }
+            
+            langtonSim = new LangtonsAnt(canvas, ctx);
+            langtonSim.init();
+            langtonSim.start();
+            
+            updateStatus('langton-status', 'Langton simulation started', 'success');
+        }
+
+        function testConwayResize() {
+            if (!conwaySim) {
+                updateStatus('conway-status', 'Please start Conway simulation first', 'error');
+                return;
+            }
+            
+            const canvas = document.getElementById('conway-canvas');
+            const originalWidth = canvas.width;
+            const originalHeight = canvas.height;
+            
+            // Store current state
+            const beforeState = conwaySim.getState();
+            
+            // Trigger resize
+            canvas.width = canvas.width === 400 ? 500 : 400;
+            canvas.height = canvas.height === 300 ? 350 : 300;
+            
+            conwaySim.resizePreserveState();
+            conwaySim.draw();
+            
+            // Check if state was preserved
+            const afterState = conwaySim.getState();
+            const cellCountPreserved = beforeState.cellCount === afterState.cellCount;
+            const generationPreserved = beforeState.generation === afterState.generation;
+            
+            if (cellCountPreserved && generationPreserved) {
+                updateStatus('conway-status', '✅ Resize successful - State preserved! Cell count: ' + afterState.cellCount, 'success');
+            } else {
+                updateStatus('conway-status', '❌ Resize failed - State lost! Before: ' + beforeState.cellCount + ', After: ' + afterState.cellCount, 'error');
+            }
+        }
+
+        function testLangtonResize() {
+            if (!langtonSim) {
+                updateStatus('langton-status', 'Please start Langton simulation first', 'error');
+                return;
+            }
+            
+            const canvas = document.getElementById('langton-canvas');
+            
+            // Store current state
+            const beforeState = langtonSim.getState();
+            
+            // Trigger resize
+            canvas.width = canvas.width === 400 ? 500 : 400;
+            canvas.height = canvas.height === 300 ? 350 : 300;
+            
+            langtonSim.resizePreserveState();
+            langtonSim.draw();
+            
+            // Check if state was preserved
+            const afterState = langtonSim.getState();
+            const cellCountPreserved = beforeState.cellCount === afterState.cellCount;
+            const antsPreserved = beforeState.ants && afterState.ants && 
+                                beforeState.ants.length === afterState.ants.length;
+            
+            if (cellCountPreserved && antsPreserved) {
+                updateStatus('langton-status', '✅ Resize successful - State preserved! Ants: ' + afterState.ants.length, 'success');
+            } else {
+                updateStatus('langton-status', '❌ Resize failed - State lost!', 'error');
+            }
+        }
+
+        function toggleConwayImmersive() {
+            if (!conwaySim) {
+                updateStatus('conway-status', 'Please start Conway simulation first', 'error');
+                return;
+            }
+            
+            const canvas = document.getElementById('conway-canvas');
+            conwayImmersive = !conwayImmersive;
+            
+            if (conwayImmersive) {
+                canvas.style.width = '100%';
+                canvas.style.height = '400px';
+            } else {
+                canvas.style.width = '400px';
+                canvas.style.height = '300px';
+            }
+            
+            // Simulate immersive mode resize
+            setTimeout(() => {
+                conwaySim.resizePreserveState();
+                conwaySim.draw();
+                updateStatus('conway-status', 'Immersive mode toggled - State should be preserved', 'success');
+            }, 100);
+        }
+
+        function toggleLangtonImmersive() {
+            if (!langtonSim) {
+                updateStatus('langton-status', 'Please start Langton simulation first', 'error');
+                return;
+            }
+            
+            const canvas = document.getElementById('langton-canvas');
+            langtonImmersive = !langtonImmersive;
+            
+            if (langtonImmersive) {
+                canvas.style.width = '100%';
+                canvas.style.height = '400px';
+            } else {
+                canvas.style.width = '400px';
+                canvas.style.height = '300px';
+            }
+            
+            // Simulate immersive mode resize
+            setTimeout(() => {
+                langtonSim.resizePreserveState();
+                langtonSim.draw();
+                updateStatus('langton-status', 'Immersive mode toggled - State should be preserved', 'success');
+            }, 100);
+        }
+
+        function updateStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'status ' + type;
+        }
+
+        // Auto-start tests after page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                startConway();
+                startLangton();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 
