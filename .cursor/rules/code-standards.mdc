@@ -1,0 +1,19 @@
+# Code Standards
+
+## JavaScript
+- Use ES6+ features, British English spelling
+- Meaningful variable/function names, JSDoc for complex functions
+- Prefer const over let, avoid var
+
+## CSS
+- Kebab-case class names, semantic naming
+- Group related styles, use CSS custom properties
+- Mobile-first responsive design
+
+## HTML
+- Semantic elements, proper accessibility attributes
+- Clean minimal markup, descriptive alt text
+description:
+globs:
+alwaysApply: false
+---

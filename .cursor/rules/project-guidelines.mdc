@@ -1,0 +1,30 @@
+# Project Guidelines
+
+## Requirements Implementation
+- Follow incremental iteration from REQUIREMENTS.md
+- Implement one requirement at a time
+- Follow Minimal Change Principle
+- Document only essential information
+
+## Development Approach
+- Before suggesting changes: "Is this the minimal change needed?"
+- Focus on working code over perfect solutions
+- Test each implementation before moving to next
+- Write tests for specific functionality being added
+
+## Quality Gates
+- Does this change directly address the stated requirement?
+- Could this change be smaller while still achieving the goal?
+- Are there any additions that aren't immediately necessary?
+
+## Performance
+- Optimise for smooth animations
+- Minimise memory usage
+- Ensure responsive user interface
+- Test across different browsers and screen sizes
+
+Remember: Working, minimal code that meets the immediate need, not perfect comprehensive solutions.
+description:
+globs:
+alwaysApply: false
+---
