@@ -138,6 +138,20 @@ class AlgorithmicPatternGenerator {
                     termiteCountSliderId: 'termites-slider',
                     termiteCountValueId: 'termites-value'
                 }
+            },
+            langton: {
+                controlsId: 'langton-controls',
+                speedSliderId: 'langton-speed-slider',
+                speedValueId: 'langton-speed-value',
+                speedFormat: (value) => `${value} steps/s`,
+                speedRange: { min: 1, max: 60, step: 1 },
+                randomBtnId: 'langton-random-btn',
+                learnBtnId: 'langton-learn-btn',
+                modalId: 'langton-modal',
+                modalCloseId: 'langton-modal-close',
+                additionalControls: {
+                    addAntBtnId: 'add-ant-btn'
+                }
             }
         };
         
@@ -247,14 +261,20 @@ class AlgorithmicPatternGenerator {
                 });
             }
             
-            // Additional controls (like termite count)
+            // Additional controls (like termite count or add ant button)
             if (config.additionalControls) {
                 Object.entries(config.additionalControls).forEach(([controlType, elementId]) => {
                     const element = document.getElementById(elementId);
-                    if (element && element.tagName === 'INPUT') {
-                        element.addEventListener('input', (e) => {
-                            this.handleAdditionalControl(simType, controlType, e.target.value);
-                        });
+                    if (element) {
+                        if (element.tagName === 'INPUT') {
+                            element.addEventListener('input', (e) => {
+                                this.handleAdditionalControl(simType, controlType, e.target.value);
+                            });
+                        } else if (element.tagName === 'BUTTON') {
+                            element.addEventListener('click', () => {
+                                this.handleAdditionalControl(simType, controlType);
+                            });
+                        }
                     }
                 });
             }
@@ -407,6 +427,12 @@ class AlgorithmicPatternGenerator {
                 e.preventDefault();
                 this.adjustSpeed(this.currentType, 1);
                 break;
+            case 'a':
+                if (this.currentType === 'langton' && this.currentSimulation?.addAnt) {
+                    e.preventDefault();
+                    this.currentSimulation.addAnt();
+                }
+                break;
         }
     }
     
@@ -532,12 +558,19 @@ class AlgorithmicPatternGenerator {
                     this.currentSimulation.setTermiteCount(parseInt(value));
                 }
                 break;
+            case 'addAntBtnId':
+                if (this.currentSimulation.addAnt) {
+                    this.currentSimulation.addAnt();
+                }
+                break;
         }
         
-        // Update display
-        const valueElement = document.getElementById(valueElementId);
-        if (valueElement) {
-            valueElement.textContent = value;
+        // Update display for slider controls
+        if (value && valueElementId) {
+            const valueElement = document.getElementById(valueElementId);
+            if (valueElement) {
+                valueElement.textContent = value;
+            }
         }
     }
     

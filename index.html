@@ -61,6 +61,20 @@
                             <button id="termite-learn-btn" class="btn secondary">Learn</button>
                         </div>
                     </div>
+                    
+                    <!-- Langton's Ant specific controls -->
+                    <div id="langton-controls" class="simulation-controls" style="display: none;">
+                        <div class="control-group">
+                            <label for="langton-speed-slider">Speed:</label>
+                            <input type="range" id="langton-speed-slider" min="1" max="60" value="30" class="slider">
+                            <span id="langton-speed-value">30 steps/s</span>
+                        </div>
+                        <div class="control-group">
+                            <button id="add-ant-btn" class="btn secondary">Add Ant</button>
+                            <button id="langton-random-btn" class="btn secondary">Random</button>
+                            <button id="langton-learn-btn" class="btn secondary">Learn</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -162,6 +176,45 @@
                 
                 <h3>Controls</h3>
                 <p>Use the speed slider to control termite movement speed, the termites slider to adjust the number of termites, and the random button to create a new random distribution of wood chips.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Langton's Ant Learn Modal -->
+    <div id="langton-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Langton's Ant</h2>
+                <button class="modal-close" id="langton-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Rules</h3>
+                <p>Langton's Ant follows simple rules that create complex emergent behaviour:</p>
+                <ul>
+                    <li><strong>White Cell:</strong> Turn 90° right, flip the cell to black, move forward</li>
+                    <li><strong>Black Cell:</strong> Turn 90° left, flip the cell to white, move forward</li>
+                    <li><strong>Movement:</strong> The ant always moves one cell in the direction it's facing</li>
+                </ul>
+                
+                <h3>Highway Formation</h3>
+                <p>After an initial chaotic period, the ant typically forms a "highway" pattern:</p>
+                <ul>
+                    <li><strong>Chaotic Phase:</strong> The ant moves in seemingly random patterns</li>
+                    <li><strong>Highway Phase:</strong> The ant creates a repeating diagonal pattern</li>
+                    <li><strong>Predictability:</strong> Once the highway forms, the ant's path becomes predictable</li>
+                </ul>
+                
+                <h3>Mathematical Significance</h3>
+                <p>Langton's Ant demonstrates important concepts in:</p>
+                <ul>
+                    <li><strong>Emergence:</strong> Complex patterns from simple rules</li>
+                    <li><strong>Deterministic Chaos:</strong> Predictable rules creating unpredictable initial behaviour</li>
+                    <li><strong>Self-Organisation:</strong> Order emerging from disorder</li>
+                    <li><strong>Computational Universality:</strong> The ant can simulate a Turing machine</li>
+                </ul>
+                
+                <h3>Controls</h3>
+                <p>Use the speed slider to control ant movement speed, the Add Ant button (or press 'a') to add new ants, and the random button to create a random pattern of white and black cells.</p>
             </div>
         </div>
     </div>

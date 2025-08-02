@@ -56,8 +56,8 @@ class BaseSimulation {
             this.lastTime = currentTime;
         }
         
-        // For Conway's Game of Life, control update frequency based on speed
-        if (this.constructor.name === 'ConwayGameOfLife') {
+        // For Conway's Game of Life and Langton's Ant, control update frequency based on speed
+        if (this.constructor.name === 'ConwayGameOfLife' || this.constructor.name === 'LangtonsAnt') {
             if (currentTime - this.lastUpdateTime >= this.updateInterval) {
                 this.update();
                 this.lastUpdateTime = currentTime;
@@ -507,74 +507,82 @@ class TermiteAlgorithm extends BaseSimulation {
 class LangtonsAnt extends BaseSimulation {
     constructor(canvas, ctx) {
         super(canvas, ctx);
-        this.ant = { x: 0, y: 0, direction: 0 }; // 0: up, 1: right, 2: down, 3: left
+        this.ants = [{ x: 0, y: 0, direction: 0 }]; // 0: up, 1: right, 2: down, 3: left
         this.grid = [];
         this.rules = ['R', 'L']; // Standard Langton's ant rules
+        this.speed = 30; // steps per second
+        this.lastUpdateTime = 0;
+        this.updateInterval = 1000 / this.speed; // milliseconds between updates
     }
     
     init() {
         super.init();
         this.initGrid();
-        this.resetAnt();
+        this.resetAnts();
     }
     
     resize() {
         super.resize();
         this.initGrid();
-        this.resetAnt();
+        this.resetAnts();
     }
     
     initGrid() {
         this.grid = this.createGrid(this.rows, this.cols, false);
     }
     
-    resetAnt() {
-        this.ant.x = Math.floor(this.cols / 2);
-        this.ant.y = Math.floor(this.rows / 2);
-        this.ant.direction = 0;
+    resetAnts() {
+        this.ants = [{ 
+            x: Math.floor(this.cols / 2), 
+            y: Math.floor(this.rows / 2), 
+            direction: 0 
+        }];
     }
     
     reset() {
         super.reset();
         this.initGrid();
-        this.resetAnt();
+        this.resetAnts();
         this.draw();
     }
     
     clear() {
         super.clear();
         this.initGrid();
-        this.resetAnt();
+        this.resetAnts();
         this.draw();
     }
     
     update() {
         this.generation++;
         
-        // Get current cell state
-        const currentCell = this.grid[this.ant.y][this.ant.x];
-        
-        // Flip the cell
-        this.grid[this.ant.y][this.ant.x] = !currentCell;
+        // Update each ant
+        this.ants.forEach(ant => {
+            // Get current cell state
+            const currentCell = this.grid[ant.y][ant.x];
+            
+            // Flip the cell
+            this.grid[ant.y][ant.x] = !currentCell;
+            
+            // Turn based on cell state
+            const rule = this.rules[currentCell ? 1 : 0];
+            if (rule === 'R') {
+                ant.direction = (ant.direction + 1) % 4;
+            } else {
+                ant.direction = (ant.direction + 3) % 4;
+            }
+            
+            // Move forward
+            switch (ant.direction) {
+                case 0: ant.y = (ant.y - 1 + this.rows) % this.rows; break; // Up
+                case 1: ant.x = (ant.x + 1) % this.cols; break; // Right
+                case 2: ant.y = (ant.y + 1) % this.rows; break; // Down
+                case 3: ant.x = (ant.x - 1 + this.cols) % this.cols; break; // Left
+            }
+        });
         
         // Update cell count
         this.cellCount = this.countLiveCells(this.grid);
-        
-        // Turn based on cell state
-        const rule = this.rules[currentCell ? 1 : 0];
-        if (rule === 'R') {
-            this.ant.direction = (this.ant.direction + 1) % 4;
-        } else {
-            this.ant.direction = (this.ant.direction + 3) % 4;
-        }
-        
-        // Move forward
-        switch (this.ant.direction) {
-            case 0: this.ant.y = (this.ant.y - 1 + this.rows) % this.rows; break; // Up
-            case 1: this.ant.x = (this.ant.x + 1) % this.cols; break; // Right
-            case 2: this.ant.y = (this.ant.y + 1) % this.rows; break; // Down
-            case 3: this.ant.x = (this.ant.x - 1 + this.cols) % this.cols; break; // Left
-        }
     }
     
     draw() {
@@ -583,14 +591,44 @@ class LangtonsAnt extends BaseSimulation {
         // Draw grid using common utility
         this.drawGrid(this.grid);
         
-        // Draw ant
-        const antX = this.ant.x * this.cellSize + this.cellSize / 2;
-        const antY = this.ant.y * this.cellSize + this.cellSize / 2;
-        this.drawActor(antX, antY, this.cellSize / 3);
+        // Draw each ant
+        this.ants.forEach(ant => {
+            const antX = ant.x * this.cellSize + this.cellSize / 2;
+            const antY = ant.y * this.cellSize + this.cellSize / 2;
+            this.drawActor(antX, antY, this.cellSize / 3);
+            
+            // Draw direction indicator using common utility
+            const directionAngle = ant.direction * Math.PI / 2;
+            this.drawDirectionIndicator(antX, antY, directionAngle, this.cellSize / 2, '#ffffff', 2);
+        });
+    }
+    
+    setSpeed(stepsPerSecond) {
+        this.speed = Math.max(1, Math.min(60, stepsPerSecond));
+        this.updateInterval = 1000 / this.speed;
+    }
+    
+    addAnt() {
+        // Add a new ant at a random position
+        const newAnt = {
+            x: Math.floor(Math.random() * this.cols),
+            y: Math.floor(Math.random() * this.rows),
+            direction: Math.floor(Math.random() * 4)
+        };
+        this.ants.push(newAnt);
         
-        // Draw direction indicator using common utility
-        const directionAngle = this.ant.direction * Math.PI / 2;
-        this.drawDirectionIndicator(antX, antY, directionAngle, this.cellSize / 2, '#ffffff', 2);
+        // Draw immediately so the ant is visible even when paused
+        this.draw();
+    }
+    
+    randomize() {
+        // Clear existing pattern
+        this.initGrid();
+        
+        // Fill with random cells (50% density of white cells)
+        this.cellCount = this.randomizeGrid(this.grid, 0.5);
+        this.generation = 0;
+        this.draw();
     }
 }
 

@@ -165,7 +165,9 @@ body {
     box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }
 
-#speed-value {
+#speed-value,
+#termite-speed-value,
+#langton-speed-value {
     font-size: 0.8rem;
     color: #cccccc;
     min-width: 50px;
