@@ -191,13 +191,33 @@ class EventHandler {
     // Setup slider control
     setupSlider(config, handlers) {
         const slider = document.getElementById(config.id);
-        const valueElement = document.getElementById(`${config.id}-value`);
+        
+        // Map slider IDs to their corresponding value element IDs based on HTML structure
+        let valueElementId;
+        if (config.id === 'speed-slider') {
+            valueElementId = 'speed-value';
+        } else if (config.id === 'termite-speed-slider') {
+            valueElementId = 'termite-speed-value';
+        } else if (config.id === 'langton-speed-slider') {
+            valueElementId = 'langton-speed-value';
+        } else if (config.id === 'termites-slider') {
+            valueElementId = 'termites-value';
+        } else {
+            valueElementId = `${config.id}-value`;
+        }
+        
+        const valueElement = document.getElementById(valueElementId);
+        
+        console.log(`Setting up slider: ${config.id}`, { slider, valueElement, valueElementId });
         
         if (slider) {
             slider.addEventListener('input', (e) => {
+                console.log(`Slider input event: ${config.id}`, e.target.value);
                 const value = config.format ? config.format(e.target.value) : e.target.value;
+                console.log(`Formatted value:`, value);
                 if (valueElement) {
                     valueElement.textContent = value;
+                    console.log(`Updated display to:`, value);
                 }
                 
                 if (config.id.includes('speed')) {
@@ -697,6 +717,8 @@ class AlgorithmicPatternGenerator {
     
     // Generic speed change handler
     handleSpeedChange(simType, value) {
+        console.log(`handleSpeedChange called:`, { simType, value, currentType: this.currentType });
+        
         if (this.currentType !== simType || !this.currentSimulation) return;
         
         const config = ConfigurationManager.getConfig(simType);
@@ -704,6 +726,7 @@ class AlgorithmicPatternGenerator {
         
         // Parse value as integer for all simulations (steps per second)
         const parsedValue = parseInt(value);
+        console.log(`Parsed value:`, parsedValue);
         
         // Set speed on simulation
         this.currentSimulation.setSpeed(parsedValue);
@@ -711,9 +734,24 @@ class AlgorithmicPatternGenerator {
         // Update the display value
         const speedControl = config.controls.speed;
         if (speedControl) {
-            const valueElement = document.getElementById(`${speedControl.id}-value`);
+            // Map slider IDs to their corresponding value element IDs
+            let valueElementId;
+            if (speedControl.id === 'speed-slider') {
+                valueElementId = 'speed-value';
+            } else if (speedControl.id === 'termite-speed-slider') {
+                valueElementId = 'termite-speed-value';
+            } else if (speedControl.id === 'langton-speed-slider') {
+                valueElementId = 'langton-speed-value';
+            } else {
+                valueElementId = `${speedControl.id}-value`;
+            }
+            
+            const valueElement = document.getElementById(valueElementId);
+            console.log(`Speed control update:`, { speedControl, valueElement, valueElementId });
             if (valueElement && speedControl.format) {
-                valueElement.textContent = speedControl.format(parsedValue);
+                const formattedValue = speedControl.format(parsedValue);
+                valueElement.textContent = formattedValue;
+                console.log(`Updated speed display to:`, formattedValue);
             }
         }
     }
@@ -787,7 +825,9 @@ class AlgorithmicPatternGenerator {
         if (config) {
             const termiteControl = config.controls.termiteCount;
             if (termiteControl) {
-                const valueElement = document.getElementById(`${termiteControl.id}-value`);
+                // Map slider ID to its corresponding value element ID
+                const valueElementId = 'termites-value';
+                const valueElement = document.getElementById(valueElementId);
                 if (valueElement && termiteControl.format) {
                     valueElement.textContent = termiteControl.format(count);
                 }
