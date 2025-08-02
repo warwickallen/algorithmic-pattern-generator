@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-button {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #00ff00;
+            padding: 12px 24px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(145deg, #3a3a3a, #4a4a4a);
+            transform: translateY(-2px);
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .test-section h2 {
+            color: #00ff00;
+            margin-top: 0;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .status.pass {
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .status.fail {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+        
+        /* Modal styles (copied from main app) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h2 {
+            color: #00ff00;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #cccccc;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Modal System Test - Requirement 4.1</h1>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <button class="test-button" onclick="testModal.show('test-modal-1')">Open Test Modal 1</button>
+            <button class="test-button" onclick="testModal.show('test-modal-2')">Open Test Modal 2</button>
+            <button class="test-button" onclick="testModal.show('test-modal-3')">Open Test Modal 3</button>
+            <button class="test-button" onclick="runAllTests()">Run All Tests</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Instructions</h2>
+            <ol>
+                <li>Click "Run All Tests" to automatically test the modal system</li>
+                <li>Manually test by opening modals and trying different close methods:
+                    <ul>
+                        <li>Click the × close button</li>
+                        <li>Press the Escape key</li>
+                        <li>Click outside the modal (on the backdrop)</li>
+                    </ul>
+                </li>
+                <li>Test responsive design by resizing the browser window</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Test Modal 1 -->
+    <div id="test-modal-1" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Test Modal 1</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Modal System Test</h3>
+                <p>This modal tests the basic functionality of the modal system.</p>
+                <p>Try closing this modal using:</p>
+                <ul>
+                    <li>The × button in the top-right corner</li>
+                    <li>The Escape key</li>
+                    <li>Clicking outside the modal (on the dark backdrop)</li>
+                </ul>
+                <p>This modal should have smooth animations when opening and closing.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Modal 2 -->
+    <div id="test-modal-2" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Test Modal 2</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Responsive Design Test</h3>
+                <p>This modal tests responsive design capabilities.</p>
+                <p>Try resizing your browser window while this modal is open to see how it adapts.</p>
+                <p>The modal should:</p>
+                <ul>
+                    <li>Maintain proper proportions on different screen sizes</li>
+                    <li>Be scrollable if content is too long</li>
+                    <li>Stay centered and properly positioned</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Modal 3 -->
+    <div id="test-modal-3" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Test Modal 3</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Multiple Modal Test</h3>
+                <p>This modal tests the ability to handle multiple modals.</p>
+                <p>Try opening another modal while this one is open - the previous modal should close automatically.</p>
+                <p>This ensures only one modal is active at a time.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal Manager (copied from main app)
+        class ModalManager {
+            constructor() {
+                this.activeModal = null;
+                this.modals = new Map();
+                this.init();
+            }
+            
+            init() {
+                // Set up global modal event listeners
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.activeModal) {
+                        this.hide(this.activeModal);
+                    }
+                });
+                
+                // Close modal when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (this.activeModal && e.target.classList.contains('modal')) {
+                        this.hide(this.activeModal);
+                    }
+                });
+            }
+            
+            register(modalId, config = {}) {
+                const modal = document.getElementById(modalId);
+                if (!modal) {
+                    console.warn(`Modal with ID '${modalId}' not found`);
+                    return;
+                }
+                
+                const modalConfig = {
+                    id: modalId,
+                    element: modal,
+                    closeBtn: modal.querySelector('.modal-close'),
+                    ...config
+                };
+                
+                // Set up close button event listener
+                if (modalConfig.closeBtn) {
+                    modalConfig.closeBtn.addEventListener('click', () => {
+                        this.hide(modalId);
+                    });
+                }
+                
+                this.modals.set(modalId, modalConfig);
+                return modalConfig;
+            }
+            
+            show(modalId) {
+                const modalConfig = this.modals.get(modalId);
+                if (!modalConfig) {
+                    console.warn(`Modal '${modalId}' not registered`);
+                    return;
+                }
+                
+                // Hide any currently active modal
+                if (this.activeModal) {
+                    this.hide(this.activeModal);
+                }
+                
+                modalConfig.element.classList.add('show');
+                this.activeModal = modalId;
+                
+                // Trigger custom show callback
+                if (modalConfig.onShow) {
+                    modalConfig.onShow();
+                }
+            }
+            
+            hide(modalId) {
+                const modalConfig = this.modals.get(modalId);
+                if (!modalConfig) {
+                    console.warn(`Modal '${modalId}' not registered`);
+                    return;
+                }
+                
+                modalConfig.element.classList.remove('show');
+                
+                if (this.activeModal === modalId) {
+                    this.activeModal = null;
+                }
+                
+                // Trigger custom hide callback
+                if (modalConfig.onHide) {
+                    modalConfig.onHide();
+                }
+            }
+            
+            hideAll() {
+                this.modals.forEach((config, id) => {
+                    this.hide(id);
+                });
+            }
+            
+            isVisible(modalId) {
+                const modalConfig = this.modals.get(modalId);
+                return modalConfig ? modalConfig.element.classList.contains('show') : false;
+            }
+        }
+
+        // Initialize modal manager
+        const testModal = new ModalManager();
+        
+        // Register test modals
+        testModal.register('test-modal-1');
+        testModal.register('test-modal-2');
+        testModal.register('test-modal-3');
+
+        // Test functions
+        function addTestResult(testName, passed, message) {
+            const resultsDiv = document.getElementById('test-results');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${passed ? 'pass' : 'fail'}`;
+            statusDiv.innerHTML = `<strong>${testName}:</strong> ${passed ? 'PASS' : 'FAIL'} - ${message}`;
+            resultsDiv.appendChild(statusDiv);
+        }
+
+        function runAllTests() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = ''; // Clear previous results
+            
+            // Test 1: Modal registration
+            try {
+                testModal.register('test-modal-1');
+                addTestResult('Modal Registration', true, 'Modals can be registered successfully');
+            } catch (error) {
+                addTestResult('Modal Registration', false, error.message);
+            }
+            
+            // Test 2: Modal opening
+            try {
+                testModal.show('test-modal-1');
+                const isVisible = testModal.isVisible('test-modal-1');
+                addTestResult('Modal Opening', isVisible, isVisible ? 'Modal opens successfully' : 'Modal failed to open');
+                
+                // Close modal after test
+                setTimeout(() => testModal.hide('test-modal-1'), 100);
+            } catch (error) {
+                addTestResult('Modal Opening', false, error.message);
+            }
+            
+            // Test 3: Modal closing
+            try {
+                testModal.show('test-modal-1');
+                setTimeout(() => {
+                    testModal.hide('test-modal-1');
+                    const isVisible = testModal.isVisible('test-modal-1');
+                    addTestResult('Modal Closing', !isVisible, !isVisible ? 'Modal closes successfully' : 'Modal failed to close');
+                }, 100);
+            } catch (error) {
+                addTestResult('Modal Closing', false, error.message);
+            }
+            
+            // Test 4: Multiple modal handling
+            try {
+                testModal.show('test-modal-1');
+                setTimeout(() => {
+                    testModal.show('test-modal-2');
+                    const modal1Visible = testModal.isVisible('test-modal-1');
+                    const modal2Visible = testModal.isVisible('test-modal-2');
+                    addTestResult('Multiple Modal Handling', !modal1Visible && modal2Visible, 
+                        'Previous modal closes when new modal opens');
+                    
+                    // Close modal after test
+                    setTimeout(() => testModal.hide('test-modal-2'), 100);
+                }, 100);
+            } catch (error) {
+                addTestResult('Multiple Modal Handling', false, error.message);
+            }
+            
+            // Test 5: Responsive design check
+            const modalContent = document.querySelector('.modal-content');
+            if (modalContent) {
+                const styles = window.getComputedStyle(modalContent);
+                const maxWidth = styles.maxWidth;
+                const width = styles.width;
+                addTestResult('Responsive Design', maxWidth === '600px' && width === '90%', 
+                    'Modal has responsive design properties');
+            } else {
+                addTestResult('Responsive Design', false, 'Modal content element not found');
+            }
+            
+            // Test 6: Animation properties
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const styles = window.getComputedStyle(modal);
+                const transition = styles.transition;
+                addTestResult('Smooth Animations', transition.includes('opacity'), 
+                    'Modal has smooth transition animations');
+            } else {
+                addTestResult('Smooth Animations', false, 'Modal element not found');
+            }
+            
+            // Test 7: Backdrop overlay
+            if (modal) {
+                const styles = window.getComputedStyle(modal);
+                const background = styles.background;
+                addTestResult('Backdrop Overlay', background.includes('rgba(0, 0, 0, 0.8)'), 
+                    'Modal has proper backdrop overlay');
+            } else {
+                addTestResult('Backdrop Overlay', false, 'Modal element not found');
+            }
+        }
+    </script>
+</body>
+</html> 
