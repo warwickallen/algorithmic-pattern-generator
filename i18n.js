@@ -48,11 +48,78 @@ class I18n {
             });
         });
         
-        // Load saved language preference
+        // Auto-detect browser language
+        this.detectAndSetLanguage();
+    }
+    
+    /**
+     * Auto-detect and set language based on browser preferences
+     * Priority: 1. Saved preference, 2. Browser language, 3. Default (en-gb)
+     */
+    detectAndSetLanguage() {
+        // First check for saved preference
         const savedLang = localStorage.getItem('preferred-language');
         if (savedLang && this.translations[savedLang]) {
             this.setLanguage(savedLang);
+            return;
         }
+        
+        // Detect browser language
+        const browserLang = this.getBrowserLanguage();
+        if (browserLang && this.translations[browserLang]) {
+            this.setLanguage(browserLang);
+            return;
+        }
+        
+        // Fall back to default language
+        this.setLanguage('en-gb');
+    }
+    
+    getBrowserLanguage() {
+        // Get browser language preferences
+        const languages = navigator.languages || [navigator.language];
+        
+        // Map browser language codes to supported app languages
+        const languageMap = {
+            'en': 'en-gb',
+            'en-US': 'en-us',
+            'en-GB': 'en-gb',
+            'en-CA': 'en-gb',
+            'en-AU': 'en-gb',
+            'en-NZ': 'en-gb',
+            'en-IE': 'en-gb',
+            'en-ZA': 'en-gb',
+            'en-IN': 'en-gb',
+            'es': 'en-gb', // Spanish - fallback to English for now
+            'fr': 'en-gb', // French - fallback to English for now
+            'de': 'en-gb', // German - fallback to English for now
+            'it': 'en-gb', // Italian - fallback to English for now
+            'pt': 'en-gb', // Portuguese - fallback to English for now
+            'ru': 'en-gb', // Russian - fallback to English for now
+            'ja': 'en-gb', // Japanese - fallback to English for now
+            'ko': 'en-gb', // Korean - fallback to English for now
+            'zh': 'en-gb', // Chinese - fallback to English for now
+            'zh-CN': 'en-gb', // Simplified Chinese - fallback to English for now
+            'zh-TW': 'en-gb', // Traditional Chinese - fallback to English for now
+        };
+        
+        // Try to find a match
+        for (const lang of languages) {
+            const mappedLang = languageMap[lang];
+            if (mappedLang && this.translations[mappedLang]) {
+                return mappedLang;
+            }
+        }
+        
+        // If no exact match, try to match language code prefix
+        for (const lang of languages) {
+            const langPrefix = lang.split('-')[0];
+            if (langPrefix === 'en') {
+                return 'en-gb'; // Default to British English for English variants
+            }
+        }
+        
+        return null;
     }
     
     setLanguage(lang) {
