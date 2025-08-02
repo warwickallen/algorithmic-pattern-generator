@@ -87,6 +87,100 @@ class BaseSimulation {
         };
     }
     
+    // Common grid utilities
+    createGrid(rows, cols, defaultValue = false) {
+        return Array(rows).fill().map(() => Array(cols).fill(defaultValue));
+    }
+    
+    createGrids(rows, cols, defaultValue = false) {
+        return {
+            current: this.createGrid(rows, cols, defaultValue),
+            next: this.createGrid(rows, cols, defaultValue)
+        };
+    }
+    
+    swapGrids(grids) {
+        [grids.current, grids.next] = [grids.next, grids.current];
+    }
+    
+    countLiveCells(grid) {
+        return grid.flat().filter(cell => cell).length;
+    }
+    
+    // Common neighbour counting utility
+    countNeighbours(grid, row, col, rows, cols, wrapAround = true) {
+        let count = 0;
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                
+                let nr, nc;
+                if (wrapAround) {
+                    nr = (row + dr + rows) % rows;
+                    nc = (col + dc + cols) % cols;
+                } else {
+                    nr = row + dr;
+                    nc = col + dc;
+                    if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+                }
+                
+                if (grid[nr][nc]) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+    
+    // Common grid rendering utility
+    drawGrid(grid, cellRenderer = null) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        for (let row = 0; row < grid.length; row++) {
+            for (let col = 0; col < grid[row].length; col++) {
+                if (grid[row][col]) {
+                    const x = col * this.cellSize;
+                    const y = row * this.cellSize;
+                    
+                    if (cellRenderer && typeof cellRenderer === 'function') {
+                        cellRenderer(x, y, row, col, grid[row][col]);
+                    } else {
+                        this.drawCell(x, y);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Common random grid generation utility
+    randomizeGrid(grid, density = 0.3) {
+        for (let row = 0; row < grid.length; row++) {
+            for (let col = 0; col < grid[row].length; col++) {
+                grid[row][col] = Math.random() < density;
+            }
+        }
+        return this.countLiveCells(grid);
+    }
+    
+    // Common cell coordinate conversion utilities
+    screenToGrid(x, y) {
+        return {
+            col: Math.floor(x / this.cellSize),
+            row: Math.floor(y / this.cellSize)
+        };
+    }
+    
+    gridToScreen(col, row) {
+        return {
+            x: col * this.cellSize,
+            y: row * this.cellSize
+        };
+    }
+    
+    isValidGridPosition(row, col) {
+        return row >= 0 && row < this.rows && col >= 0 && col < this.cols;
+    }
+    
     // Gradient colour utilities
     getGradientColor(x, y, startColor, endColor) {
         const maxX = this.canvas.width;
@@ -162,14 +256,26 @@ class BaseSimulation {
         
         this.clearGlowEffect();
     }
+    
+    // Common direction indicator rendering
+    drawDirectionIndicator(x, y, angle, length = 8, color = '#ffffff', lineWidth = 1) {
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(
+            x + Math.cos(angle) * length,
+            y + Math.sin(angle) * length
+        );
+        this.ctx.stroke();
+    }
 }
 
 // Conway's Game of Life
 class ConwayGameOfLife extends BaseSimulation {
     constructor(canvas, ctx) {
         super(canvas, ctx);
-        this.grid = [];
-        this.nextGrid = [];
+        this.grids = null;
         this.speed = 30; // FPS for simulation speed
         this.lastUpdateTime = 0;
         this.updateInterval = 1000 / this.speed; // milliseconds between updates
@@ -186,8 +292,7 @@ class ConwayGameOfLife extends BaseSimulation {
     }
     
     initGrids() {
-        this.grid = Array(this.rows).fill().map(() => Array(this.cols).fill(false));
-        this.nextGrid = Array(this.rows).fill().map(() => Array(this.cols).fill(false));
+        this.grids = this.createGrids(this.rows, this.cols, false);
     }
     
     reset() {
@@ -204,67 +309,37 @@ class ConwayGameOfLife extends BaseSimulation {
     
     update() {
         this.generation++;
-        this.cellCount = 0;
         
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
-                const neighbours = this.countNeighbours(row, col);
-                const isAlive = this.grid[row][col];
+                const neighbours = this.countNeighbours(this.grids.current, row, col, this.rows, this.cols);
+                const isAlive = this.grids.current[row][col];
                 
                 if (isAlive) {
-                    this.nextGrid[row][col] = neighbours === 2 || neighbours === 3;
+                    this.grids.next[row][col] = neighbours === 2 || neighbours === 3;
                 } else {
-                    this.nextGrid[row][col] = neighbours === 3;
-                }
-                
-                if (this.nextGrid[row][col]) {
-                    this.cellCount++;
+                    this.grids.next[row][col] = neighbours === 3;
                 }
             }
         }
         
         // Swap grids
-        [this.grid, this.nextGrid] = [this.nextGrid, this.grid];
-    }
-    
-    countNeighbours(row, col) {
-        let count = 0;
-        for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-                if (dr === 0 && dc === 0) continue;
-                
-                const nr = (row + dr + this.rows) % this.rows;
-                const nc = (col + dc + this.cols) % this.cols;
-                
-                if (this.grid[nr][nc]) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        this.swapGrids(this.grids);
+        
+        // Update cell count
+        this.cellCount = this.countLiveCells(this.grids.current);
     }
     
     draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        for (let row = 0; row < this.rows; row++) {
-            for (let col = 0; col < this.cols; col++) {
-                if (this.grid[row][col]) {
-                    const x = col * this.cellSize;
-                    const y = row * this.cellSize;
-                    this.drawCell(x, y);
-                }
-            }
-        }
+        this.drawGrid(this.grids.current);
     }
     
     toggleCell(x, y) {
-        const col = Math.floor(x / this.cellSize);
-        const row = Math.floor(y / this.cellSize);
+        const { col, row } = this.screenToGrid(x, y);
         
-        if (row >= 0 && row < this.rows && col >= 0 && col < this.cols) {
-            this.grid[row][col] = !this.grid[row][col];
-            this.cellCount = this.grid.flat().filter(cell => cell).length;
+        if (this.isValidGridPosition(row, col)) {
+            this.grids.current[row][col] = !this.grids.current[row][col];
+            this.cellCount = this.countLiveCells(this.grids.current);
             this.draw();
         }
     }
@@ -279,15 +354,7 @@ class ConwayGameOfLife extends BaseSimulation {
         this.initGrids();
         
         // Fill with random cells (30% density)
-        for (let row = 0; row < this.rows; row++) {
-            for (let col = 0; col < this.cols; col++) {
-                if (Math.random() < 0.3) {
-                    this.grid[row][col] = true;
-                }
-            }
-        }
-        
-        this.cellCount = this.grid.flat().filter(cell => cell).length;
+        this.cellCount = this.randomizeGrid(this.grids.current, 0.3);
         this.generation = 0;
         this.draw();
     }
@@ -405,17 +472,7 @@ class TermiteAlgorithm extends BaseSimulation {
         // Draw termites
         this.termites.forEach(termite => {
             this.drawActor(termite.x, termite.y, 3);
-            
-            // Draw direction indicator
-            this.ctx.strokeStyle = '#ffffff';
-            this.ctx.lineWidth = 1;
-            this.ctx.beginPath();
-            this.ctx.moveTo(termite.x, termite.y);
-            this.ctx.lineTo(
-                termite.x + Math.cos(termite.angle) * 8,
-                termite.y + Math.sin(termite.angle) * 8
-            );
-            this.ctx.stroke();
+            this.drawDirectionIndicator(termite.x, termite.y, termite.angle);
         });
     }
     
@@ -468,7 +525,7 @@ class LangtonsAnt extends BaseSimulation {
     }
     
     initGrid() {
-        this.grid = Array(this.rows).fill().map(() => Array(this.cols).fill(false));
+        this.grid = this.createGrid(this.rows, this.cols, false);
     }
     
     resetAnt() {
@@ -501,7 +558,7 @@ class LangtonsAnt extends BaseSimulation {
         this.grid[this.ant.y][this.ant.x] = !currentCell;
         
         // Update cell count
-        this.cellCount = this.grid.flat().filter(cell => cell).length;
+        this.cellCount = this.countLiveCells(this.grid);
         
         // Turn based on cell state
         const rule = this.rules[currentCell ? 1 : 0];
@@ -523,36 +580,17 @@ class LangtonsAnt extends BaseSimulation {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw grid
-        for (let row = 0; row < this.rows; row++) {
-            for (let col = 0; col < this.cols; col++) {
-                if (this.grid[row][col]) {
-                    const x = col * this.cellSize;
-                    const y = row * this.cellSize;
-                    this.drawCell(x, y);
-                }
-            }
-        }
+        // Draw grid using common utility
+        this.drawGrid(this.grid);
         
         // Draw ant
         const antX = this.ant.x * this.cellSize + this.cellSize / 2;
         const antY = this.ant.y * this.cellSize + this.cellSize / 2;
         this.drawActor(antX, antY, this.cellSize / 3);
         
-        // Draw direction indicator
-        this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 2;
-        this.ctx.beginPath();
-        this.ctx.moveTo(antX, antY);
-        
-        const directionX = Math.cos(this.ant.direction * Math.PI / 2) * this.cellSize / 2;
-        const directionY = Math.sin(this.ant.direction * Math.PI / 2) * this.cellSize / 2;
-        
-        this.ctx.lineTo(
-            antX + directionX,
-            antY + directionY
-        );
-        this.ctx.stroke();
+        // Draw direction indicator using common utility
+        const directionAngle = this.ant.direction * Math.PI / 2;
+        this.drawDirectionIndicator(antX, antY, directionAngle, this.cellSize / 2, '#ffffff', 2);
     }
 }
 
