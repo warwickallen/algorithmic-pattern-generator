@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Modal Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Learn Modal Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Verify Learn Buttons Exist</h2>
+        <p>Check that all three Learn buttons exist in the DOM:</p>
+        <button class="test-button" onclick="testLearnButtonsExist()">Test Learn Buttons</button>
+        <div id="test1-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Verify Modal Content</h2>
+        <p>Check that each modal contains the correct content:</p>
+        <button class="test-button" onclick="testModalContent()">Test Modal Content</button>
+        <div id="test2-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Verify Event Handlers</h2>
+        <p>Check that Learn buttons have event handlers attached:</p>
+        <button class="test-button" onclick="testEventHandlers()">Test Event Handlers</button>
+        <div id="test3-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Manual Modal Test</h2>
+        <p>Manually test opening each modal:</p>
+        <button class="test-button" onclick="openConwayModal()">Open Conway Modal</button>
+        <button class="test-button" onclick="openTermiteModal()">Open Termite Modal</button>
+        <button class="test-button" onclick="openLangtonModal()">Open Langton Modal</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function testLearnButtonsExist() {
+            const learnBtn = document.getElementById('learn-btn');
+            const termiteLearnBtn = document.getElementById('termite-learn-btn');
+            const langtonLearnBtn = document.getElementById('langton-learn-btn');
+            
+            if (learnBtn && termiteLearnBtn && langtonLearnBtn) {
+                showResult('test1-result', 
+                    '✅ All Learn buttons exist:<br>' +
+                    '- learn-btn: ' + (learnBtn ? 'Found' : 'Missing') + '<br>' +
+                    '- termite-learn-btn: ' + (termiteLearnBtn ? 'Found' : 'Missing') + '<br>' +
+                    '- langton-learn-btn: ' + (langtonLearnBtn ? 'Found' : 'Missing'), 
+                    'success');
+            } else {
+                showResult('test1-result', 
+                    '❌ Missing Learn buttons:<br>' +
+                    '- learn-btn: ' + (learnBtn ? 'Found' : 'Missing') + '<br>' +
+                    '- termite-learn-btn: ' + (termiteLearnBtn ? 'Found' : 'Missing') + '<br>' +
+                    '- langton-learn-btn: ' + (langtonLearnBtn ? 'Found' : 'Missing'), 
+                    'error');
+            }
+        }
+
+        function testModalContent() {
+            const conwayModal = document.getElementById('conway-modal');
+            const termiteModal = document.getElementById('termite-modal');
+            const langtonModal = document.getElementById('langton-modal');
+            
+            let result = '';
+            let allGood = true;
+            
+            if (conwayModal && conwayModal.textContent.includes("Conway's Game of Life")) {
+                result += '✅ Conway modal content: Correct<br>';
+            } else {
+                result += '❌ Conway modal content: Incorrect or missing<br>';
+                allGood = false;
+            }
+            
+            if (termiteModal && termiteModal.textContent.includes('Termite Algorithm')) {
+                result += '✅ Termite modal content: Correct<br>';
+            } else {
+                result += '❌ Termite modal content: Incorrect or missing<br>';
+                allGood = false;
+            }
+            
+            if (langtonModal && langtonModal.textContent.includes("Langton's Ant")) {
+                result += '✅ Langton modal content: Correct<br>';
+            } else {
+                result += '❌ Langton modal content: Incorrect or missing<br>';
+                allGood = false;
+            }
+            
+            showResult('test2-result', result, allGood ? 'success' : 'error');
+        }
+
+        function testEventHandlers() {
+            const learnBtn = document.getElementById('learn-btn');
+            const termiteLearnBtn = document.getElementById('termite-learn-btn');
+            const langtonLearnBtn = document.getElementById('langton-learn-btn');
+            
+            let result = '';
+            let allGood = true;
+            
+            // Check if buttons have click event listeners
+            if (learnBtn && learnBtn.onclick !== null) {
+                result += '✅ learn-btn: Has event handler<br>';
+            } else {
+                result += '❌ learn-btn: Missing event handler<br>';
+                allGood = false;
+            }
+            
+            if (termiteLearnBtn && termiteLearnBtn.onclick !== null) {
+                result += '✅ termite-learn-btn: Has event handler<br>';
+            } else {
+                result += '❌ termite-learn-btn: Missing event handler<br>';
+                allGood = false;
+            }
+            
+            if (langtonLearnBtn && langtonLearnBtn.onclick !== null) {
+                result += '✅ langton-learn-btn: Has event handler<br>';
+            } else {
+                result += '❌ langton-learn-btn: Missing event handler<br>';
+                allGood = false;
+            }
+            
+            showResult('test3-result', result, allGood ? 'success' : 'error');
+        }
+
+        function openConwayModal() {
+            const modal = document.getElementById('conway-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                modal.classList.add('show');
+                showResult('test4-result', '✅ Conway modal opened successfully', 'success');
+            } else {
+                showResult('test4-result', '❌ Conway modal not found', 'error');
+            }
+        }
+
+        function openTermiteModal() {
+            const modal = document.getElementById('termite-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                modal.classList.add('show');
+                showResult('test4-result', '✅ Termite modal opened successfully', 'success');
+            } else {
+                showResult('test4-result', '❌ Termite modal not found', 'error');
+            }
+        }
+
+        function openLangtonModal() {
+            const modal = document.getElementById('langton-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                modal.classList.add('show');
+                showResult('test4-result', '✅ Langton modal opened successfully', 'success');
+            } else {
+                showResult('test4-result', '❌ Langton modal not found', 'error');
+            }
+        }
+
+        // Add modal close functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-close') || e.target.classList.contains('modal')) {
+                e.target.closest('.modal').style.display = 'none';
+                e.target.closest('.modal').classList.remove('show');
+            }
+        });
+
+        // Run initial tests when page loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                testLearnButtonsExist();
+                testModalContent();
+            }, 100);
+        });
+    </script>
+
+    <!-- Include the modals from the main app -->
+    <div id="conway-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Conway's Game of Life</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Rules</h3>
+                <p>Conway's Game of Life is a cellular automaton with simple rules:</p>
+                <ul>
+                    <li><strong>Birth:</strong> A dead cell with exactly 3 live neighbours becomes alive</li>
+                    <li><strong>Survival:</strong> A live cell with 2 or 3 live neighbours stays alive</li>
+                    <li><strong>Death:</strong> A live cell with fewer than 2 or more than 3 neighbours dies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="termite-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Termite Algorithm</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>How It Works</h3>
+                <p>The Termite Algorithm demonstrates emergent behaviour through simple rules:</p>
+                <ul>
+                    <li><strong>Movement:</strong> Termites move randomly across the grid</li>
+                    <li><strong>Pick Up:</strong> If a termite encounters a wood chip and isn't carrying one, it picks it up</li>
+                    <li><strong>Drop:</strong> If a termite is carrying a chip and encounters an empty space, it drops the chip</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="langton-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Langton's Ant</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Rules</h3>
+                <p>Langton's Ant follows simple rules that create complex emergent behaviour:</p>
+                <ul>
+                    <li><strong>White Cell:</strong> Turn 90° right, flip the cell to black, move forward</li>
+                    <li><strong>Black Cell:</strong> Turn 90° left, flip the cell to white, move forward</li>
+                    <li><strong>Movement:</strong> The ant always moves one cell in the direction it's facing</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add the Learn buttons -->
+    <div id="learn-container" class="control-group top-right">
+        <button id="learn-btn" class="btn secondary">Learn</button>
+        <button id="termite-learn-btn" class="btn secondary">Learn</button>
+        <button id="langton-learn-btn" class="btn secondary">Learn</button>
+    </div>
+
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal.show {
+            display: block;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</body>
+</html> 

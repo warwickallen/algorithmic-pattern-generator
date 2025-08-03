@@ -324,8 +324,8 @@
         </div>
     </div>
     
-    <!-- Required canvas element for AlgorithmicPatternGenerator -->
-    <canvas id="canvas" width="800" height="600" style="display: none;"></canvas>
+         <!-- Required canvas element for AlgorithmicPatternGenerator -->
+     <canvas id="canvas" width="800" height="600" style="display: none; width: 800px; height: 600px;"></canvas>
     
     <!-- Additional required elements -->
     <select id="simulation-select" style="display: none;">
@@ -681,12 +681,20 @@
         
         testSuite.addTest('Drag Cell Toggle', async () => {
             const canvas = document.createElement('canvas');
-            canvas.width = 200;
-            canvas.height = 200;
+            canvas.width = 400;
+            canvas.height = 300;
             const ctx = canvas.getContext('2d');
+            
+            // Add canvas to DOM temporarily for getBoundingClientRect to work
+            canvas.style.position = 'absolute';
+            canvas.style.left = '-9999px';
+            document.body.appendChild(canvas);
             
             const simulation = new ConwayGameOfLife(canvas, ctx);
             simulation.init();
+            
+            // Remove canvas from DOM after initialization
+            document.body.removeChild(canvas);
             
             // Check if drag toggling is initialized
             const hasDragToggling = typeof simulation.initDragToggling === 'function' &&
@@ -731,12 +739,20 @@
 
         testSuite.addTest('Drag Coordinate Fix', async () => {
             const canvas = document.createElement('canvas');
-            canvas.width = 200;
-            canvas.height = 200;
+            canvas.width = 400;
+            canvas.height = 300;
             const ctx = canvas.getContext('2d');
+            
+            // Add canvas to DOM temporarily for getBoundingClientRect to work
+            canvas.style.position = 'absolute';
+            canvas.style.left = '-9999px';
+            document.body.appendChild(canvas);
             
             const simulation = new ConwayGameOfLife(canvas, ctx);
             simulation.init();
+            
+            // Remove canvas from DOM after initialization
+            document.body.removeChild(canvas);
             
             // Test horizontal drag specifically
             simulation.clear();
@@ -1127,6 +1143,66 @@
             return {
                 passed: afterChangeCount === 25 && afterChangeCount !== initialCount,
                 details: `Termite slider integration: count changed from ${initialCount} to ${afterChangeCount} (expected 25)`
+            };
+        }, 'ui');
+        
+        testSuite.addTest('Learn Modal Content Verification', async () => {
+            // Test the modal content directly without full app initialization
+            const modalManager = new ModalManager();
+            
+            // Register the modals
+            modalManager.register('conway-modal');
+            modalManager.register('termite-modal');
+            modalManager.register('langton-modal');
+            
+            // Test Conway modal content
+            modalManager.show('conway-modal');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            const conwayModal = document.getElementById('conway-modal');
+            const conwayModalVisible = conwayModal && conwayModal.classList.contains('show');
+            const conwayTitle = conwayModal ? conwayModal.querySelector('h2').textContent : '';
+            const conwayCorrect = conwayTitle.includes('Conway');
+            
+            // Close Conway modal
+            modalManager.hide('conway-modal');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Test Termite modal content
+            modalManager.show('termite-modal');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            const termiteModal = document.getElementById('termite-modal');
+            const termiteModalVisible = termiteModal && termiteModal.classList.contains('show');
+            const termiteTitle = termiteModal ? termiteModal.querySelector('h2').textContent : '';
+            const termiteCorrect = termiteTitle.includes('Termite');
+            
+            // Close Termite modal
+            modalManager.hide('termite-modal');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Test Langton modal content
+            modalManager.show('langton-modal');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            const langtonModal = document.getElementById('langton-modal');
+            const langtonModalVisible = langtonModal && langtonModal.classList.contains('show');
+            const langtonTitle = langtonModal ? langtonModal.querySelector('h2').textContent : '';
+            const langtonCorrect = langtonTitle.includes('Langton');
+            
+            // Close Langton modal
+            modalManager.hide('langton-modal');
+            
+            // Check all results
+            const allModalsVisible = conwayModalVisible && termiteModalVisible && langtonModalVisible;
+            const allTitlesCorrect = conwayCorrect && termiteCorrect && langtonCorrect;
+            
+            // Clean up
+            modalManager.cleanup();
+            
+            return {
+                passed: allModalsVisible && allTitlesCorrect,
+                details: `Conway: ${conwayCorrect ? '✓' : '✗'}, Termite: ${termiteCorrect ? '✓' : '✗'}, Langton: ${langtonCorrect ? '✓' : '✗'}`
             };
         }, 'ui');
         

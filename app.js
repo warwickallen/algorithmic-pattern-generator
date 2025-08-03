@@ -386,7 +386,7 @@ class ConfigurationManager {
                 },
                 learn: {
                     type: 'button',
-                    id: 'termite-learn-btn',
+                    id: 'learn-btn',
                     label: 'Learn'
                 }
             },
@@ -421,7 +421,7 @@ class ConfigurationManager {
                 },
                 learn: {
                     type: 'button',
-                    id: 'langton-learn-btn',
+                    id: 'learn-btn',
                     label: 'Learn'
                 }
             },
@@ -718,7 +718,8 @@ class ControlManager {
             'random-btn',
             'termite-random-btn', 
             'langton-random-btn',
-            'add-ant-btn'
+            'add-ant-btn',
+            'learn-btn'
         ];
         
         actionButtons.forEach(buttonId => {
@@ -772,7 +773,7 @@ class ControlManager {
         const handlers = {
             speedChange: (value) => app.handleSpeedChange(simType, value),
             randomPattern: () => app.handleRandomPattern(simType),
-            showLearnModal: () => app.showLearnModal(simType),
+            showLearnModal: () => app.showLearnModal(), // Use current simulation type
             addAnt: () => app.handleAddAnt(simType),
             termiteCountChange: (count) => app.handleTermiteCountChange(count)
         };
@@ -838,6 +839,7 @@ class ControlManager {
                 if (config.id.includes('random')) {
                     handlers.randomPattern();
                 } else if (config.id.includes('learn')) {
+                    // Pass the current simulation type to show the correct modal
                     handlers.showLearnModal();
                 } else if (config.id.includes('add-ant')) {
                     handlers.addAnt();
@@ -1456,7 +1458,9 @@ class AlgorithmicPatternGenerator {
     
     // Generic modal handlers using modal manager
     showLearnModal(simType) {
-        const config = ConfigurationManager.getConfig(simType);
+        // If no simType is provided, use the current simulation type
+        const currentSimType = simType || this.currentType;
+        const config = ConfigurationManager.getConfig(currentSimType);
         if (!config) return;
         
         this.modalManager.show(config.modal.id);
