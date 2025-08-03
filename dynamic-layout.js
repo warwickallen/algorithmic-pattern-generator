@@ -16,6 +16,7 @@ class DynamicLayoutManager {
             'simulation-container',
             'playback-container', 
             'action-container',
+            'termites-container',
             'display-container'
         ];
         
@@ -57,9 +58,19 @@ class DynamicLayoutManager {
     }
     
     positionElement(element) {
+        // Skip elements that are hidden (display: none)
+        if (element.style.display === 'none') {
+            return;
+        }
+        
         const rect = element.getBoundingClientRect();
         const elementWidth = rect.width;
         const elementHeight = rect.height;
+        
+        // Skip elements with zero dimensions (hidden elements)
+        if (elementWidth === 0 || elementHeight === 0) {
+            return;
+        }
         
         // Start from top-left
         let x = this.leftMargin;
@@ -222,7 +233,13 @@ class DynamicLayoutManager {
             timeout = setTimeout(later, wait);
         };
     }
+    
+    // Public method to reposition elements when visibility changes
+    repositionElements() {
+        this.positionElements();
+    }
 }
 
 // Initialize the layout manager when the script loads
-const layoutManager = new DynamicLayoutManager(); 
+const layoutManager = new DynamicLayoutManager();
+window.layoutManager = layoutManager; 

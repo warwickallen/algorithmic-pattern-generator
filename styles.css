@@ -77,9 +77,46 @@ body {
     transition: all 0.3s ease;
     z-index: 10;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    min-height: 2.5rem; /* Match button height for visual consistency */
     /* Performance optimizations */
     will-change: transform, opacity;
     transform: translateZ(0);
+}
+
+/* Control groups inside simulation-controls should not be fixed positioned */
+.simulation-controls .control-group {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    z-index: auto;
+}
+
+/* Control groups inside brightness-control should not be fixed positioned */
+.brightness-control .control-group {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    z-index: auto;
+}
+
+/* Control groups inside termites-container should not be fixed positioned */
+#termites-container .control-group {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    z-index: auto;
 }
 
 .control-group:hover {
@@ -307,7 +344,8 @@ body {
 #speed-value,
 #termite-speed-value,
 #langton-speed-value,
-#brightness-value {
+#brightness-value,
+#termites-value {
     font-size: 0.8rem;
     color: #cccccc;
     min-width: 50px;

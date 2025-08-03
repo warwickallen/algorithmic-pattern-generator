@@ -347,6 +347,16 @@ class ControlManager {
             this.activeControls = simType;
         }
         
+        // Show termites container for termite simulation
+        const termitesContainer = document.getElementById('termites-container');
+        if (termitesContainer) {
+            termitesContainer.style.display = simType === 'termite' ? 'block' : 'none';
+            // Reposition elements when termites container visibility changes
+            if (window.layoutManager) {
+                setTimeout(() => window.layoutManager.repositionElements(), 0);
+            }
+        }
+        
         // Show/hide action buttons based on simulation type
         this.showActionButtons(simType);
     }
@@ -359,6 +369,13 @@ class ControlManager {
                 controlsElement.style.display = 'none';
             }
         });
+        
+        // Hide termites container
+        const termitesContainer = document.getElementById('termites-container');
+        if (termitesContainer) {
+            termitesContainer.style.display = 'none';
+        }
+        
         this.activeControls = null;
     }
     
@@ -1031,6 +1048,11 @@ class AlgorithmicPatternGenerator {
                     valueElement.textContent = termiteControl.format(count);
                 }
             }
+        }
+        
+        // Force a redraw to show termite count changes immediately, even when paused
+        if (this.currentSimulation.draw) {
+            this.currentSimulation.draw();
         }
     }
     
