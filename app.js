@@ -889,7 +889,7 @@ class KeyboardHandler {
         this.shortcuts.set('Escape', () => this.app.handleEscape());
         this.shortcuts.set(',', () => this.app.adjustSpeed(this.app.currentType, -1));
         this.shortcuts.set('.', () => this.app.adjustSpeed(this.app.currentType, 1));
-        this.shortcuts.set('a', () => this.app.handleAddAnt(this.app.currentType));
+        this.shortcuts.set('a', () => this.app.handleAddAnt(this.app.currentType, true));
         this.shortcuts.set('[', () => this.app.adjustBrightness(-0.1));
         this.shortcuts.set(']', () => this.app.adjustBrightness(0.1));
     }
@@ -1060,6 +1060,10 @@ class AlgorithmicPatternGenerator {
         this.isImmersive = false;
         this.brightness = 1.0; // Default brightness
         
+        // Mouse position tracking for Add Ant feature
+        this.mouseX = null;
+        this.mouseY = null;
+        
         // Performance optimization properties
         this.elementCache = PerformanceOptimizer.createElementCache();
         this.updateQueue = new Set();
@@ -1145,6 +1149,13 @@ class AlgorithmicPatternGenerator {
         // Canvas interactions
         this.eventFramework.register(this.canvas, 'click', (e) => {
             this.handleCanvasClick(e);
+        });
+        
+        // Mouse move tracking for Add Ant feature
+        this.eventFramework.register(this.canvas, 'mousemove', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            this.mouseX = e.clientX - rect.left;
+            this.mouseY = e.clientY - rect.top;
         });
         
         // Keyboard shortcuts
@@ -1449,11 +1460,17 @@ class AlgorithmicPatternGenerator {
     }
     
     // Generic add ant handler
-    handleAddAnt(simType) {
+    handleAddAnt(simType, useMousePosition = false) {
         if (this.currentType !== simType || !this.currentSimulation) return;
         
         if (this.currentSimulation.addAnt) {
-            this.currentSimulation.addAnt();
+            if (useMousePosition) {
+                // Pass mouse coordinates for keyboard-triggered ant addition
+                this.currentSimulation.addAnt(this.mouseX, this.mouseY);
+            } else {
+                // Use random placement for button-triggered ant addition
+                this.currentSimulation.addAnt(null, null);
+            }
         }
     }
     

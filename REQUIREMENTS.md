@@ -215,7 +215,7 @@ This document outlines the requirements for enhancing the Algorithmic Pattern Ge
   - Keyboard shortcuts: "," (decrease), "." (increase)
 - **Add Ant Button**: Add new ant to simulation
   - Button click adds ant at random position
-  - Keyboard shortcut "a" also adds ant
+  - Keyboard shortcut "a" adds ant under mouse pointer
   - Support multiple ants simultaneously
 - **Random Button**: Fill grid with random white/black cells
   - 50% density of white cells
@@ -234,8 +234,9 @@ This document outlines the requirements for enhancing the Algorithmic Pattern Ge
 
 **Test Cases**:
 - Adjust speed and verify ant movement changes
-- Click Add Ant button and verify new ant appears
-- Press "a" key and verify ant addition
+- Click Add Ant button and verify new ant appears at random position
+- Press "a" key and verify ant addition under mouse pointer
+- Test adding ants outside canvas bounds (should clamp to nearest valid position)
 - Click Random and verify random pattern
 - Open Learn modal and verify content
 

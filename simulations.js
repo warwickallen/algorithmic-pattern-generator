@@ -1485,11 +1485,26 @@ class LangtonsAnt extends BaseSimulation {
         this.updateInterval = 1000 / this.speed;
     }
     
-    addAnt() {
-        // Add a new ant at a random position
+    addAnt(mouseX = null, mouseY = null) {
+        let x, y;
+        
+        if (mouseX !== null && mouseY !== null) {
+            // Convert screen coordinates to grid coordinates
+            const gridPos = this.screenToGrid(mouseX, mouseY);
+            
+            // Clamp to valid grid bounds
+            x = Math.max(0, Math.min(this.cols - 1, gridPos.col));
+            y = Math.max(0, Math.min(this.rows - 1, gridPos.row));
+        } else {
+            // Fallback to random position if no mouse coordinates provided
+            x = Math.floor(Math.random() * this.cols);
+            y = Math.floor(Math.random() * this.rows);
+        }
+        
+        // Add a new ant at the specified or random position
         const newAnt = {
-            x: Math.floor(Math.random() * this.cols),
-            y: Math.floor(Math.random() * this.rows),
+            x: x,
+            y: y,
             direction: Math.floor(Math.random() * 4)
         };
         this.ants.push(newAnt);

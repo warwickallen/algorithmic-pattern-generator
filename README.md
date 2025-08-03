@@ -8,14 +8,14 @@ A combined web application featuring three classic algorithmic simulations: Conw
 
 1. **Conway's Game of Life** - A cellular automaton where cells live or die based on their neighbours
 2. **Termite Algorithm** - Termites that pick up and drop wood chips, creating fascinating patterns
-3. **Langton's Ant** - A simple ant following basic rules that creates complex highways
+3. **Langton's Ant** - A simple ant following basic rules that creates complex highways. New ants can be added randomly (button) or under the mouse pointer (keyboard) for precise placement.
 
 ### Key Features
 
 - **Simulation Selector** - Switch between the three algorithms seamlessly
 - **Immersive Mode** - Hide controls for a full-screen experience
 - **Internationalisation** - Support for UK English and US English (easily extensible)
-- **Interactive Controls** - Click to toggle cells in Conway's Game of Life
+- **Interactive Controls** - Click to toggle cells in Conway's Game of Life, add ants randomly or under mouse pointer in Langton's Ant
 - **Real-time Statistics** - Generation count, cell count, and FPS display
 - **Keyboard Shortcuts** - Space to start/pause, Ctrl+R to reset, Ctrl+C to clear, Ctrl+I for immersive mode
 
@@ -34,6 +34,7 @@ A combined web application featuring three classic algorithmic simulations: Conw
 - **Ctrl+C** - Clear simulation
 - **Ctrl+I** - Toggle immersive mode
 - **Escape** - Exit immersive mode
+- **A** - Add ant (Langton's Ant only, places ant under mouse pointer)
 
 ## Technical Details
 
