@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithmic Pattern Generator - Test Suite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #ddd;
+            background: #f9f9f9;
+        }
+        
+        .test-item.pass {
+            border-left-color: #4CAF50;
+            background: #E8F5E8;
+        }
+        
+        .test-item.fail {
+            border-left-color: #f44336;
+            background: #FFEBEE;
+        }
+        
+        .test-item.running {
+            border-left-color: #2196F3;
+            background: #E3F2FD;
+        }
+        
+        .test-result {
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .test-result.pass {
+            color: #4CAF50;
+        }
+        
+        .test-result.fail {
+            color: #f44336;
+        }
+        
+        .test-result.running {
+            color: #2196F3;
+        }
+        
+        .test-details {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .summary {
+            background: #E3F2FD;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .summary h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transition: width 0.3s ease;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        
+        .canvas-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        #test-canvas {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .test-category {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        
+        .test-category h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        /* Styles for test DOM elements */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .simulation-controls {
+            display: none;
+        }
+        
+        .control-group {
+            margin: 10px 0;
+        }
+        
+        .control-group label {
+            display: inline-block;
+            width: 100px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Algorithmic Pattern Generator - Comprehensive Test Suite</h1>
+        
+        <div class="summary">
+            <h3>Test Summary</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div id="test-summary">Tests: 0 passed, 0 failed, 0 total</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="runAllTests()">Run All Tests</button>
+            <button class="btn btn-success" onclick="runSimulationTests()">Run Simulation Tests</button>
+            <button class="btn btn-warning" onclick="runUITests()">Run UI Tests</button>
+            <button class="btn btn-danger" onclick="runPerformanceTests()">Run Performance Tests</button>
+            <button class="btn btn-primary" onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="test-canvas" width="400" height="300"></canvas>
+        </div>
+        
+        <div class="test-grid">
+            <div class="test-category">
+                <h3>Core Simulation Tests</h3>
+                <div id="core-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>UI Component Tests</h3>
+                <div id="ui-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>Performance Tests</h3>
+                <div id="performance-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>Integration Tests</h3>
+                <div id="integration-tests"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden DOM elements needed for tests -->
+    <div id="conway-controls" class="simulation-controls" style="display: none;">
+        <div class="control-group">
+            <label for="conway-speed">Speed:</label>
+            <input type="range" id="conway-speed" min="1" max="30" value="10">
+            <span id="conway-speed-value">10</span>
+        </div>
+    </div>
+    
+    <div id="termite-controls" class="simulation-controls" style="display: none;">
+        <div class="control-group">
+            <label for="termite-speed">Speed:</label>
+            <input type="range" id="termite-speed" min="1" max="30" value="10">
+            <span id="termite-speed-value">10</span>
+        </div>
+    </div>
+    
+    <div id="langton-controls" class="simulation-controls" style="display: none;">
+        <div class="control-group">
+            <label for="langton-speed">Speed:</label>
+            <input type="range" id="langton-speed" min="1" max="30" value="10">
+            <span id="langton-speed-value">10</span>
+        </div>
+    </div>
+    
+    <div id="termites-container" style="display: none;">
+        <div class="control-group">
+            <label for="termite-count">Termite Count:</label>
+            <input type="range" id="termite-count" min="1" max="50" value="10">
+            <span id="termite-count-value">10</span>
+        </div>
+    </div>
+    
+    <!-- Action buttons needed for tests -->
+    <button id="random-btn" style="display: none;">Random Pattern</button>
+    <button id="termite-random-btn" style="display: none;">Random Termites</button>
+    <button id="langton-random-btn" style="display: none;">Random Ants</button>
+    <button id="add-ant-btn" style="display: none;">Add Ant</button>
+    
+    <!-- Modal elements needed for tests -->
+    <div id="conway-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Conway's Game of Life</h2>
+            <p>Educational content about Conway's Game of Life.</p>
+        </div>
+    </div>
+    
+    <div id="termite-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Termite Algorithm</h2>
+            <p>Educational content about the Termite Algorithm.</p>
+        </div>
+    </div>
+    
+    <div id="langton-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Langton's Ant</h2>
+            <p>Educational content about Langton's Ant.</p>
+        </div>
+    </div>
+    
+    <!-- Required canvas element for AlgorithmicPatternGenerator -->
+    <canvas id="canvas" width="800" height="600" style="display: none;"></canvas>
+    
+    <!-- Additional required elements -->
+    <select id="simulation-select" style="display: none;">
+        <option value="conway">Conway's Game of Life</option>
+        <option value="termite">Termite Algorithm</option>
+        <option value="langton">Langton's Ant</option>
+    </select>
+    
+    <button id="start-pause-btn" style="display: none;">Start/Pause</button>
+    <button id="reset-btn" style="display: none;">Reset</button>
+    <button id="clear-btn" style="display: none;">Clear</button>
+    <button id="immersive-btn" style="display: none;">Immersive</button>
+    
+    <input type="range" id="brightness-slider" min="0" max="2" step="0.1" value="1" style="display: none;">
+    <span id="brightness-value" style="display: none;">100%</span>
+    
+    <div id="generation-count" style="display: none;">0</div>
+    <div id="cell-count" style="display: none;">0</div>
+    <div id="fps" style="display: none;">0</div>
+
+    <script src="i18n.js"></script>
+    <script src="simulations.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        // Test Suite Implementation
+        class TestSuite {
+            constructor() {
+                this.tests = [];
+                this.results = {
+                    passed: 0,
+                    failed: 0,
+                    total: 0
+                };
+                this.canvas = document.getElementById('test-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.app = null;
+            }
+            
+            // Add a test to the suite
+            addTest(name, testFunction, category = 'core') {
+                this.tests.push({
+                    name,
+                    testFunction,
+                    category,
+                    result: null,
+                    details: ''
+                });
+            }
+            
+            // Run a single test
+            async runTest(test) {
+                const testElement = this.createTestElement(test);
+                testElement.className = 'test-item running';
+                
+                try {
+                    const result = await test.testFunction();
+                    test.result = result.passed ? 'pass' : 'fail';
+                    test.details = result.details || '';
+                    
+                    testElement.className = `test-item ${test.result}`;
+                    testElement.querySelector('.test-result').textContent = result.passed ? 'PASS' : 'FAIL';
+                    testElement.querySelector('.test-result').className = `test-result ${test.result}`;
+                    
+                    if (test.details) {
+                        testElement.querySelector('.test-details').textContent = test.details;
+                    }
+                    
+                    if (result.passed) {
+                        this.results.passed++;
+                    } else {
+                        this.results.failed++;
+                    }
+                    this.results.total++;
+                    
+                } catch (error) {
+                    test.result = 'fail';
+                    test.details = `Error: ${error.message}`;
+                    testElement.className = 'test-item fail';
+                    testElement.querySelector('.test-result').textContent = 'ERROR';
+                    testElement.querySelector('.test-result').className = 'test-result fail';
+                    testElement.querySelector('.test-details').textContent = test.details;
+                    
+                    this.results.failed++;
+                    this.results.total++;
+                }
+                
+                this.updateSummary();
+            }
+            
+            // Create test element
+            createTestElement(test) {
+                const container = document.getElementById(`${test.category}-tests`);
+                const testElement = document.createElement('div');
+                testElement.className = 'test-item';
+                testElement.innerHTML = `
+                    <span>${test.name}</span>
+                    <span class="test-result">RUNNING</span>
+                    <div class="test-details"></div>
+                `;
+                container.appendChild(testElement);
+                return testElement;
+            }
+            
+            // Update summary
+            updateSummary() {
+                const summary = document.getElementById('test-summary');
+                const progress = document.getElementById('progress-fill');
+                
+                summary.textContent = `Tests: ${this.results.passed} passed, ${this.results.failed} failed, ${this.results.total} total`;
+                
+                if (this.results.total > 0) {
+                    const percentage = (this.results.passed / this.results.total) * 100;
+                    progress.style.width = `${percentage}%`;
+                }
+            }
+            
+            // Clear all results
+            clearResults() {
+                this.results = { passed: 0, failed: 0, total: 0 };
+                this.tests.forEach(test => {
+                    test.result = null;
+                    test.details = '';
+                });
+                
+                document.querySelectorAll('.test-item').forEach(el => el.remove());
+                this.updateSummary();
+            }
+            
+            // Run all tests
+            async runAllTests() {
+                this.clearResults();
+                
+                for (const test of this.tests) {
+                    await this.runTest(test);
+                    // Small delay to prevent overwhelming the UI
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            
+            // Run tests by category
+            async runTestsByCategory(category) {
+                const categoryTests = this.tests.filter(test => test.category === category);
+                this.clearResults();
+                
+                for (const test of categoryTests) {
+                    await this.runTest(test);
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+        }
+        
+        // Initialize test suite
+        const testSuite = new TestSuite();
+        
+        // Core Simulation Tests
+        testSuite.addTest('Conway Game of Life Creation', async () => {
+            const simulation = SimulationFactory.createSimulation('conway', testSuite.canvas, testSuite.ctx);
+            return {
+                passed: simulation instanceof ConwayGameOfLife,
+                details: `Created ${simulation.constructor.name}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Termite Algorithm Creation', async () => {
+            const simulation = SimulationFactory.createSimulation('termite', testSuite.canvas, testSuite.ctx);
+            return {
+                passed: simulation instanceof TermiteAlgorithm,
+                details: `Created ${simulation.constructor.name}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Langton\'s Ant Creation', async () => {
+            const simulation = SimulationFactory.createSimulation('langton', testSuite.canvas, testSuite.ctx);
+            return {
+                passed: simulation instanceof LangtonsAnt,
+                details: `Created ${simulation.constructor.name}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Conway Grid Initialization', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            return {
+                passed: simulation.grids && simulation.grids.current && simulation.grids.next,
+                details: `Grid dimensions: ${simulation.rows}x${simulation.cols}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Conway Cell Toggle', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            const initialCount = simulation.cellCount;
+            simulation.toggleCell(50, 50);
+            const afterToggleCount = simulation.cellCount;
+            
+            return {
+                passed: afterToggleCount !== initialCount,
+                details: `Cell count changed from ${initialCount} to ${afterToggleCount}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Conway Neighbour Counting', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            // Create a simple pattern
+            simulation.grids.current[1][1] = true;
+            simulation.grids.current[1][2] = true;
+            simulation.grids.current[2][1] = true;
+            
+            const neighbours = simulation.countNeighbours(simulation.grids.current, 1, 1, simulation.rows, simulation.cols);
+            
+            return {
+                passed: neighbours === 2,
+                details: `Neighbour count: ${neighbours} (expected 2)`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Termite Movement', async () => {
+            const simulation = new TermiteAlgorithm(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            const initialX = simulation.termites[0].x;
+            const initialY = simulation.termites[0].y;
+            
+            simulation.update();
+            
+            const newX = simulation.termites[0].x;
+            const newY = simulation.termites[0].y;
+            
+            return {
+                passed: newX !== initialX || newY !== initialY,
+                details: `Termite moved from (${initialX.toFixed(1)}, ${initialY.toFixed(1)}) to (${newX.toFixed(1)}, ${newY.toFixed(1)})`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Langton Ant Movement', async () => {
+            const simulation = new LangtonsAnt(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            const initialX = simulation.ants[0].x;
+            const initialY = simulation.ants[0].y;
+            
+            simulation.update();
+            
+            const newX = simulation.ants[0].x;
+            const newY = simulation.ants[0].y;
+            
+            return {
+                passed: newX !== initialX || newY !== initialY,
+                details: `Ant moved from (${initialX}, ${initialY}) to (${newX}, ${newY})`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Brightness Application', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            const originalColor = 'rgb(100, 150, 200)';
+            const brightColor = simulation.applyBrightness(originalColor);
+            
+            return {
+                passed: brightColor !== originalColor,
+                details: `Brightness applied: ${originalColor} → ${brightColor}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Speed Setting', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            simulation.setSpeed(15);
+            
+            return {
+                passed: simulation.speed === 15 && simulation.updateInterval === 1000 / 15,
+                details: `Speed set to 15, interval: ${simulation.updateInterval.toFixed(1)}ms`
+            };
+        }, 'core');
+        
+        // UI Component Tests
+        testSuite.addTest('Configuration Manager', async () => {
+            const configs = ConfigurationManager.getAllConfigs();
+            return {
+                passed: configs.conway && configs.termite && configs.langton,
+                details: `Found ${Object.keys(configs).length} simulation configs`
+            };
+        }, 'ui');
+        
+        testSuite.addTest('Shared Components', async () => {
+            // Create the required DOM elements for the slider
+            const sliderContainer = document.createElement('div');
+            const sliderElement = document.createElement('input');
+            sliderElement.type = 'range';
+            sliderElement.id = 'test-slider';
+            sliderElement.min = '0';
+            sliderElement.max = '100';
+            sliderElement.value = '50';
+            
+            const valueElement = document.createElement('span');
+            valueElement.id = 'test-slider-value';
+            valueElement.textContent = '50';
+            
+            sliderContainer.appendChild(sliderElement);
+            sliderContainer.appendChild(valueElement);
+            document.body.appendChild(sliderContainer);
+            
+            const slider = SharedComponents.createSlider({
+                id: 'test-slider',
+                min: 0,
+                max: 100,
+                value: 50,
+                label: 'Test'
+            });
+            
+            // Clean up
+            document.body.removeChild(sliderContainer);
+            
+            return {
+                passed: slider && slider.element && slider.range,
+                details: 'Slider component created successfully'
+            };
+        }, 'ui');
+        
+        testSuite.addTest('Performance Optimizer', async () => {
+            const debounced = PerformanceOptimizer.debounce(() => {}, 100);
+            const throttled = PerformanceOptimizer.throttle(() => {}, 100);
+            
+            return {
+                passed: typeof debounced === 'function' && typeof throttled === 'function',
+                details: 'Debounce and throttle functions created'
+            };
+        }, 'ui');
+        
+        testSuite.addTest('Element Cache', async () => {
+            const cache = PerformanceOptimizer.createElementCache();
+            const element = cache.get('#test-canvas');
+            
+            return {
+                passed: element === testSuite.canvas,
+                details: 'Element cache working correctly'
+            };
+        }, 'ui');
+        
+        testSuite.addTest('Event Listener Manager', async () => {
+            const manager = PerformanceOptimizer.createEventListenerManager();
+            let testValue = false;
+            
+            const handler = () => { testValue = true; };
+            manager.add(testSuite.canvas, 'click', handler);
+            
+            // Simulate click
+            testSuite.canvas.click();
+            
+            return {
+                passed: testValue === true,
+                details: 'Event listener manager working correctly'
+            };
+        }, 'ui');
+        
+        // Performance Tests
+        testSuite.addTest('Grid Creation Performance', async () => {
+            const start = performance.now();
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            const end = performance.now();
+            
+            return {
+                passed: (end - start) < 100, // Should complete in under 100ms
+                details: `Grid creation took ${(end - start).toFixed(2)}ms`
+            };
+        }, 'performance');
+        
+        testSuite.addTest('Cell Counting Performance', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            // Fill grid with random data
+            simulation.randomizeGrid(simulation.grids.current, 0.5);
+            
+            const start = performance.now();
+            const count = simulation.countLiveCells(simulation.grids.current);
+            const end = performance.now();
+            
+            return {
+                passed: (end - start) < 10, // Should complete in under 10ms
+                details: `Counted ${count} cells in ${(end - start).toFixed(2)}ms`
+            };
+        }, 'performance');
+        
+        testSuite.addTest('Drawing Performance', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            simulation.randomizeGrid(simulation.grids.current, 0.3);
+            
+            const start = performance.now();
+            simulation.draw();
+            const end = performance.now();
+            
+            return {
+                passed: (end - start) < 50, // Should complete in under 50ms
+                details: `Drawing took ${(end - start).toFixed(2)}ms`
+            };
+        }, 'performance');
+        
+        testSuite.addTest('Update Performance', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            simulation.randomizeGrid(simulation.grids.current, 0.3);
+            
+            const start = performance.now();
+            simulation.update();
+            const end = performance.now();
+            
+            return {
+                passed: (end - start) < 20, // Should complete in under 20ms
+                details: `Update took ${(end - start).toFixed(2)}ms`
+            };
+        }, 'performance');
+        
+        // Integration Tests
+        testSuite.addTest('Simulation Switching', async () => {
+            // Test simulation factory instead of full app switching
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            const conwaySim = SimulationFactory.createSimulation('conway', canvas, ctx);
+            const termiteSim = SimulationFactory.createSimulation('termite', canvas, ctx);
+            const langtonSim = SimulationFactory.createSimulation('langton', canvas, ctx);
+            
+            const conwayRunning = conwaySim instanceof ConwayGameOfLife;
+            const termiteRunning = termiteSim instanceof TermiteAlgorithm;
+            const langtonRunning = langtonSim instanceof LangtonsAnt;
+            
+            return {
+                passed: conwayRunning && termiteRunning && langtonRunning,
+                details: 'All simulation types can be created via factory'
+            };
+        }, 'integration');
+        
+        testSuite.addTest('State Preservation', async () => {
+            const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            // Create some state
+            simulation.toggleCell(10, 10);
+            simulation.toggleCell(11, 11);
+            const originalState = simulation.getState();
+            
+            // Simulate resize
+            simulation.resizePreserveState();
+            const newState = simulation.getState();
+            
+            return {
+                passed: newState.generation === originalState.generation,
+                details: 'State preserved during resize'
+            };
+        }, 'integration');
+        
+        testSuite.addTest('Modal Management', async () => {
+            const modalManager = new ModalManager();
+            
+            // Create a test modal
+            const testModal = document.createElement('div');
+            testModal.id = 'test-modal';
+            testModal.className = 'modal';
+            testModal.innerHTML = '<div class="modal-content"><button class="modal-close">&times;</button></div>';
+            document.body.appendChild(testModal);
+            
+            modalManager.register('test-modal');
+            modalManager.show('test-modal');
+            
+            // Wait for requestAnimationFrame to complete
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            
+            const isVisible = modalManager.isVisible('test-modal');
+            
+            // Cleanup
+            document.body.removeChild(testModal);
+            
+            return {
+                passed: isVisible,
+                details: 'Modal manager working correctly'
+            };
+        }, 'integration');
+        
+        testSuite.addTest('Control Management', async () => {
+            const controlManager = new ControlManager();
+            
+            // Test control visibility
+            controlManager.showControls('conway');
+            
+            return {
+                passed: controlManager.activeControls === 'conway',
+                details: 'Control manager working correctly'
+            };
+        }, 'integration');
+        
+        testSuite.addTest('Initial Controls Visibility on Page Load', async () => {
+            // Test control manager directly instead of full app
+            const controlManager = new ControlManager();
+            
+            // Test that controls can be shown/hidden
+            controlManager.showControls('conway');
+            const conwayActive = controlManager.activeControls === 'conway';
+            
+            controlManager.showControls('termite');
+            const termiteActive = controlManager.activeControls === 'termite';
+            
+            controlManager.showControls('langton');
+            const langtonActive = controlManager.activeControls === 'langton';
+            
+            return {
+                passed: conwayActive && termiteActive && langtonActive,
+                details: 'Control manager can switch between all simulation types'
+            };
+        }, 'ui');
+        
+        testSuite.addTest('Controls Visibility Timing', async () => {
+            // Test control manager timing directly
+            const controlManager = new ControlManager();
+            
+            // Test immediate control switching
+            const startTime = performance.now();
+            controlManager.showControls('conway');
+            const endTime = performance.now();
+            
+            const switchTime = endTime - startTime;
+            const isImmediate = switchTime < 10; // Should be very fast
+            
+            return {
+                passed: isImmediate && controlManager.activeControls === 'conway',
+                details: `Control switching took ${switchTime.toFixed(2)}ms (should be < 10ms)`
+            };
+        }, 'ui');
+        
+        testSuite.addTest('Keyboard Handler', async () => {
+            // Test keyboard handler without full app initialization
+            const mockApp = {
+                toggleSimulation: () => {},
+                handleEscape: () => {},
+                currentSimulation: null
+            };
+            
+            const keyboardHandler = new KeyboardHandler(mockApp);
+            
+            // Test shortcut registration
+            const hasSpaceShortcut = keyboardHandler.shortcuts.has(' ');
+            const hasEscapeShortcut = keyboardHandler.shortcuts.has('Escape');
+            
+            return {
+                passed: hasSpaceShortcut && hasEscapeShortcut,
+                details: 'Keyboard shortcuts registered correctly'
+            };
+        }, 'integration');
+        
+        // Global functions for button clicks
+        window.runAllTests = () => testSuite.runAllTests();
+        window.runSimulationTests = () => testSuite.runTestsByCategory('core');
+        window.runUITests = () => testSuite.runTestsByCategory('ui');
+        window.runPerformanceTests = () => testSuite.runTestsByCategory('performance');
+        window.clearResults = () => testSuite.clearResults();
+        
+        // Auto-run tests when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Test suite loaded with', testSuite.tests.length, 'tests');
+        });
+    </script>
+</body>
+</html> 

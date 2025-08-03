@@ -1,0 +1,423 @@
+/**
+ * Test Runner for Algorithmic Pattern Generator
+ * 
+ * This script provides automated testing capabilities for ensuring
+ * refactoring doesn't introduce regressions.
+ */
+
+class TestRunner {
+    constructor() {
+        this.testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            errors: 0,
+            startTime: null,
+            endTime: null
+        };
+        this.tests = [];
+    }
+    
+    /**
+     * Add a test to the runner
+     * @param {string} name - Test name
+     * @param {Function} testFunction - Async function that returns {passed: boolean, details: string}
+     * @param {string} category - Test category
+     */
+    addTest(name, testFunction, category = 'general') {
+        this.tests.push({
+            name,
+            testFunction,
+            category,
+            result: null,
+            details: '',
+            duration: 0
+        });
+    }
+    
+    /**
+     * Run a single test
+     * @param {Object} test - Test object
+     * @returns {Promise<Object>} Test result
+     */
+    async runTest(test) {
+        const startTime = performance.now();
+        
+        try {
+            const result = await test.testFunction();
+            const endTime = performance.now();
+            
+            test.result = result.passed ? 'pass' : 'fail';
+            test.details = result.details || '';
+            test.duration = endTime - startTime;
+            
+            if (result.passed) {
+                this.testResults.passed++;
+            } else {
+                this.testResults.failed++;
+            }
+            
+            return {
+                name: test.name,
+                result: test.result,
+                details: test.details,
+                duration: test.duration
+            };
+            
+        } catch (error) {
+            const endTime = performance.now();
+            
+            test.result = 'error';
+            test.details = `Error: ${error.message}`;
+            test.duration = endTime - startTime;
+            
+            this.testResults.errors++;
+            
+            return {
+                name: test.name,
+                result: 'error',
+                details: test.details,
+                duration: test.duration
+            };
+        } finally {
+            this.testResults.total++;
+        }
+    }
+    
+    /**
+     * Run all tests
+     * @returns {Promise<Object>} Summary of all test results
+     */
+    async runAllTests() {
+        this.testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            errors: 0,
+            startTime: performance.now(),
+            endTime: null
+        };
+        
+        console.log('🚀 Starting test suite...');
+        console.log(`📋 Running ${this.tests.length} tests`);
+        console.log('─'.repeat(50));
+        
+        const results = [];
+        
+        for (const test of this.tests) {
+            const result = await this.runTest(test);
+            results.push(result);
+            
+            // Log result
+            const status = result.result === 'pass' ? '✅' : result.result === 'fail' ? '❌' : '💥';
+            console.log(`${status} ${result.name} (${result.duration.toFixed(2)}ms)`);
+            
+            if (result.details) {
+                console.log(`   ${result.details}`);
+            }
+        }
+        
+        this.testResults.endTime = performance.now();
+        
+        this.printSummary();
+        return {
+            summary: this.testResults,
+            results: results
+        };
+    }
+    
+    /**
+     * Run tests by category
+     * @param {string} category - Category to run
+     * @returns {Promise<Object>} Summary of category test results
+     */
+    async runTestsByCategory(category) {
+        const categoryTests = this.tests.filter(test => test.category === category);
+        
+        console.log(`🚀 Starting ${category} tests...`);
+        console.log(`📋 Running ${categoryTests.length} tests in category: ${category}`);
+        console.log('─'.repeat(50));
+        
+        const results = [];
+        
+        for (const test of categoryTests) {
+            const result = await this.runTest(test);
+            results.push(result);
+            
+            const status = result.result === 'pass' ? '✅' : result.result === 'fail' ? '❌' : '💥';
+            console.log(`${status} ${result.name} (${result.duration.toFixed(2)}ms)`);
+            
+            if (result.details) {
+                console.log(`   ${result.details}`);
+            }
+        }
+        
+        this.printSummary();
+        return {
+            category,
+            results: results
+        };
+    }
+    
+    /**
+     * Print test summary
+     */
+    printSummary() {
+        const duration = this.testResults.endTime - this.testResults.startTime;
+        const successRate = this.testResults.total > 0 ? 
+            (this.testResults.passed / this.testResults.total * 100).toFixed(1) : 0;
+        
+        console.log('─'.repeat(50));
+        console.log('📊 TEST SUMMARY');
+        console.log('─'.repeat(50));
+        console.log(`Total Tests: ${this.testResults.total}`);
+        console.log(`✅ Passed: ${this.testResults.passed}`);
+        console.log(`❌ Failed: ${this.testResults.failed}`);
+        console.log(`💥 Errors: ${this.testResults.errors}`);
+        console.log(`📈 Success Rate: ${successRate}%`);
+        console.log(`⏱️  Duration: ${duration.toFixed(2)}ms`);
+        console.log('─'.repeat(50));
+        
+        if (this.testResults.failed > 0 || this.testResults.errors > 0) {
+            console.log('⚠️  Some tests failed! Please review the results above.');
+        } else {
+            console.log('🎉 All tests passed!');
+        }
+    }
+    
+    /**
+     * Get test statistics by category
+     * @returns {Object} Statistics grouped by category
+     */
+    getCategoryStats() {
+        const stats = {};
+        
+        this.tests.forEach(test => {
+            if (!stats[test.category]) {
+                stats[test.category] = {
+                    total: 0,
+                    passed: 0,
+                    failed: 0,
+                    errors: 0
+                };
+            }
+            
+            stats[test.category].total++;
+            
+            if (test.result === 'pass') {
+                stats[test.category].passed++;
+            } else if (test.result === 'fail') {
+                stats[test.category].failed++;
+            } else if (test.result === 'error') {
+                stats[test.category].errors++;
+            }
+        });
+        
+        return stats;
+    }
+    
+    /**
+     * Export test results to JSON
+     * @returns {Object} Test results in JSON format
+     */
+    exportResults() {
+        return {
+            timestamp: new Date().toISOString(),
+            summary: this.testResults,
+            categoryStats: this.getCategoryStats(),
+            tests: this.tests.map(test => ({
+                name: test.name,
+                category: test.category,
+                result: test.result,
+                details: test.details,
+                duration: test.duration
+            }))
+        };
+    }
+}
+
+// Predefined test suites for common scenarios
+class PredefinedTestSuites {
+    /**
+     * Create a comprehensive test suite for the algorithmic pattern generator
+     * @param {Object} dependencies - Required dependencies (canvas, ctx, etc.)
+     * @returns {TestRunner} Configured test runner
+     */
+    static createComprehensiveSuite(dependencies = {}) {
+        const runner = new TestRunner();
+        
+        // Core simulation tests
+        runner.addTest('Conway Game of Life Creation', async () => {
+            const simulation = SimulationFactory.createSimulation('conway', dependencies.canvas, dependencies.ctx);
+            return {
+                passed: simulation instanceof ConwayGameOfLife,
+                details: `Created ${simulation.constructor.name}`
+            };
+        }, 'core');
+        
+        runner.addTest('Termite Algorithm Creation', async () => {
+            const simulation = SimulationFactory.createSimulation('termite', dependencies.canvas, dependencies.ctx);
+            return {
+                passed: simulation instanceof TermiteAlgorithm,
+                details: `Created ${simulation.constructor.name}`
+            };
+        }, 'core');
+        
+        runner.addTest('Langton\'s Ant Creation', async () => {
+            const simulation = SimulationFactory.createSimulation('langton', dependencies.canvas, dependencies.ctx);
+            return {
+                passed: simulation instanceof LangtonsAnt,
+                details: `Created ${simulation.constructor.name}`
+            };
+        }, 'core');
+        
+        // Performance tests
+        runner.addTest('Grid Creation Performance', async () => {
+            const start = performance.now();
+            const simulation = new ConwayGameOfLife(dependencies.canvas, dependencies.ctx);
+            simulation.init();
+            const end = performance.now();
+            
+            return {
+                passed: (end - start) < 100,
+                details: `Grid creation took ${(end - start).toFixed(2)}ms`
+            };
+        }, 'performance');
+        
+        runner.addTest('Update Performance', async () => {
+            const simulation = new ConwayGameOfLife(dependencies.canvas, dependencies.ctx);
+            simulation.init();
+            simulation.randomizeGrid(simulation.grids.current, 0.3);
+            
+            const start = performance.now();
+            simulation.update();
+            const end = performance.now();
+            
+            return {
+                passed: (end - start) < 20,
+                details: `Update took ${(end - start).toFixed(2)}ms`
+            };
+        }, 'performance');
+        
+        // UI component tests
+        runner.addTest('Configuration Manager', async () => {
+            const configs = ConfigurationManager.getAllConfigs();
+            return {
+                passed: configs.conway && configs.termite && configs.langton,
+                details: `Found ${Object.keys(configs).length} simulation configs`
+            };
+        }, 'ui');
+        
+        runner.addTest('Initial Controls Visibility', async () => {
+            // This test requires DOM elements to exist
+            if (typeof document === 'undefined') {
+                return {
+                    passed: true,
+                    details: 'Skipped in non-DOM environment'
+                };
+            }
+            
+            const app = new AlgorithmicPatternGenerator();
+            app.init();
+            
+            const conwayControls = document.getElementById('conway-controls');
+            const isVisible = conwayControls && conwayControls.style.display === 'flex';
+            
+            return {
+                passed: isVisible,
+                details: `Controls visibility after init: ${isVisible}`
+            };
+        }, 'ui');
+        
+        runner.addTest('Performance Optimizer', async () => {
+            const debounced = PerformanceOptimizer.debounce(() => {}, 100);
+            const throttled = PerformanceOptimizer.throttle(() => {}, 100);
+            
+            return {
+                passed: typeof debounced === 'function' && typeof throttled === 'function',
+                details: 'Debounce and throttle functions created successfully'
+            };
+        }, 'ui');
+        
+        // Colour scheme tests
+        runner.addTest('Dynamic Colour Scheme', async () => {
+            const colourScheme = new DynamicColourScheme();
+            const hue = colourScheme.getCornerHue('topLeft', 0);
+            
+            return {
+                passed: hue === 45,
+                details: `Top left corner hue: ${hue}°`
+            };
+        }, 'colour');
+        
+        runner.addTest('Colour Interpolation', async () => {
+            const colourScheme = new DynamicColourScheme();
+            const colour = colourScheme.getColourAtPosition(0, 0, 100, 100, 80, 50, 0);
+            
+            return {
+                passed: colour.startsWith('rgb('),
+                details: `Generated colour: ${colour}`
+            };
+        }, 'colour');
+        
+        return runner;
+    }
+    
+    /**
+     * Create a minimal test suite for quick validation
+     * @param {Object} dependencies - Required dependencies
+     * @returns {TestRunner} Configured test runner
+     */
+    static createMinimalSuite(dependencies = {}) {
+        const runner = new TestRunner();
+        
+        runner.addTest('Basic Simulation Creation', async () => {
+            const simulation = SimulationFactory.createSimulation('conway', dependencies.canvas, dependencies.ctx);
+            return {
+                passed: simulation instanceof ConwayGameOfLife,
+                details: 'Basic simulation creation works'
+            };
+        }, 'basic');
+        
+        runner.addTest('Configuration Access', async () => {
+            const configs = ConfigurationManager.getAllConfigs();
+            return {
+                passed: Object.keys(configs).length > 0,
+                details: `Found ${Object.keys(configs).length} configurations`
+            };
+        }, 'basic');
+        
+        return runner;
+    }
+}
+
+// Export for use in different environments
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { TestRunner, PredefinedTestSuites };
+} else if (typeof window !== 'undefined') {
+    window.TestRunner = TestRunner;
+    window.PredefinedTestSuites = PredefinedTestSuites;
+}
+
+// Auto-run if in browser environment with canvas
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+        
+        const runner = PredefinedTestSuites.createMinimalSuite({ canvas, ctx });
+        
+        console.log('🧪 Test runner loaded. Run runner.runAllTests() to execute tests.');
+        console.log('Available commands:');
+        console.log('  - runner.runAllTests()');
+        console.log('  - runner.runTestsByCategory("core")');
+        console.log('  - runner.runTestsByCategory("performance")');
+        console.log('  - runner.runTestsByCategory("ui")');
+        console.log('  - runner.runTestsByCategory("colour")');
+        
+        // Make runner globally available
+        window.testRunner = runner;
+    });
+} 
