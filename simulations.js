@@ -599,6 +599,12 @@ class BaseSimulation {
         this.colorCache = new Map(); // Cache for brightness-adjusted colors
         this.maxCacheSize = 1000; // Limit cache size to prevent memory leaks
         
+        // Trail properties
+        this.trailLength = 30; // Steps before fade
+        this.trailEnabled = true; // Toggle on/off
+        this.trailOpacity = 0.8; // Maximum opacity
+        this.trailColor = null; // Use dynamic colour or custom
+        
         // Dynamic colour scheme
         this.colourScheme = new DynamicColourScheme();
         
@@ -607,7 +613,9 @@ class BaseSimulation {
             isRunning: false,
             generation: 0,
             cellCount: 0,
-            brightness: 1.0
+            brightness: 1.0,
+            trailLength: this.trailLength,
+            trailEnabled: this.trailEnabled
         });
         
         this.eventHandler = simulationLifecycleFramework.createEventHandler();
@@ -660,7 +668,9 @@ class BaseSimulation {
         return {
             generation: this.generation,
             cellCount: this.cellCount,
-            isRunning: this.isRunning
+            isRunning: this.isRunning,
+            trailLength: this.trailLength,
+            trailEnabled: this.trailEnabled
         };
     }
     
@@ -669,6 +679,8 @@ class BaseSimulation {
         this.generation = state.generation || 0;
         this.cellCount = state.cellCount || 0;
         this.isRunning = state.isRunning || false;
+        this.trailLength = state.trailLength || 30;
+        this.trailEnabled = state.trailEnabled !== undefined ? state.trailEnabled : true;
     }
     
     start() {
@@ -1025,6 +1037,83 @@ class BaseSimulation {
         this.speed = Math.max(1, Math.min(60, stepsPerSecond));
         this.updateInterval = 1000 / this.speed;
     }
+    
+    // Trail management methods
+    updateActorTrail(actor, x, y) {
+        if (!this.trailEnabled || !actor) return;
+        
+        // Initialize trail array if it doesn't exist
+        if (!actor.trail) {
+            actor.trail = [];
+        }
+        
+        // Add current position to trail
+        actor.trail.push({x: x, y: y, age: 0});
+        
+        // Age existing trail points
+        actor.trail.forEach(point => point.age++);
+        
+        // Remove expired trail points
+        actor.trail = actor.trail.filter(point => point.age < this.trailLength);
+    }
+    
+    drawActorTrail(actor, radius = 2) {
+        if (!this.trailEnabled || !actor || !actor.trail) return;
+        
+        actor.trail.forEach(point => {
+            const alpha = this.trailOpacity * (1 - (point.age / this.trailLength));
+            if (alpha > 0.01) { // Only draw if visible enough
+                this.drawTrailPoint(point.x, point.y, radius, alpha);
+            }
+        });
+    }
+    
+    drawTrailPoint(x, y, radius, alpha) {
+        this.ctx.save();
+        
+        // Set up transparency
+        this.ctx.globalAlpha = alpha;
+        
+        // Get trail colour
+        let color = this.trailColor;
+        if (!color) {
+            // Use dynamic colour scheme for trail
+            const currentTime = this.isRunning ? Date.now() : null;
+            color = this.colourScheme.getColourAtPosition(x, y, this.canvas.width, this.canvas.height, 70, 40, currentTime);
+        }
+        
+        // Apply brightness to the color
+        color = this.applyBrightness(color);
+        
+        this.ctx.fillStyle = color;
+        this.setGlowEffect(color, 10 * this.brightness * alpha);
+        
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        this.clearGlowEffect();
+        this.ctx.restore();
+    }
+    
+    // Trail configuration methods
+    setTrailLength(length) {
+        this.trailLength = Math.max(1, Math.min(100, length));
+        this.stateManager.setState({ trailLength: this.trailLength });
+    }
+    
+    setTrailEnabled(enabled) {
+        this.trailEnabled = enabled;
+        this.stateManager.setState({ trailEnabled: this.trailEnabled });
+    }
+    
+    setTrailOpacity(opacity) {
+        this.trailOpacity = Math.max(0.1, Math.min(1.0, opacity));
+    }
+    
+    setTrailColor(color) {
+        this.trailColor = color; // null for dynamic, or specific colour string
+    }
 }
 
 
@@ -1202,7 +1291,8 @@ class TermiteAlgorithm extends BaseSimulation {
                 x: Math.random() * this.canvas.width,
                 y: Math.random() * this.canvas.height,
                 angle: Math.random() * Math.PI * 2,
-                carrying: false
+                carrying: false,
+                trail: [] // Initialize empty trail
             });
         }
     }
@@ -1242,6 +1332,9 @@ class TermiteAlgorithm extends BaseSimulation {
         this.cellCount = this.woodChips.size;
         
         this.termites.forEach(termite => {
+            // Update trail before moving
+            this.updateActorTrail(termite, termite.x, termite.y);
+            
             // Move termite
             const speed = 2; // Base movement speed
             termite.x += Math.cos(termite.angle) * speed;
@@ -1286,8 +1379,12 @@ class TermiteAlgorithm extends BaseSimulation {
             this.drawCell(x, y);
         });
         
-        // Draw termites
+        // Draw termites with trails
         this.termites.forEach(termite => {
+            // Draw trail first (behind the termite)
+            this.drawActorTrail(termite, 2);
+            
+            // Draw termite
             this.drawActor(termite.x, termite.y, 3);
             this.drawDirectionIndicator(termite.x, termite.y, termite.angle);
         });
@@ -1351,7 +1448,8 @@ class LangtonsAnt extends BaseSimulation {
         this.ants = [{ 
             x: Math.floor(this.cols / 2), 
             y: Math.floor(this.rows / 2), 
-            direction: 0 
+            direction: 0,
+            trail: [] // Initialize empty trail
         }];
     }
     
@@ -1422,7 +1520,8 @@ class LangtonsAnt extends BaseSimulation {
             this.ants = state.ants.map(ant => ({
                 x: Math.min(ant.x, this.cols - 1),
                 y: Math.min(ant.y, this.rows - 1),
-                direction: ant.direction
+                direction: ant.direction,
+                trail: ant.trail || [] // Preserve trail data
             }));
         }
         
@@ -1437,6 +1536,11 @@ class LangtonsAnt extends BaseSimulation {
         this.ants.forEach(ant => {
             // Get current cell state
             const currentCell = this.grid[ant.y][ant.x];
+            
+            // Update trail before moving (convert grid coordinates to screen coordinates)
+            const antX = ant.x * this.cellSize + this.cellSize / 2;
+            const antY = ant.y * this.cellSize + this.cellSize / 2;
+            this.updateActorTrail(ant, antX, antY);
             
             // Flip the cell
             this.grid[ant.y][ant.x] = !currentCell;
@@ -1468,10 +1572,15 @@ class LangtonsAnt extends BaseSimulation {
         // Draw grid using common utility
         this.drawGrid(this.grid);
         
-        // Draw each ant
+        // Draw each ant with trails
         this.ants.forEach(ant => {
             const antX = ant.x * this.cellSize + this.cellSize / 2;
             const antY = ant.y * this.cellSize + this.cellSize / 2;
+            
+            // Draw trail first (behind the ant)
+            this.drawActorTrail(ant, this.cellSize / 4);
+            
+            // Draw ant
             this.drawActor(antX, antY, this.cellSize / 3);
             
             // Draw direction indicator using common utility
@@ -1505,7 +1614,8 @@ class LangtonsAnt extends BaseSimulation {
         const newAnt = {
             x: x,
             y: y,
-            direction: Math.floor(Math.random() * 4)
+            direction: Math.floor(Math.random() * 4),
+            trail: [] // Initialize empty trail
         };
         this.ants.push(newAnt);
         
