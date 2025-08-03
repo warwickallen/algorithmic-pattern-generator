@@ -179,11 +179,410 @@ class DynamicColourScheme {
     }
 }
 
+// Simulation Lifecycle Framework (R4 Implementation)
+class SimulationLifecycleFramework {
+    constructor() {
+        this.lifecycleHooks = new Map();
+        this.stateManagers = new Map();
+        this.eventHandlers = new Map();
+    }
+    
+    // Register lifecycle hooks for a simulation
+    registerLifecycleHooks(simulationId, hooks) {
+        const defaultHooks = {
+            onInit: () => console.log(`Simulation ${simulationId} initialized`),
+            onStart: () => console.log(`Simulation ${simulationId} started`),
+            onPause: () => console.log(`Simulation ${simulationId} paused`),
+            onReset: () => console.log(`Simulation ${simulationId} reset`),
+            onClear: () => console.log(`Simulation ${simulationId} cleared`),
+            onResize: () => console.log(`Simulation ${simulationId} resized`),
+            onUpdate: () => console.log(`Simulation ${simulationId} updated`),
+            onDraw: () => console.log(`Simulation ${simulationId} drawn`),
+            onDestroy: () => console.log(`Simulation ${simulationId} destroyed`)
+        };
+        
+        this.lifecycleHooks.set(simulationId, { ...defaultHooks, ...hooks });
+    }
+    
+    // Register state manager for a simulation
+    registerStateManager(simulationId, stateManager) {
+        this.stateManagers.set(simulationId, stateManager);
+    }
+    
+    // Register event handlers for a simulation
+    registerEventHandlers(simulationId, handlers) {
+        this.eventHandlers.set(simulationId, handlers);
+    }
+    
+    // Execute lifecycle hook
+    executeHook(simulationId, hookName, ...args) {
+        const hooks = this.lifecycleHooks.get(simulationId);
+        if (hooks && hooks[hookName]) {
+            try {
+                return hooks[hookName](...args);
+            } catch (error) {
+                console.error(`Error executing ${hookName} hook for simulation ${simulationId}:`, error);
+            }
+        }
+    }
+    
+    // Get state manager for a simulation
+    getStateManager(simulationId) {
+        return this.stateManagers.get(simulationId);
+    }
+    
+    // Get event handlers for a simulation
+    getEventHandlers(simulationId) {
+        return this.eventHandlers.get(simulationId);
+    }
+    
+    // Create standardized state manager
+    createStateManager(initialState = {}) {
+        return {
+            state: { ...initialState },
+            subscribers: new Set(),
+            
+            // Get current state
+            getState() {
+                return { ...this.state };
+            },
+            
+            // Set state
+            setState(newState) {
+                this.state = { ...this.state, ...newState };
+                this.notifySubscribers();
+            },
+            
+            // Subscribe to state changes
+            subscribe(callback) {
+                this.subscribers.add(callback);
+                return () => this.subscribers.delete(callback);
+            },
+            
+            // Notify subscribers of state changes
+            notifySubscribers() {
+                this.subscribers.forEach(callback => {
+                    try {
+                        callback(this.state);
+                    } catch (error) {
+                        console.error('Error in state subscriber:', error);
+                    }
+                });
+            }
+        };
+    }
+    
+    // Create standardized event handler
+    createEventHandler() {
+        return {
+            events: new Map(),
+            
+            // Register event handler
+            on(eventName, handler) {
+                if (!this.events.has(eventName)) {
+                    this.events.set(eventName, []);
+                }
+                this.events.get(eventName).push(handler);
+            },
+            
+            // Emit event
+            emit(eventName, ...args) {
+                const handlers = this.events.get(eventName);
+                if (handlers) {
+                    handlers.forEach(handler => {
+                        try {
+                            handler(...args);
+                        } catch (error) {
+                            console.error(`Error in event handler for ${eventName}:`, error);
+                        }
+                    });
+                }
+            },
+            
+            // Remove event handler
+            off(eventName, handler) {
+                const handlers = this.events.get(eventName);
+                if (handlers) {
+                    const index = handlers.indexOf(handler);
+                    if (index > -1) {
+                        handlers.splice(index, 1);
+                    }
+                }
+            }
+        };
+    }
+    
+    // Cleanup lifecycle framework
+    cleanup() {
+        this.lifecycleHooks.clear();
+        this.stateManagers.clear();
+        this.eventHandlers.clear();
+    }
+}
+
+// Global lifecycle framework instance
+const simulationLifecycleFramework = new SimulationLifecycleFramework();
+
+// Rendering Utilities Framework (R5 Implementation)
+class RenderingUtils {
+    constructor() {
+        this.renderCache = new Map();
+        this.colorCache = new Map();
+        this.maxCacheSize = 1000;
+        this.performanceMetrics = {
+            renderTime: 0,
+            cacheHits: 0,
+            cacheMisses: 0
+        };
+    }
+    
+    // Unified colour management
+    createColorManager() {
+        return {
+            // Convert HSL to RGB
+            hslToRgb(h, s, l) {
+                h /= 360;
+                s /= 100;
+                l /= 100;
+                
+                const c = (1 - Math.abs(2 * l - 1)) * s;
+                const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+                const m = l - c / 2;
+                
+                let r, g, b;
+                if (h < 1/6) {
+                    [r, g, b] = [c, x, 0];
+                } else if (h < 2/6) {
+                    [r, g, b] = [x, c, 0];
+                } else if (h < 3/6) {
+                    [r, g, b] = [0, c, x];
+                } else if (h < 4/6) {
+                    [r, g, b] = [0, x, c];
+                } else if (h < 5/6) {
+                    [r, g, b] = [x, 0, c];
+                } else {
+                    [r, g, b] = [c, 0, x];
+                }
+                
+                return [
+                    Math.round((r + m) * 255),
+                    Math.round((g + m) * 255),
+                    Math.round((b + m) * 255)
+                ];
+            },
+            
+            // Apply brightness to colour
+            applyBrightness(color, brightness) {
+                const cacheKey = `${color}-${brightness}`;
+                if (this.colorCache.has(cacheKey)) {
+                    this.performanceMetrics.cacheHits++;
+                    return this.colorCache.get(cacheKey);
+                }
+                
+                this.performanceMetrics.cacheMisses++;
+                let rgb;
+                
+                if (color.startsWith('#')) {
+                    const hex = color.slice(1);
+                    rgb = [
+                        parseInt(hex.slice(0, 2), 16),
+                        parseInt(hex.slice(2, 4), 16),
+                        parseInt(hex.slice(4, 6), 16)
+                    ];
+                } else if (color.startsWith('rgb')) {
+                    rgb = color.match(/\d+/g).map(Number);
+                } else {
+                    return color; // Return as-is for unsupported formats
+                }
+                
+                const adjustedRgb = rgb.map(c => Math.min(255, Math.max(0, Math.round(c * brightness))));
+                const result = `rgb(${adjustedRgb[0]}, ${adjustedRgb[1]}, ${adjustedRgb[2]})`;
+                
+                // Cache the result
+                if (this.colorCache.size < this.maxCacheSize) {
+                    this.colorCache.set(cacheKey, result);
+                }
+                
+                return result;
+            },
+            
+            // Interpolate between two colours
+            interpolateColor(color1, color2, factor) {
+                const cacheKey = `${color1}-${color2}-${factor}`;
+                if (this.colorCache.has(cacheKey)) {
+                    this.performanceMetrics.cacheHits++;
+                    return this.colorCache.get(cacheKey);
+                }
+                
+                this.performanceMetrics.cacheMisses++;
+                
+                // Convert colours to RGB arrays
+                const rgb1 = this.parseColor(color1);
+                const rgb2 = this.parseColor(color2);
+                
+                if (!rgb1 || !rgb2) {
+                    return color1;
+                }
+                
+                const interpolated = rgb1.map((c1, i) => 
+                    Math.round(c1 + (rgb2[i] - c1) * factor)
+                );
+                
+                const result = `rgb(${interpolated[0]}, ${interpolated[1]}, ${interpolated[2]})`;
+                
+                // Cache the result
+                if (this.colorCache.size < this.maxCacheSize) {
+                    this.colorCache.set(cacheKey, result);
+                }
+                
+                return result;
+            },
+            
+            // Parse colour string to RGB array
+            parseColor(color) {
+                if (color.startsWith('#')) {
+                    const hex = color.slice(1);
+                    return [
+                        parseInt(hex.slice(0, 2), 16),
+                        parseInt(hex.slice(2, 4), 16),
+                        parseInt(hex.slice(4, 6), 16)
+                    ];
+                } else if (color.startsWith('rgb')) {
+                    return color.match(/\d+/g).map(Number);
+                }
+                return null;
+            }
+        };
+    }
+    
+    // Performance optimization utilities
+    createPerformanceOptimizer() {
+        return {
+            // Debounced render function
+            debounceRender(func, delay = 16) {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func(...args), delay);
+                };
+            },
+            
+            // Throttled render function
+            throttleRender(func, limit = 16) {
+                let inThrottle;
+                return (...args) => {
+                    if (!inThrottle) {
+                        func(...args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                };
+            },
+            
+            // Measure render performance
+            measureRenderTime(func, ...args) {
+                const startTime = performance.now();
+                const result = func(...args);
+                const endTime = performance.now();
+                
+                this.performanceMetrics.renderTime = endTime - startTime;
+                return result;
+            }
+        };
+    }
+    
+    // Grid rendering utilities
+    createGridRenderer() {
+        return {
+            // Draw grid with custom cell renderer
+            drawGrid(ctx, grid, cellSize, cellRenderer = null) {
+                const startTime = performance.now();
+                
+                for (let row = 0; row < grid.length; row++) {
+                    for (let col = 0; col < grid[row].length; col++) {
+                        const x = col * cellSize;
+                        const y = row * cellSize;
+                        
+                        if (cellRenderer) {
+                            cellRenderer(ctx, x, y, cellSize, grid[row][col], row, col);
+                        } else {
+                            // Default cell rendering
+                            ctx.fillStyle = grid[row][col] ? '#ffffff' : '#000000';
+                            ctx.fillRect(x, y, cellSize, cellSize);
+                        }
+                    }
+                }
+                
+                this.performanceMetrics.renderTime = performance.now() - startTime;
+            },
+            
+            // Draw cell with glow effect
+            drawCellWithGlow(ctx, x, y, size, color, glowIntensity = 0) {
+                if (glowIntensity > 0) {
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = glowIntensity;
+                }
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y, size, size);
+                
+                ctx.shadowBlur = 0;
+            },
+            
+            // Draw actor (termite, ant, etc.)
+            drawActor(ctx, x, y, radius, color, direction = 0) {
+                ctx.save();
+                ctx.translate(x + radius, y + radius);
+                ctx.rotate(direction * Math.PI / 2);
+                
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Draw direction indicator
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, -radius + 2);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+        };
+    }
+    
+    // Cache management
+    clearCaches() {
+        this.renderCache.clear();
+        this.colorCache.clear();
+    }
+    
+    // Get performance metrics
+    getPerformanceMetrics() {
+        return { ...this.performanceMetrics };
+    }
+    
+    // Reset performance metrics
+    resetPerformanceMetrics() {
+        this.performanceMetrics = {
+            renderTime: 0,
+            cacheHits: 0,
+            cacheMisses: 0
+        };
+    }
+}
+
+// Global rendering utilities instance
+const renderingUtils = new RenderingUtils();
+
 // Base simulation class with performance optimization
 class BaseSimulation {
-    constructor(canvas, ctx) {
+    constructor(canvas, ctx, simulationId = 'base') {
         this.canvas = canvas;
         this.ctx = ctx;
+        this.simulationId = simulationId;
         this.isRunning = false;
         this.generation = 0;
         this.cellCount = 0;
@@ -202,9 +601,29 @@ class BaseSimulation {
         
         // Dynamic colour scheme
         this.colourScheme = new DynamicColourScheme();
+        
+        // Lifecycle framework integration
+        this.stateManager = simulationLifecycleFramework.createStateManager({
+            isRunning: false,
+            generation: 0,
+            cellCount: 0,
+            brightness: 1.0
+        });
+        
+        this.eventHandler = simulationLifecycleFramework.createEventHandler();
+        
+        // Register with lifecycle framework
+        simulationLifecycleFramework.registerStateManager(this.simulationId, this.stateManager);
+        simulationLifecycleFramework.registerEventHandlers(this.simulationId, this.eventHandler);
+        
+        // Rendering utilities integration
+        this.colorManager = renderingUtils.createColorManager();
+        this.performanceOptimizer = renderingUtils.createPerformanceOptimizer();
+        this.gridRenderer = renderingUtils.createGridRenderer();
     }
     
     init() {
+        simulationLifecycleFramework.executeHook(this.simulationId, 'onInit');
         this.resize();
         this.reset();
     }
@@ -219,6 +638,8 @@ class BaseSimulation {
         
         // Clear caches on resize
         this.clearCaches();
+        
+        simulationLifecycleFramework.executeHook(this.simulationId, 'onResize');
     }
     
     // New method for preserving state during resize
@@ -252,22 +673,34 @@ class BaseSimulation {
     
     start() {
         this.isRunning = true;
+        this.stateManager.setState({ isRunning: true });
+        simulationLifecycleFramework.executeHook(this.simulationId, 'onStart');
         this.animate();
     }
     
     pause() {
         this.isRunning = false;
+        this.stateManager.setState({ isRunning: false });
+        simulationLifecycleFramework.executeHook(this.simulationId, 'onPause');
     }
     
     reset() {
         this.generation = 0;
         this.cellCount = 0;
         this.isRunning = false;
+        this.stateManager.setState({ 
+            generation: 0, 
+            cellCount: 0, 
+            isRunning: false 
+        });
+        simulationLifecycleFramework.executeHook(this.simulationId, 'onReset');
     }
     
     clear() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.cellCount = 0;
+        this.stateManager.setState({ cellCount: 0 });
+        simulationLifecycleFramework.executeHook(this.simulationId, 'onClear');
     }
     
     animate(currentTime = 0) {
@@ -293,10 +726,12 @@ class BaseSimulation {
     
     update() {
         // Override in subclasses
+        simulationLifecycleFramework.executeHook(this.simulationId, 'onUpdate');
     }
     
     draw() {
         // Override in subclasses
+        simulationLifecycleFramework.executeHook(this.simulationId, 'onDraw');
     }
     
     getStats() {
@@ -597,7 +1032,7 @@ class BaseSimulation {
 // Conway's Game of Life
 class ConwayGameOfLife extends BaseSimulation {
     constructor(canvas, ctx) {
-        super(canvas, ctx);
+        super(canvas, ctx, 'conway');
         this.grids = null;
         this.speed = 30; // FPS for simulation speed
         this.lastUpdateTime = 0;
@@ -741,7 +1176,7 @@ class ConwayGameOfLife extends BaseSimulation {
 // Termite Algorithm
 class TermiteAlgorithm extends BaseSimulation {
     constructor(canvas, ctx) {
-        super(canvas, ctx);
+        super(canvas, ctx, 'termite');
         this.termites = [];
         this.woodChips = new Set();
         this.maxTermites = 50;
@@ -889,7 +1324,7 @@ class TermiteAlgorithm extends BaseSimulation {
 // Langton's Ant
 class LangtonsAnt extends BaseSimulation {
     constructor(canvas, ctx) {
-        super(canvas, ctx);
+        super(canvas, ctx, 'langton');
         this.ants = [{ x: 0, y: 0, direction: 0 }]; // 0: up, 1: right, 2: down, 3: left
         this.grid = [];
         this.rules = ['R', 'L']; // Standard Langton's ant rules

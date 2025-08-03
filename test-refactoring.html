@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refactoring Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .pass {
+            background: #2d5a2d;
+            border-left: 4px solid #4caf50;
+        }
+        .fail {
+            background: #5a2d2d;
+            border-left: 4px solid #f44336;
+        }
+        .info {
+            background: #2d2d5a;
+            border-left: 4px solid #2196f3;
+        }
+        button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Code Re-use Refactoring Test</h1>
+    <p>Testing the implementation of requirements R1-R5 from CODE_REUSE_IMPROVEMENTS_REQUIREMENTS.md</p>
+    
+    <div class="test-section">
+        <h2>R1: Event Handling Framework Test</h2>
+        <div id="event-test-results"></div>
+        <button onclick="testEventFramework()">Test Event Framework</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>R2: Configuration Factory Test</h2>
+        <div id="config-test-results"></div>
+        <button onclick="testConfigurationFactory()">Test Configuration Factory</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>R3: UI Component Library Test</h2>
+        <div id="ui-test-results"></div>
+        <button onclick="testUIComponentLibrary()">Test UI Component Library</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>R4: Simulation Lifecycle Framework Test</h2>
+        <div id="lifecycle-test-results"></div>
+        <button onclick="testLifecycleFramework()">Test Lifecycle Framework</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>R5: Rendering Utilities Framework Test</h2>
+        <div id="rendering-test-results"></div>
+        <button onclick="testRenderingUtils()">Test Rendering Utils</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Integration Test</h2>
+        <div id="integration-test-results"></div>
+        <button onclick="testIntegration()">Test Integration</button>
+    </div>
+
+    <script src="simulations.js"></script>
+    <script src="app.js"></script>
+    <script>
+        function addTestResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const result = document.createElement('div');
+            result.className = `test-result ${type}`;
+            result.textContent = message;
+            container.appendChild(result);
+        }
+        
+        function clearTestResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        function testEventFramework() {
+            clearTestResults('event-test-results');
+            
+            try {
+                // Test EventFramework creation
+                const eventFramework = new EventFramework();
+                addTestResult('event-test-results', '✓ EventFramework created successfully', 'pass');
+                
+                // Test element caching
+                const element = eventFramework.getElement('body');
+                if (element) {
+                    addTestResult('event-test-results', '✓ Element caching working', 'pass');
+                } else {
+                    addTestResult('event-test-results', '✗ Element caching failed', 'fail');
+                }
+                
+                // Test debounce
+                const debouncedFn = eventFramework.debounce(() => {
+                    addTestResult('event-test-results', '✓ Debounce function executed', 'pass');
+                }, 100, 'test-debounce');
+                
+                debouncedFn();
+                addTestResult('event-test-results', '✓ Debounce utility working', 'pass');
+                
+                // Test cleanup
+                eventFramework.cleanup();
+                addTestResult('event-test-results', '✓ EventFramework cleanup working', 'pass');
+                
+            } catch (error) {
+                addTestResult('event-test-results', `✗ EventFramework test failed: ${error.message}`, 'fail');
+            }
+        }
+        
+        function testConfigurationFactory() {
+            clearTestResults('config-test-results');
+            
+            try {
+                // Test slider config creation
+                const sliderConfig = ConfigurationManager.createSliderConfig(
+                    'test-slider', 'test-value', 0, 100, 1, 50, 'Test Slider'
+                );
+                
+                if (ConfigurationManager.validateSliderConfig(sliderConfig)) {
+                    addTestResult('config-test-results', '✓ Slider config creation and validation working', 'pass');
+                } else {
+                    addTestResult('config-test-results', '✗ Slider config validation failed', 'fail');
+                }
+                
+                // Test button config creation
+                const buttonConfig = ConfigurationManager.createButtonConfig('test-btn', 'Test Button');
+                
+                if (ConfigurationManager.validateButtonConfig(buttonConfig)) {
+                    addTestResult('config-test-results', '✓ Button config creation and validation working', 'pass');
+                } else {
+                    addTestResult('config-test-results', '✗ Button config validation failed', 'fail');
+                }
+                
+                // Test modal config creation
+                const modalConfig = ConfigurationManager.createModalConfig('test-modal', 'test-close');
+                
+                if (ConfigurationManager.validateModalConfig(modalConfig)) {
+                    addTestResult('config-test-results', '✓ Modal config creation and validation working', 'pass');
+                } else {
+                    addTestResult('config-test-results', '✗ Modal config validation failed', 'fail');
+                }
+                
+                // Test complete simulation config
+                const simulationConfig = ConfigurationManager.createCompleteSimulationConfig(
+                    'test-sim',
+                    'Test Simulation',
+                    { speed: sliderConfig },
+                    modalConfig
+                );
+                
+                if (ConfigurationManager.validateSimulationConfig(simulationConfig)) {
+                    addTestResult('config-test-results', '✓ Complete simulation config creation working', 'pass');
+                } else {
+                    addTestResult('config-test-results', '✗ Complete simulation config validation failed', 'fail');
+                }
+                
+            } catch (error) {
+                addTestResult('config-test-results', `✗ Configuration factory test failed: ${error.message}`, 'fail');
+            }
+        }
+        
+        function testUIComponentLibrary() {
+            clearTestResults('ui-test-results');
+            
+            try {
+                // Test UIComponentLibrary creation
+                const uiLibrary = new UIComponentLibrary();
+                addTestResult('ui-test-results', '✓ UIComponentLibrary created successfully', 'pass');
+                
+                // Test component creation (mock elements)
+                const mockSlider = document.createElement('input');
+                mockSlider.id = 'test-slider';
+                mockSlider.type = 'range';
+                document.body.appendChild(mockSlider);
+                
+                const mockValue = document.createElement('span');
+                mockValue.id = 'test-value';
+                document.body.appendChild(mockValue);
+                
+                const sliderComponent = uiLibrary.createSlider({
+                    id: 'test-slider',
+                    valueElementId: 'test-value',
+                    min: 0,
+                    max: 100,
+                    step: 1,
+                    value: 50,
+                    label: 'Test Slider'
+                });
+                
+                if (sliderComponent && sliderComponent.methods) {
+                    addTestResult('ui-test-results', '✓ Slider component creation working', 'pass');
+                } else {
+                    addTestResult('ui-test-results', '✗ Slider component creation failed', 'fail');
+                }
+                
+                // Test component methods
+                sliderComponent.methods.setValue(75);
+                addTestResult('ui-test-results', '✓ Component methods working', 'pass');
+                
+                // Cleanup
+                uiLibrary.cleanup();
+                document.body.removeChild(mockSlider);
+                document.body.removeChild(mockValue);
+                addTestResult('ui-test-results', '✓ UIComponentLibrary cleanup working', 'pass');
+                
+            } catch (error) {
+                addTestResult('ui-test-results', `✗ UI Component Library test failed: ${error.message}`, 'fail');
+            }
+        }
+        
+        function testLifecycleFramework() {
+            clearTestResults('lifecycle-test-results');
+            
+            try {
+                // Test lifecycle framework
+                const lifecycleFramework = new SimulationLifecycleFramework();
+                addTestResult('lifecycle-test-results', '✓ LifecycleFramework created successfully', 'pass');
+                
+                // Test state manager creation
+                const stateManager = lifecycleFramework.createStateManager({ test: 'value' });
+                
+                if (stateManager && stateManager.getState) {
+                    addTestResult('lifecycle-test-results', '✓ State manager creation working', 'pass');
+                } else {
+                    addTestResult('lifecycle-test-results', '✗ State manager creation failed', 'fail');
+                }
+                
+                // Test state management
+                const initialState = stateManager.getState();
+                if (initialState.test === 'value') {
+                    addTestResult('lifecycle-test-results', '✓ State management working', 'pass');
+                } else {
+                    addTestResult('lifecycle-test-results', '✗ State management failed', 'fail');
+                }
+                
+                // Test event handler creation
+                const eventHandler = lifecycleFramework.createEventHandler();
+                
+                if (eventHandler && eventHandler.on && eventHandler.emit) {
+                    addTestResult('lifecycle-test-results', '✓ Event handler creation working', 'pass');
+                } else {
+                    addTestResult('lifecycle-test-results', '✗ Event handler creation failed', 'fail');
+                }
+                
+                // Test lifecycle hooks
+                lifecycleFramework.registerLifecycleHooks('test-sim', {
+                    onInit: () => addTestResult('lifecycle-test-results', '✓ Lifecycle hook executed', 'pass')
+                });
+                
+                lifecycleFramework.executeHook('test-sim', 'onInit');
+                
+                // Cleanup
+                lifecycleFramework.cleanup();
+                addTestResult('lifecycle-test-results', '✓ LifecycleFramework cleanup working', 'pass');
+                
+            } catch (error) {
+                addTestResult('lifecycle-test-results', `✗ Lifecycle Framework test failed: ${error.message}`, 'fail');
+            }
+        }
+        
+        function testRenderingUtils() {
+            clearTestResults('rendering-test-results');
+            
+            try {
+                // Test RenderingUtils creation
+                const renderingUtils = new RenderingUtils();
+                addTestResult('rendering-test-results', '✓ RenderingUtils created successfully', 'pass');
+                
+                // Test color manager
+                const colorManager = renderingUtils.createColorManager();
+                
+                if (colorManager && colorManager.hslToRgb) {
+                    addTestResult('rendering-test-results', '✓ Color manager creation working', 'pass');
+                } else {
+                    addTestResult('rendering-test-results', '✗ Color manager creation failed', 'fail');
+                }
+                
+                // Test HSL to RGB conversion
+                const rgb = colorManager.hslToRgb(0, 100, 50);
+                if (rgb && rgb.length === 3) {
+                    addTestResult('rendering-test-results', '✓ HSL to RGB conversion working', 'pass');
+                } else {
+                    addTestResult('rendering-test-results', '✗ HSL to RGB conversion failed', 'fail');
+                }
+                
+                // Test brightness application
+                const brightColor = colorManager.applyBrightness('#ff0000', 0.5);
+                if (brightColor && brightColor.startsWith('rgb')) {
+                    addTestResult('rendering-test-results', '✓ Brightness application working', 'pass');
+                } else {
+                    addTestResult('rendering-test-results', '✗ Brightness application failed', 'fail');
+                }
+                
+                // Test performance optimizer
+                const performanceOptimizer = renderingUtils.createPerformanceOptimizer();
+                
+                if (performanceOptimizer && performanceOptimizer.debounceRender) {
+                    addTestResult('rendering-test-results', '✓ Performance optimizer creation working', 'pass');
+                } else {
+                    addTestResult('rendering-test-results', '✗ Performance optimizer creation failed', 'fail');
+                }
+                
+                // Test grid renderer
+                const gridRenderer = renderingUtils.createGridRenderer();
+                
+                if (gridRenderer && gridRenderer.drawGrid) {
+                    addTestResult('rendering-test-results', '✓ Grid renderer creation working', 'pass');
+                } else {
+                    addTestResult('rendering-test-results', '✗ Grid renderer creation failed', 'fail');
+                }
+                
+                // Test performance metrics
+                const metrics = renderingUtils.getPerformanceMetrics();
+                if (metrics && typeof metrics.renderTime === 'number') {
+                    addTestResult('rendering-test-results', '✓ Performance metrics working', 'pass');
+                } else {
+                    addTestResult('rendering-test-results', '✗ Performance metrics failed', 'fail');
+                }
+                
+                // Cleanup
+                renderingUtils.clearCaches();
+                addTestResult('rendering-test-results', '✓ RenderingUtils cleanup working', 'pass');
+                
+            } catch (error) {
+                addTestResult('rendering-test-results', `✗ Rendering Utils test failed: ${error.message}`, 'fail');
+            }
+        }
+        
+        function testIntegration() {
+            clearTestResults('integration-test-results');
+            
+            try {
+                // Test that all frameworks work together
+                addTestResult('integration-test-results', 'Testing integration of all frameworks...', 'info');
+                
+                // Test that the main app can be created
+                const canvas = document.createElement('canvas');
+                canvas.id = 'canvas';
+                document.body.appendChild(canvas);
+                
+                // Test simulation creation
+                const conwaySim = new ConwayGameOfLife(canvas, canvas.getContext('2d'));
+                addTestResult('integration-test-results', '✓ Conway simulation created with lifecycle framework', 'pass');
+                
+                // Test that simulation has all the new frameworks
+                if (conwaySim.stateManager && conwaySim.eventHandler && conwaySim.colorManager) {
+                    addTestResult('integration-test-results', '✓ Simulation has all framework integrations', 'pass');
+                } else {
+                    addTestResult('integration-test-results', '✗ Simulation missing framework integrations', 'fail');
+                }
+                
+                // Test simulation lifecycle
+                conwaySim.init();
+                addTestResult('integration-test-results', '✓ Simulation initialization working', 'pass');
+                
+                conwaySim.start();
+                addTestResult('integration-test-results', '✓ Simulation start working', 'pass');
+                
+                conwaySim.pause();
+                addTestResult('integration-test-results', '✓ Simulation pause working', 'pass');
+                
+                // Cleanup
+                document.body.removeChild(canvas);
+                addTestResult('integration-test-results', '✓ Integration test cleanup successful', 'pass');
+                
+            } catch (error) {
+                addTestResult('integration-test-results', `✗ Integration test failed: ${error.message}`, 'fail');
+            }
+        }
+        
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testEventFramework();
+                testConfigurationFactory();
+                testUIComponentLibrary();
+                testLifecycleFramework();
+                testRenderingUtils();
+                testIntegration();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

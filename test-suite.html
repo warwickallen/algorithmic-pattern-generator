@@ -582,6 +582,33 @@
             };
         }, 'core');
         
+        testSuite.addTest('Termite Slider Functionality', async () => {
+            // Create a test canvas and context
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            // Create termite simulation
+            const simulation = new TermiteAlgorithm(canvas, ctx);
+            simulation.init();
+            
+            // Get initial termite count
+            const initialCount = simulation.termites.length;
+            
+            // Test setTermiteCount method
+            const newCount = 25;
+            simulation.setTermiteCount(newCount);
+            
+            // Check if termite count changed
+            const afterChangeCount = simulation.termites.length;
+            
+            return {
+                passed: afterChangeCount === newCount && afterChangeCount !== initialCount,
+                details: `Termite count changed from ${initialCount} to ${afterChangeCount} (expected ${newCount})`
+            };
+        }, 'core');
+        
         testSuite.addTest('Brightness Application', async () => {
             const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
             simulation.init();
@@ -862,6 +889,71 @@
             return {
                 passed: isImmediate && controlManager.activeControls === 'conway',
                 details: `Control switching took ${switchTime.toFixed(2)}ms (should be < 10ms)`
+            };
+        }, 'ui');
+        
+        testSuite.addTest('Termite Slider Integration', async () => {
+            // Create test DOM elements
+            const sliderContainer = document.createElement('div');
+            const sliderElement = document.createElement('input');
+            sliderElement.type = 'range';
+            sliderElement.id = 'termites-slider';
+            sliderElement.min = '10';
+            sliderElement.max = '100';
+            sliderElement.value = '50';
+            
+            const valueElement = document.createElement('span');
+            valueElement.id = 'termites-value';
+            valueElement.textContent = '50';
+            
+            sliderContainer.appendChild(sliderElement);
+            sliderContainer.appendChild(valueElement);
+            document.body.appendChild(sliderContainer);
+            
+            // Create test canvas and simulation
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            const simulation = new TermiteAlgorithm(canvas, ctx);
+            simulation.init();
+            
+            // Create mock app with handleTermiteCountChange method
+            const mockApp = {
+                handleTermiteCountChange: (count) => {
+                    simulation.setTermiteCount(count);
+                }
+            };
+            
+            // Create EventFramework and ControlManager
+            const eventFramework = new EventFramework();
+            const controlManager = new ControlManager(eventFramework);
+            
+            // Register termite handlers
+            controlManager.registerSimulationHandlers('termite', mockApp);
+            
+            // Get initial termite count
+            const initialCount = simulation.termites.length;
+            
+            // Simulate slider change
+            sliderElement.value = '25';
+            sliderElement.dispatchEvent(new Event('change'));
+            
+            // Wait a bit for the event to process
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            // Check if termite count changed
+            const afterChangeCount = simulation.termites.length;
+            
+            // Clean up
+            document.body.removeChild(sliderContainer);
+            eventFramework.cleanup();
+            controlManager.cleanup();
+            
+            return {
+                passed: afterChangeCount === 25 && afterChangeCount !== initialCount,
+                details: `Termite slider integration: count changed from ${initialCount} to ${afterChangeCount} (expected 25)`
             };
         }, 'ui');
         

@@ -271,6 +271,21 @@ class PredefinedTestSuites {
             };
         }, 'core');
         
+        runner.addTest('Termite Slider Functionality', async () => {
+            const simulation = SimulationFactory.createSimulation('termite', dependencies.canvas, dependencies.ctx);
+            simulation.init();
+            
+            const initialCount = simulation.termites.length;
+            const newCount = 25;
+            simulation.setTermiteCount(newCount);
+            const afterChangeCount = simulation.termites.length;
+            
+            return {
+                passed: afterChangeCount === newCount && afterChangeCount !== initialCount,
+                details: `Termite count changed from ${initialCount} to ${afterChangeCount} (expected ${newCount})`
+            };
+        }, 'core');
+        
         // Performance tests
         runner.addTest('Grid Creation Performance', async () => {
             const start = performance.now();
@@ -326,6 +341,78 @@ class PredefinedTestSuites {
             return {
                 passed: isVisible,
                 details: `Controls visibility after init: ${isVisible}`
+            };
+        }, 'ui');
+        
+        runner.addTest('Termite Slider Integration', async () => {
+            // This test requires DOM elements to exist
+            if (typeof document === 'undefined') {
+                return {
+                    passed: true,
+                    details: 'Skipped in non-DOM environment'
+                };
+            }
+            
+            // Create test DOM elements
+            const sliderElement = document.createElement('input');
+            sliderElement.type = 'range';
+            sliderElement.id = 'termites-slider';
+            sliderElement.min = '10';
+            sliderElement.max = '100';
+            sliderElement.value = '50';
+            
+            const valueElement = document.createElement('span');
+            valueElement.id = 'termites-value';
+            valueElement.textContent = '50';
+            
+            document.body.appendChild(sliderElement);
+            document.body.appendChild(valueElement);
+            
+            // Create test canvas and simulation
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            const simulation = SimulationFactory.createSimulation('termite', canvas, ctx);
+            simulation.init();
+            
+            // Create mock app with handleTermiteCountChange method
+            const mockApp = {
+                handleTermiteCountChange: (count) => {
+                    simulation.setTermiteCount(count);
+                }
+            };
+            
+            // Create EventFramework and ControlManager
+            const eventFramework = new EventFramework();
+            const controlManager = new ControlManager(eventFramework);
+            
+            // Register termite handlers
+            controlManager.registerSimulationHandlers('termite', mockApp);
+            
+            // Get initial termite count
+            const initialCount = simulation.termites.length;
+            
+            // Simulate slider change
+            sliderElement.value = '25';
+            sliderElement.dispatchEvent(new Event('change'));
+            
+            // Wait a bit for the event to process
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            // Check if termite count changed
+            const afterChangeCount = simulation.termites.length;
+            
+            // Clean up
+            document.body.removeChild(sliderElement);
+            document.body.removeChild(valueElement);
+            eventFramework.cleanup();
+            controlManager.cleanup();
+            
+            return {
+                passed: afterChangeCount === 25 && afterChangeCount !== initialCount,
+                details: `Termite slider integration: count changed from ${initialCount} to ${afterChangeCount} (expected 25)`
             };
         }, 'ui');
         
