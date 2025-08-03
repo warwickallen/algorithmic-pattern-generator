@@ -1146,11 +1146,6 @@ class AlgorithmicPatternGenerator {
         // Setup brightness controls
         this.setupBrightnessControls();
         
-        // Canvas interactions
-        this.eventFramework.register(this.canvas, 'click', (e) => {
-            this.handleCanvasClick(e);
-        });
-        
         // Mouse move tracking for Add Ant feature
         this.eventFramework.register(this.canvas, 'mousemove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
@@ -1560,6 +1555,7 @@ class AlgorithmicPatternGenerator {
         
         if (this.currentSimulation) {
             this.currentSimulation.pause();
+            this.currentSimulation.cleanupDragToggling();
         }
     }
 }

@@ -634,6 +634,7 @@ class BaseSimulation {
         simulationLifecycleFramework.executeHook(this.simulationId, 'onInit');
         this.resize();
         this.reset();
+        this.initDragToggling();
     }
     
     resize() {
@@ -948,6 +949,124 @@ class BaseSimulation {
         console.warn(`toggleCell not implemented for ${this.simulationId} simulation`);
     }
     
+    // Click-and-drag cell toggling functionality
+    initDragToggling() {
+        this.isDragging = false;
+        this.dragStartPos = null;
+        this.lastDragPos = null;
+        this.toggledCells = new Set(); // Track cells toggled during this drag
+        
+        // Store bound handlers for cleanup
+        this.boundMouseDown = this.handleMouseDown.bind(this);
+        this.boundMouseMove = this.handleMouseMove.bind(this);
+        this.boundMouseUp = this.handleMouseUp.bind(this);
+        
+        // Bind event handlers
+        this.canvas.addEventListener('mousedown', this.boundMouseDown);
+        this.canvas.addEventListener('mousemove', this.boundMouseMove);
+        this.canvas.addEventListener('mouseup', this.boundMouseUp);
+        this.canvas.addEventListener('mouseleave', this.boundMouseUp);
+    }
+    
+    handleMouseDown(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        this.isDragging = true;
+        this.dragStartPos = { x, y };
+        this.lastDragPos = { x, y };
+        this.toggledCells.clear();
+        
+        // Toggle the initial cell
+        this.toggleCellAtPosition(x, y);
+    }
+    
+    handleMouseMove(e) {
+        if (!this.isDragging) return;
+        
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Toggle cells along the drag path
+        this.toggleCellsAlongPath(this.lastDragPos.x, this.lastDragPos.y, x, y);
+        
+        this.lastDragPos = { x, y };
+    }
+    
+    handleMouseUp(e) {
+        if (!this.isDragging) return;
+        
+        this.isDragging = false;
+        this.dragStartPos = null;
+        this.lastDragPos = null;
+        this.toggledCells.clear();
+    }
+    
+    toggleCellAtPosition(x, y) {
+        const gridPos = this.screenToGrid(x, y);
+        if (gridPos && this.isValidGridPosition(gridPos.row, gridPos.col)) {
+            const cellKey = `${gridPos.row},${gridPos.col}`;
+            if (!this.toggledCells.has(cellKey)) {
+                this.toggleCell(x, y);
+                this.toggledCells.add(cellKey);
+                
+                // Trigger UI update if available
+                if (window.app && window.app.updateUI) {
+                    window.app.updateUI();
+                }
+            }
+        }
+    }
+    
+    toggleCellsAlongPath(startX, startY, endX, endY) {
+        // Use Bresenham's line algorithm to toggle all cells along the path
+        const startGrid = this.screenToGrid(startX, startY);
+        const endGrid = this.screenToGrid(endX, endY);
+        
+        if (!startGrid || !endGrid) return;
+        
+        // getLinePoints expects (col0, row0, col1, row1) - grid coordinates
+        const points = this.getLinePoints(startGrid.col, startGrid.row, endGrid.col, endGrid.row);
+        
+        for (const point of points) {
+            if (this.isValidGridPosition(point.row, point.col)) {
+                const screenPos = this.gridToScreen(point.col, point.row);
+                this.toggleCellAtPosition(screenPos.x, screenPos.y);
+            }
+        }
+    }
+    
+    getLinePoints(col0, row0, col1, row1) {
+        const points = [];
+        const dx = Math.abs(col1 - col0);
+        const dy = Math.abs(row1 - row0);
+        const sx = col0 < col1 ? 1 : -1;
+        const sy = row0 < row1 ? 1 : -1;
+        let err = dx - dy;
+        
+        let col = col0, row = row0;
+        
+        while (true) {
+            points.push({ row: row, col: col });
+            
+            if (col === col1 && row === row1) break;
+            
+            const e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                col += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                row += sy;
+            }
+        }
+        
+        return points;
+    }
+    
     // Gradient colour utilities with caching
     getGradientColor(x, y, startColor, endColor) {
         // Use dynamic colour scheme instead of static gradient
@@ -1119,6 +1238,16 @@ class BaseSimulation {
     
     setTrailColor(color) {
         this.trailColor = color; // null for dynamic, or specific colour string
+    }
+    
+    // Cleanup drag toggling event listeners
+    cleanupDragToggling() {
+        if (this.boundMouseDown) {
+            this.canvas.removeEventListener('mousedown', this.boundMouseDown);
+            this.canvas.removeEventListener('mousemove', this.boundMouseMove);
+            this.canvas.removeEventListener('mouseup', this.boundMouseUp);
+            this.canvas.removeEventListener('mouseleave', this.boundMouseUp);
+        }
     }
 }
 

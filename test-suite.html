@@ -679,6 +679,122 @@
             };
         }, 'core');
         
+        testSuite.addTest('Drag Cell Toggle', async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            const simulation = new ConwayGameOfLife(canvas, ctx);
+            simulation.init();
+            
+            // Check if drag toggling is initialized
+            const hasDragToggling = typeof simulation.initDragToggling === 'function' &&
+                                   typeof simulation.handleMouseDown === 'function' &&
+                                   typeof simulation.handleMouseMove === 'function' &&
+                                   typeof simulation.handleMouseUp === 'function';
+            
+            // Test single click still works
+            const initialCount = simulation.cellCount;
+            simulation.toggleCell(50, 50);
+            const afterSingleClick = simulation.cellCount;
+            
+            // Test drag functionality by simulating mouse events
+            simulation.toggleCell(100, 100); // Reset to known state
+            const beforeDrag = simulation.cellCount;
+            
+            // Simulate drag events
+            const mousedownEvent = new MouseEvent('mousedown', {
+                clientX: 50,
+                clientY: 50
+            });
+            const mousemoveEvent = new MouseEvent('mousemove', {
+                clientX: 150,
+                clientY: 150
+            });
+            const mouseupEvent = new MouseEvent('mouseup', {
+                clientX: 150,
+                clientY: 150
+            });
+            
+            simulation.handleMouseDown(mousedownEvent);
+            simulation.handleMouseMove(mousemoveEvent);
+            simulation.handleMouseUp(mouseupEvent);
+            
+            const afterDrag = simulation.cellCount;
+            
+            return {
+                passed: hasDragToggling && afterSingleClick !== initialCount && afterDrag !== beforeDrag,
+                details: `Drag toggling implemented: Single click ${afterSingleClick !== initialCount ? 'works' : 'fails'}, Drag ${afterDrag !== beforeDrag ? 'works' : 'fails'}`
+            };
+        }, 'core');
+
+        testSuite.addTest('Drag Coordinate Fix', async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            const simulation = new ConwayGameOfLife(canvas, ctx);
+            simulation.init();
+            
+            // Test horizontal drag specifically
+            simulation.clear();
+            const beforeHorizontalDrag = simulation.cellCount;
+            
+            // Simulate horizontal drag (x changes, y stays same)
+            const horizontalDownEvent = new MouseEvent('mousedown', {
+                clientX: 50,
+                clientY: 100
+            });
+            const horizontalMoveEvent = new MouseEvent('mousemove', {
+                clientX: 150,
+                clientY: 100
+            });
+            const horizontalUpEvent = new MouseEvent('mouseup', {
+                clientX: 150,
+                clientY: 100
+            });
+            
+            simulation.handleMouseDown(horizontalDownEvent);
+            simulation.handleMouseMove(horizontalMoveEvent);
+            simulation.handleMouseUp(horizontalUpEvent);
+            
+            const afterHorizontalDrag = simulation.cellCount;
+            
+            // Test vertical drag specifically
+            simulation.clear();
+            const beforeVerticalDrag = simulation.cellCount;
+            
+            // Simulate vertical drag (y changes, x stays same)
+            const verticalDownEvent = new MouseEvent('mousedown', {
+                clientX: 100,
+                clientY: 50
+            });
+            const verticalMoveEvent = new MouseEvent('mousemove', {
+                clientX: 100,
+                clientY: 150
+            });
+            const verticalUpEvent = new MouseEvent('mouseup', {
+                clientX: 100,
+                clientY: 150
+            });
+            
+            simulation.handleMouseDown(verticalDownEvent);
+            simulation.handleMouseMove(verticalMoveEvent);
+            simulation.handleMouseUp(verticalUpEvent);
+            
+            const afterVerticalDrag = simulation.cellCount;
+            
+            const horizontalWorks = afterHorizontalDrag > beforeHorizontalDrag;
+            const verticalWorks = afterVerticalDrag > beforeVerticalDrag;
+            
+            return {
+                passed: horizontalWorks && verticalWorks,
+                details: `Coordinate fix: Horizontal drag ${horizontalWorks ? 'works' : 'fails'}, Vertical drag ${verticalWorks ? 'works' : 'fails'}`
+            };
+        }, 'core');
+        
         testSuite.addTest('Speed Setting', async () => {
             const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
             simulation.init();

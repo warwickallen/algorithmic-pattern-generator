@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag Toggle Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        canvas {
+            border: 2px solid #333;
+            background: #000;
+            display: block;
+            margin: 20px 0;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .info {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .test-results {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Drag Toggle Fix Test</h1>
+        
+        <div class="info">
+            <h3>Test Instructions:</h3>
+            <ol>
+                <li>Click on a simulation button to load it</li>
+                <li>Try clicking on individual cells - they should toggle correctly</li>
+                <li>Try dragging horizontally - you should see a horizontal line of toggled cells</li>
+                <li>Try dragging vertically - you should see a vertical line of toggled cells</li>
+                <li>If the coordinates were transposed, horizontal drags would create vertical lines and vice versa</li>
+            </ol>
+        </div>
+
+        <div class="controls">
+            <button onclick="loadSimulation('conway')">Load Conway's Game of Life</button>
+            <button onclick="loadSimulation('termite')">Load Termite Algorithm</button>
+            <button onclick="loadSimulation('langton')">Load Langton's Ant</button>
+            <button onclick="runProgrammaticTest()">Run Programmatic Test</button>
+            <button onclick="clearCanvas()">Clear Canvas</button>
+        </div>
+
+        <canvas id="canvas" width="800" height="600"></canvas>
+
+        <div class="test-results">
+            <h3>Test Results:</h3>
+            <div id="results">No tests run yet.</div>
+        </div>
+    </div>
+
+    <script src="simulations.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let currentSimulation = null;
+        let canvas, ctx;
+
+        function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = 800;
+            canvas.height = 600;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function loadSimulation(type) {
+            if (currentSimulation) {
+                currentSimulation.cleanupDragToggling();
+            }
+            
+            currentSimulation = SimulationFactory.createSimulation(type, canvas, ctx);
+            currentSimulation.init();
+            
+            document.getElementById('results').innerHTML = `Loaded ${type} simulation. Try clicking and dragging to test.`;
+        }
+
+        function clearCanvas() {
+            if (currentSimulation) {
+                currentSimulation.clear();
+            }
+        }
+
+        function runProgrammaticTest() {
+            if (!currentSimulation) {
+                document.getElementById('results').innerHTML = 'Please load a simulation first.';
+                return;
+            }
+
+            const results = [];
+            
+            // Test 1: Single click
+            const initialCount = currentSimulation.cellCount || 0;
+            currentSimulation.toggleCell(50, 50);
+            const afterClick = currentSimulation.cellCount || 0;
+            results.push(`Single click test: ${afterClick !== initialCount ? 'PASS' : 'FAIL'}`);
+            
+            // Test 2: Simulate horizontal drag
+            const beforeDrag = currentSimulation.cellCount || 0;
+            
+            // Simulate mousedown at (100, 100)
+            const mouseDownEvent = new MouseEvent('mousedown', {
+                clientX: 100,
+                clientY: 100,
+                bubbles: true
+            });
+            canvas.dispatchEvent(mouseDownEvent);
+            
+            // Simulate mousemove to (200, 100) - horizontal movement
+            const mouseMoveEvent = new MouseEvent('mousemove', {
+                clientX: 200,
+                clientY: 100,
+                bubbles: true
+            });
+            canvas.dispatchEvent(mouseMoveEvent);
+            
+            // Simulate mouseup
+            const mouseUpEvent = new MouseEvent('mouseup', {
+                bubbles: true
+            });
+            canvas.dispatchEvent(mouseUpEvent);
+            
+            const afterDrag = currentSimulation.cellCount || 0;
+            results.push(`Horizontal drag test: ${afterDrag > beforeDrag ? 'PASS' : 'FAIL'}`);
+            
+            document.getElementById('results').innerHTML = results.join('<br>');
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html> 
