@@ -529,6 +529,34 @@
             };
         }, 'core');
         
+        testSuite.addTest('Termite Cell Toggle', async () => {
+            const simulation = new TermiteAlgorithm(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            const initialCount = simulation.cellCount;
+            simulation.toggleCell(50, 50);
+            const afterToggleCount = simulation.cellCount;
+            
+            return {
+                passed: afterToggleCount !== initialCount,
+                details: `Wood chip count changed from ${initialCount} to ${afterToggleCount}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Langton Cell Toggle', async () => {
+            const simulation = new LangtonsAnt(testSuite.canvas, testSuite.ctx);
+            simulation.init();
+            
+            const initialCount = simulation.cellCount;
+            simulation.toggleCell(50, 50);
+            const afterToggleCount = simulation.cellCount;
+            
+            return {
+                passed: afterToggleCount !== initialCount,
+                details: `Cell count changed from ${initialCount} to ${afterToggleCount}`
+            };
+        }, 'core');
+        
         testSuite.addTest('Conway Neighbour Counting', async () => {
             const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
             simulation.init();
@@ -619,6 +647,35 @@
             return {
                 passed: brightColor !== originalColor,
                 details: `Brightness applied: ${originalColor} → ${brightColor}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Cell Toggle', async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            const conway = new ConwayGameOfLife(canvas, ctx);
+            const termite = new TermiteAlgorithm(canvas, ctx);
+            const langton = new LangtonsAnt(canvas, ctx);
+            
+            // Check if all simulations have toggleCell method
+            const allHaveToggle = typeof conway.toggleCell === 'function' &&
+                                 typeof termite.toggleCell === 'function' &&
+                                 typeof langton.toggleCell === 'function';
+            
+            // Check if BaseSimulation has generic method
+            const baseHasToggle = typeof BaseSimulation.prototype.toggleCell === 'function';
+            
+            // Check if each simulation overrides the base method
+            const conwayOverrides = conway.toggleCell !== BaseSimulation.prototype.toggleCell;
+            const termiteOverrides = termite.toggleCell !== BaseSimulation.prototype.toggleCell;
+            const langtonOverrides = langton.toggleCell !== BaseSimulation.prototype.toggleCell;
+            
+            return {
+                passed: allHaveToggle && baseHasToggle && conwayOverrides && termiteOverrides && langtonOverrides,
+                details: `DRY implementation: Base method exists, all simulations override it`
             };
         }, 'core');
         

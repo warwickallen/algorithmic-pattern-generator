@@ -1308,8 +1308,8 @@ class AlgorithmicPatternGenerator {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        // Only allow cell toggling for Conway's Game of Life
-        if (this.currentType === 'conway' && this.currentSimulation.toggleCell) {
+        // Allow cell toggling for all simulations
+        if (this.currentSimulation.toggleCell) {
             this.currentSimulation.toggleCell(x, y);
             this.updateUI();
         }

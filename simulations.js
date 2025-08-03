@@ -942,6 +942,12 @@ class BaseSimulation {
         return row >= 0 && row < this.rows && col >= 0 && col < this.cols;
     }
     
+    // Generic cell toggling method - to be overridden by subclasses
+    toggleCell(x, y) {
+        // Default implementation - subclasses should override this
+        console.warn(`toggleCell not implemented for ${this.simulationId} simulation`);
+    }
+    
     // Gradient colour utilities with caching
     getGradientColor(x, y, startColor, endColor) {
         // Use dynamic colour scheme instead of static gradient
@@ -1400,6 +1406,25 @@ class TermiteAlgorithm extends BaseSimulation {
         this.initTermites();
     }
     
+    toggleCell(x, y) {
+        const { col, row } = this.screenToGrid(x, y);
+        
+        if (this.isValidGridPosition(row, col)) {
+            const gridX = col * this.cellSize;
+            const gridY = row * this.cellSize;
+            const chipKey = `${gridX},${gridY}`;
+            
+            if (this.woodChips.has(chipKey)) {
+                this.woodChips.delete(chipKey);
+            } else {
+                this.woodChips.add(chipKey);
+            }
+            
+            this.cellCount = this.woodChips.size;
+            this.draw();
+        }
+    }
+    
     randomize() {
         this.woodChips.clear();
         const numChips = Math.floor((this.cols * this.rows) * 0.3);
@@ -1621,6 +1646,16 @@ class LangtonsAnt extends BaseSimulation {
         
         // Draw immediately so the ant is visible even when paused
         this.draw();
+    }
+    
+    toggleCell(x, y) {
+        const { col, row } = this.screenToGrid(x, y);
+        
+        if (this.isValidGridPosition(row, col)) {
+            this.grid[row][col] = !this.grid[row][col];
+            this.cellCount = this.countLiveCells(this.grid);
+            this.draw();
+        }
     }
     
     randomize() {
