@@ -1,0 +1,20 @@
+---
+- Each of the four corners start with a different hue.
+- The hue at each corner slowly changes, moving around the colour wheel.
+- The rate of change of the hue at each corner is independant of the other corners.
+  Its period is the time taken to complete a full cycle of the colour wheel.
+- The hue of any point between the corners is a linear interpolation of the current corner colours,
+  based on the distance from the respective corners.
+- Corners:
+    - Top left corner:
+        Start hue: 45 degrees
+        Period: 60 seconds
+    - Top right corner:
+        Start hue: 135 degrees
+        Period: 75 seconds
+    - Bottom right corner:
+        Start hue: 225 degrees
+        Period: 90 seconds
+    - Bottom left corner:
+        Start hue: 315 degrees
+        Period: 105 seconds

@@ -1,3 +1,184 @@
+// Dynamic colour scheme implementation based on four-corner hue rotation
+class DynamicColourScheme {
+    constructor() {
+        // Corner configurations from the YAML specification
+        this.corners = {
+            topLeft: { startHue: 45, period: 60000 },    // 60 seconds
+            topRight: { startHue: 135, period: 75000 },  // 75 seconds
+            bottomRight: { startHue: 225, period: 90000 }, // 90 seconds
+            bottomLeft: { startHue: 315, period: 105000 }  // 105 seconds
+        };
+        
+        this.startTime = Date.now();
+    }
+    
+    // Get current hue for a specific corner
+    getCornerHue(corner, currentTime = Date.now()) {
+        const config = this.corners[corner];
+        
+        // For static rendering (currentTime = 0), use the starting hue directly
+        if (currentTime === 0) {
+            return config.startHue;
+        }
+        
+        const elapsed = currentTime - this.startTime;
+        const hue = (config.startHue + (elapsed / config.period) * 360) % 360;
+        return hue;
+    }
+    
+    // Get interpolated hue for any position on the canvas
+    getHueAtPosition(x, y, canvasWidth, canvasHeight, currentTime = null) {
+        // Clamp position to canvas bounds
+        const clampedX = Math.max(0, Math.min(x, canvasWidth));
+        const clampedY = Math.max(0, Math.min(y, canvasHeight));
+        
+        // Normalize position to 0-1 range
+        const normX = clampedX / canvasWidth;
+        const normY = clampedY / canvasHeight;
+        
+        // For static rendering, use starting hues directly
+        if (currentTime === null) {
+            const topLeftHue = this.corners.topLeft.startHue;
+            const topRightHue = this.corners.topRight.startHue;
+            const bottomRightHue = this.corners.bottomRight.startHue;
+            const bottomLeftHue = this.corners.bottomLeft.startHue;
+            
+            // Use proper bilinear interpolation with circular hue handling
+            return this.getBilinearHue(normX, normY, topLeftHue, topRightHue, bottomRightHue, bottomLeftHue);
+        }
+        
+        // For dynamic rendering, use time-based hues
+        const topLeftHue = this.getCornerHue('topLeft', currentTime);
+        const topRightHue = this.getCornerHue('topRight', currentTime);
+        const bottomRightHue = this.getCornerHue('bottomRight', currentTime);
+        const bottomLeftHue = this.getCornerHue('bottomLeft', currentTime);
+        
+        // Use proper bilinear interpolation with circular hue handling
+        return this.getBilinearHue(normX, normY, topLeftHue, topRightHue, bottomRightHue, bottomLeftHue);
+    }
+    
+    // Get hue using proper bilinear interpolation with circular hue handling
+    getBilinearHue(normX, normY, topLeftHue, topRightHue, bottomRightHue, bottomLeftHue) {
+        // Convert all hues to unit vectors on the colour wheel
+        const topLeftVector = this.hueToVector(topLeftHue);
+        const topRightVector = this.hueToVector(topRightHue);
+        const bottomRightVector = this.hueToVector(bottomRightHue);
+        const bottomLeftVector = this.hueToVector(bottomLeftHue);
+        
+        // Interpolate vectors instead of angles
+        const topVector = this.interpolateVector(topLeftVector, topRightVector, normX);
+        const bottomVector = this.interpolateVector(bottomLeftVector, bottomRightVector, normX);
+        const finalVector = this.interpolateVector(topVector, bottomVector, normY);
+        
+        // Convert back to hue
+        return this.vectorToHue(finalVector);
+    }
+    
+    // Convert hue to unit vector on the colour wheel
+    hueToVector(hue) {
+        const angle = (hue * Math.PI) / 180;
+        return {
+            x: Math.cos(angle),
+            y: Math.sin(angle)
+        };
+    }
+    
+    // Convert unit vector back to hue
+    vectorToHue(vector) {
+        let angle = Math.atan2(vector.y, vector.x);
+        let hue = (angle * 180) / Math.PI;
+        
+        // Normalize to 0-360 range
+        hue = ((hue % 360) + 360) % 360;
+        
+        return hue;
+    }
+    
+    // Interpolate between two unit vectors
+    interpolateVector(v1, v2, factor) {
+        // Linear interpolation of vector components
+        const x = v1.x + (v2.x - v1.x) * factor;
+        const y = v1.y + (v2.y - v1.y) * factor;
+        
+        // Normalize to unit vector
+        const length = Math.sqrt(x * x + y * y);
+        if (length > 0) {
+            return {
+                x: x / length,
+                y: y / length
+            };
+        } else {
+            // If vectors are opposite, choose one based on factor
+            return factor < 0.5 ? v1 : v2;
+        }
+    }
+    
+    // Interpolate between two hues, handling the circular nature of hue
+    interpolateHue(hue1, hue2, factor) {
+        // Normalize hues to 0-360 range
+        hue1 = ((hue1 % 360) + 360) % 360;
+        hue2 = ((hue2 % 360) + 360) % 360;
+        
+        // Calculate the shortest path around the colour wheel
+        let diff = hue2 - hue1;
+        
+        // If the difference is greater than 180 degrees, go the other way
+        if (diff > 180) {
+            diff -= 360;
+        } else if (diff < -180) {
+            diff += 360;
+        }
+        
+        // Interpolate along the shortest path
+        let result = hue1 + diff * factor;
+        
+        // Normalize the result to 0-360 range
+        result = ((result % 360) + 360) % 360;
+        
+        return result;
+    }
+    
+    // Convert HSL to RGB
+    hslToRgb(h, s, l) {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+        
+        const c = (1 - Math.abs(2 * l - 1)) * s;
+        const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+        const m = l - c / 2;
+        
+        let r, g, b;
+        
+        if (h < 1/6) {
+            r = c; g = x; b = 0;
+        } else if (h < 2/6) {
+            r = x; g = c; b = 0;
+        } else if (h < 3/6) {
+            r = 0; g = c; b = x;
+        } else if (h < 4/6) {
+            r = 0; g = x; b = c;
+        } else if (h < 5/6) {
+            r = x; g = 0; b = c;
+        } else {
+            r = c; g = 0; b = x;
+        }
+        
+        return {
+            r: Math.round((r + m) * 255),
+            g: Math.round((g + m) * 255),
+            b: Math.round((b + m) * 255)
+        };
+    }
+    
+    // Get RGB colour for a position with specified saturation and lightness
+    getColourAtPosition(x, y, canvasWidth, canvasHeight, saturation = 80, lightness = 50, currentTime = null) {
+        const hue = this.getHueAtPosition(x, y, canvasWidth, canvasHeight, currentTime);
+        const rgb = this.hslToRgb(hue, saturation, lightness);
+        return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+    }
+}
+
 // Base simulation class with performance optimization
 class BaseSimulation {
     constructor(canvas, ctx) {
@@ -18,6 +199,9 @@ class BaseSimulation {
         this.renderCache = new Map(); // Cache for rendered elements
         this.colorCache = new Map(); // Cache for brightness-adjusted colors
         this.maxCacheSize = 1000; // Limit cache size to prevent memory leaks
+        
+        // Dynamic colour scheme
+        this.colourScheme = new DynamicColourScheme();
     }
     
     init() {
@@ -313,17 +497,10 @@ class BaseSimulation {
     
     // Gradient colour utilities with caching
     getGradientColor(x, y, startColor, endColor) {
-        const maxX = this.canvas.width;
-        const maxY = this.canvas.height;
-        
-        // Normalize position (0 to 1)
-        const normX = x / maxX;
-        const normY = y / maxY;
-        
-        // Combine X and Y for diagonal gradient effect
-        const factor = (normX + normY) / 2;
-        
-        return this.interpolateColor(startColor, endColor, factor);
+        // Use dynamic colour scheme instead of static gradient
+        // Pass current time if simulation is running, otherwise use null for static rendering
+        const currentTime = this.isRunning ? Date.now() : null;
+        return this.colourScheme.getColourAtPosition(x, y, this.canvas.width, this.canvas.height, 80, 50, currentTime);
     }
     
     interpolateColor(color1, color2, factor) {
@@ -360,7 +537,7 @@ class BaseSimulation {
     // Common cell rendering method with caching
     drawCell(x, y, color = null) {
         if (!color) {
-            color = this.getGradientColor(x, y, '#00ff00', '#4a90e2');
+            color = this.getGradientColor(x, y);
         }
         
         // Apply brightness to the color
@@ -377,7 +554,9 @@ class BaseSimulation {
     // Common actor rendering method (for termites and ants) with caching
     drawActor(x, y, radius, color = null) {
         if (!color) {
-            color = this.getGradientColor(x, y, '#ff6b35', '#ff4757');
+            // Use a slightly different saturation/lightness for actors to make them stand out
+            const currentTime = this.isRunning ? Date.now() : null;
+            color = this.colourScheme.getColourAtPosition(x, y, this.canvas.width, this.canvas.height, 90, 60, currentTime);
         }
         
         // Apply brightness to the color
