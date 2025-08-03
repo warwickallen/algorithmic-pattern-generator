@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Likelihood Slider Layout Test</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Test the action container layout -->
+        <div id="action-container" class="control-group dynamic-position" style="position: relative; top: 20px; left: 20px;">
+            <button id="reset-btn" class="btn secondary">Reset</button>
+            
+            <!-- Likelihood Control -->
+            <div class="likelihood-control">
+                <div class="control-group">
+                    <label for="likelihood-slider">Coverage:</label>
+                    <input type="range" id="likelihood-slider" min="0" max="100" value="30" class="slider">
+                    <span id="likelihood-value">30%</span>
+                </div>
+            </div>
+            
+            <button id="random-btn" class="btn secondary">Random</button>
+        </div>
+
+        <!-- Test the display container layout for comparison -->
+        <div id="display-container" class="control-group dynamic-position" style="position: relative; top: 100px; left: 20px;">
+            <button id="immersive-btn" class="btn secondary">Immersive Mode</button>
+            
+            <!-- Brightness Control -->
+            <div class="brightness-control">
+                <div class="control-group">
+                    <label for="brightness-slider">Brightness:</label>
+                    <input type="range" id="brightness-slider" min="0.1" max="2.0" step="0.1" value="1.0" class="slider">
+                    <span id="brightness-value">100%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test the likelihood slider functionality
+        const likelihoodSlider = document.getElementById('likelihood-slider');
+        const likelihoodValue = document.getElementById('likelihood-value');
+        
+        if (likelihoodSlider && likelihoodValue) {
+            likelihoodSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                likelihoodValue.textContent = `${value}%`;
+            });
+        }
+
+        // Test the brightness slider functionality
+        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessValue = document.getElementById('brightness-value');
+        
+        if (brightnessSlider && brightnessValue) {
+            brightnessSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                brightnessValue.textContent = `${Math.round(value * 100)}%`;
+            });
+        }
+    </script>
+</body>
+</html> 

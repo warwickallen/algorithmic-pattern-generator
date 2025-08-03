@@ -119,6 +119,18 @@ body {
     z-index: auto;
 }
 
+/* Control groups inside likelihood-control should not be fixed positioned */
+.likelihood-control .control-group {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    z-index: auto;
+}
+
 .control-group:hover {
     background: linear-gradient(145deg, rgba(10, 10, 10, 0.7), rgba(20, 20, 20, 0.7));
     border-color: rgba(255, 255, 255, 0.3);
@@ -286,6 +298,13 @@ body {
     margin-left: 1rem;
 }
 
+.likelihood-control {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-left: 1rem;
+}
+
 .control-group {
     display: flex;
     align-items: center;
@@ -345,7 +364,8 @@ body {
 #termite-speed-value,
 #langton-speed-value,
 #brightness-value,
-#termites-value {
+#termites-value,
+#likelihood-value {
     font-size: 0.8rem;
     color: #cccccc;
     min-width: 50px;
@@ -526,6 +546,13 @@ body {
     }
     
     .brightness-control {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+    
+    .likelihood-control {
         flex-direction: column;
         gap: 0.5rem;
         margin-left: 0;

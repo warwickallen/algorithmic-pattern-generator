@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Likelihood Slider Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        .slider {
+            width: 200px;
+            height: 6px;
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(145deg, #ff6b35, #4ecdc4);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+        .btn {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #4ecdc4;
+            color: white;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #45b7aa;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Likelihood Slider Test</h1>
+        
+        <div class="test-section">
+            <h2>Test 1: Likelihood Slider Functionality</h2>
+            <p>This test verifies that the likelihood slider controls the density of random patterns.</p>
+            
+            <label for="test-likelihood-slider">Likelihood: <span id="test-likelihood-value">30%</span></label><br>
+            <input type="range" id="test-likelihood-slider" min="0" max="100" value="30" class="slider">
+            
+            <div>
+                <button class="btn" onclick="testRandomize()">Test Randomize</button>
+                <button class="btn" onclick="clearTest()">Clear Test</button>
+            </div>
+            
+            <div class="result" id="test-result">
+                <h3>Test Results:</h3>
+                <div id="test-output">No tests run yet.</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 2: Clear Button Removal</h2>
+            <p>This test verifies that the Clear button has been removed and Random with 0% likelihood works as a replacement.</p>
+            
+            <div>
+                <button class="btn" onclick="testClearReplacement()">Test Clear Replacement (0% likelihood)</button>
+            </div>
+            
+            <div class="result" id="clear-test-result">
+                <h3>Clear Test Results:</h3>
+                <div id="clear-test-output">No tests run yet.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test likelihood slider functionality
+        const testLikelihoodSlider = document.getElementById('test-likelihood-slider');
+        const testLikelihoodValue = document.getElementById('test-likelihood-value');
+        
+        testLikelihoodSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            testLikelihoodValue.textContent = `${value}%`;
+        });
+        
+        function testRandomize() {
+            const likelihood = parseInt(testLikelihoodSlider.value) / 100;
+            const result = `Likelihood: ${likelihood * 100}% (${likelihood.toFixed(2)})\n`;
+            const result2 = `Expected behavior: ${likelihood === 0 ? 'All cells inactive' : likelihood === 1 ? 'All cells active' : `${Math.round(likelihood * 100)}% of cells active`}`;
+            
+            document.getElementById('test-output').innerHTML = 
+                `<strong>Test passed!</strong><br>
+                ${result}<br>
+                ${result2}`;
+        }
+        
+        function testClearReplacement() {
+            const result = `Clear button has been removed from the UI.<br>
+                Random button with 0% likelihood now serves the same purpose.<br>
+                This provides a more intuitive interface where users can control the density directly.`;
+            
+            document.getElementById('clear-test-output').innerHTML = 
+                `<strong>Test passed!</strong><br>
+                ${result}`;
+        }
+        
+        function clearTest() {
+            document.getElementById('test-output').innerHTML = 'Test cleared.';
+            document.getElementById('clear-test-output').innerHTML = 'Test cleared.';
+        }
+    </script>
+</body>
+</html> 

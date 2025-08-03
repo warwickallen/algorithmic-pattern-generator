@@ -1127,7 +1127,6 @@ class AlgorithmicPatternGenerator {
         // Control buttons with element caching
         const startPauseBtn = this.eventFramework.getElement('#start-pause-btn');
         const resetBtn = this.eventFramework.getElement('#reset-btn');
-        const clearBtn = this.eventFramework.getElement('#clear-btn');
         const immersiveBtn = this.eventFramework.getElement('#immersive-btn');
         
         if (startPauseBtn) {
@@ -1136,15 +1135,15 @@ class AlgorithmicPatternGenerator {
         if (resetBtn) {
             this.eventFramework.register(resetBtn, 'click', () => this.resetSimulation());
         }
-        if (clearBtn) {
-            this.eventFramework.register(clearBtn, 'click', () => this.clearSimulation());
-        }
         if (immersiveBtn) {
             this.eventFramework.register(immersiveBtn, 'click', () => this.toggleImmersiveMode());
         }
         
         // Setup brightness controls
         this.setupBrightnessControls();
+        
+        // Setup likelihood slider
+        this.setupLikelihoodSlider();
         
         // Mouse move tracking for Add Ant feature
         this.eventFramework.register(this.canvas, 'mousemove', (e) => {
@@ -1183,6 +1182,23 @@ class AlgorithmicPatternGenerator {
         
         // Initialize brightness display
         this.updateBrightnessDisplay();
+    }
+    
+    setupLikelihoodSlider() {
+        const likelihoodSlider = this.eventFramework.getElement('#likelihood-slider');
+        const likelihoodValue = this.eventFramework.getElement('#likelihood-value');
+        
+        // Likelihood slider with immediate value updates
+        if (likelihoodSlider) {
+            const likelihoodHandler = (e) => {
+                const value = parseInt(e.target.value);
+                if (likelihoodValue) {
+                    likelihoodValue.textContent = `${value}%`;
+                }
+            };
+            
+            this.eventFramework.register(likelihoodSlider, 'input', likelihoodHandler);
+        }
     }
     
     createSimulation(type) {
@@ -1235,12 +1251,7 @@ class AlgorithmicPatternGenerator {
         }
     }
     
-    clearSimulation() {
-        if (this.currentSimulation) {
-            this.currentSimulation.clear();
-            this.updateUI();
-        }
-    }
+
     
     toggleImmersiveMode() {
         this.isImmersive = !this.isImmersive;
@@ -1433,8 +1444,12 @@ class AlgorithmicPatternGenerator {
     handleRandomPattern(simType) {
         if (this.currentType !== simType || !this.currentSimulation) return;
         
+        // Get likelihood value from slider
+        const likelihoodSlider = this.eventFramework.getElement('#likelihood-slider');
+        const likelihood = likelihoodSlider ? parseInt(likelihoodSlider.value) / 100 : 0.3;
+        
         if (this.currentSimulation.randomize) {
-            this.currentSimulation.randomize();
+            this.currentSimulation.randomize(likelihood);
             this.updateUI();
         }
     }

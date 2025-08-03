@@ -58,10 +58,18 @@
             </div>
         </div>
 
-        <!-- Reset, Clear, Random buttons (top) -->
+        <!-- Reset, Random buttons and likelihood slider (top) -->
         <div id="action-container" class="control-group dynamic-position">
             <button id="reset-btn" class="btn secondary">Reset</button>
-            <button id="clear-btn" class="btn secondary">Clear</button>
+            
+            <!-- Likelihood Control -->
+            <div class="likelihood-control">
+                <div class="control-group">
+                    <label for="likelihood-slider">Coverage:</label>
+                    <input type="range" id="likelihood-slider" min="0" max="100" value="30" class="slider">
+                    <span id="likelihood-value">30%</span>
+                </div>
+            </div>
             
             <!-- Conway's Game of Life specific buttons -->
             <button id="random-btn" class="btn secondary" style="display: none;">Random</button>

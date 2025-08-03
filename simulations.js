@@ -1386,12 +1386,12 @@ class ConwayGameOfLife extends BaseSimulation {
         this.updateInterval = 1000 / this.speed;
     }
     
-    randomize() {
+    randomize(likelihood = 0.3) {
         // Clear existing pattern
         this.initGrids();
         
-        // Fill with random cells (30% density)
-        this.cellCount = this.randomizeGrid(this.grids.current, 0.3);
+        // Fill with random cells using the provided likelihood
+        this.cellCount = this.randomizeGrid(this.grids.current, likelihood);
         this.generation = 0;
         this.draw();
     }
@@ -1554,14 +1554,18 @@ class TermiteAlgorithm extends BaseSimulation {
         }
     }
     
-    randomize() {
+    randomize(likelihood = 0.3) {
         this.woodChips.clear();
-        const numChips = Math.floor((this.cols * this.rows) * 0.3);
         
-        for (let i = 0; i < numChips; i++) {
-            const x = Math.floor(Math.random() * this.cols) * this.cellSize;
-            const y = Math.floor(Math.random() * this.rows) * this.cellSize;
-            this.woodChips.add(`${x},${y}`);
+        // Use the same approach as other simulations for consistent coverage
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                if (Math.random() < likelihood) {
+                    const x = col * this.cellSize;
+                    const y = row * this.cellSize;
+                    this.woodChips.add(`${x},${y}`);
+                }
+            }
         }
         
         // Reset termites to not carrying anything
@@ -1787,12 +1791,12 @@ class LangtonsAnt extends BaseSimulation {
         }
     }
     
-    randomize() {
+    randomize(likelihood = 0.5) {
         // Clear existing pattern
         this.initGrid();
         
-        // Fill with random cells (50% density of white cells)
-        this.cellCount = this.randomizeGrid(this.grid, 0.5);
+        // Fill with random cells using the provided likelihood
+        this.cellCount = this.randomizeGrid(this.grid, likelihood);
         this.generation = 0;
         this.draw();
     }

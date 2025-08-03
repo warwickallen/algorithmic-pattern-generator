@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag Toggling Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .pass {
+            background: #E8F5E8;
+            color: #2E7D32;
+        }
+        .fail {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Drag Toggling Test</h1>
+        <p>Test the click-and-drag cell toggling functionality for all simulations.</p>
+        
+        <canvas id="test-canvas" width="400" height="300"></canvas>
+        
+        <div>
+            <button onclick="testConway()">Test Conway</button>
+            <button onclick="testTermite()">Test Termite</button>
+            <button onclick="testLangton()">Test Langton</button>
+            <button onclick="testDragFunctionality()">Test Drag Functionality</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="i18n.js"></script>
+    <script src="simulations.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        const canvas = document.getElementById('test-canvas');
+        const ctx = canvas.getContext('2d');
+        let currentSimulation = null;
+        
+        function testConway() {
+            if (currentSimulation) {
+                currentSimulation.pause();
+            }
+            currentSimulation = new ConwayGameOfLife(canvas, ctx);
+            currentSimulation.init();
+            currentSimulation.draw();
+            addResult('Conway simulation loaded', 'pass');
+        }
+        
+        function testTermite() {
+            if (currentSimulation) {
+                currentSimulation.pause();
+            }
+            currentSimulation = new TermiteAlgorithm(canvas, ctx);
+            currentSimulation.init();
+            currentSimulation.draw();
+            addResult('Termite simulation loaded', 'pass');
+        }
+        
+        function testLangton() {
+            if (currentSimulation) {
+                currentSimulation.pause();
+            }
+            currentSimulation = new LangtonsAnt(canvas, ctx);
+            currentSimulation.init();
+            currentSimulation.draw();
+            addResult('Langton simulation loaded', 'pass');
+        }
+        
+        function testDragFunctionality() {
+            if (!currentSimulation) {
+                addResult('No simulation loaded', 'fail');
+                return;
+            }
+            
+            // Test if drag methods exist
+            const hasDragMethods = typeof currentSimulation.initDragToggling === 'function' &&
+                                 typeof currentSimulation.handleMouseDown === 'function' &&
+                                 typeof currentSimulation.handleMouseMove === 'function' &&
+                                 typeof currentSimulation.handleMouseUp === 'function';
+            
+            if (!hasDragMethods) {
+                addResult('Drag methods not found', 'fail');
+                return;
+            }
+            
+            // Test single click functionality
+            const initialCount = currentSimulation.cellCount;
+            currentSimulation.toggleCell(50, 50);
+            const afterClick = currentSimulation.cellCount;
+            
+            if (afterClick !== initialCount) {
+                addResult('Single click toggling works', 'pass');
+            } else {
+                addResult('Single click toggling failed', 'fail');
+            }
+            
+            // Test drag functionality
+            const beforeDrag = currentSimulation.cellCount;
+            
+            // Simulate drag events
+            const rect = canvas.getBoundingClientRect();
+            const mousedownEvent = new MouseEvent('mousedown', {
+                clientX: rect.left + 50,
+                clientY: rect.top + 50
+            });
+            const mousemoveEvent = new MouseEvent('mousemove', {
+                clientX: rect.left + 150,
+                clientY: rect.top + 150
+            });
+            const mouseupEvent = new MouseEvent('mouseup', {
+                clientX: rect.left + 150,
+                clientY: rect.top + 150
+            });
+            
+            currentSimulation.handleMouseDown(mousedownEvent);
+            currentSimulation.handleMouseMove(mousemoveEvent);
+            currentSimulation.handleMouseUp(mouseupEvent);
+            
+            const afterDrag = currentSimulation.cellCount;
+            
+            if (afterDrag !== beforeDrag) {
+                addResult('Drag toggling works', 'pass');
+            } else {
+                addResult('Drag toggling failed', 'fail');
+            }
+            
+            currentSimulation.draw();
+        }
+        
+        function addResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.textContent = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        // Initialize with Conway
+        testConway();
+    </script>
+</body>
+</html> 
