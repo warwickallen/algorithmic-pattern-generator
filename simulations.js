@@ -1150,7 +1150,7 @@ class ConwayGameOfLife extends BaseSimulation {
     
     clear() {
         super.clear();
-        this.initData();
+        this.initGrids(); // Only clear the grids, keep generation count and simulation state
         this.draw();
     }
     
@@ -1462,7 +1462,7 @@ class LangtonsAnt extends BaseSimulation {
     
     clear() {
         super.clear();
-        this.initData();
+        this.initGrid(); // Only clear the grid, keep ants in current positions
         this.draw();
     }
     
