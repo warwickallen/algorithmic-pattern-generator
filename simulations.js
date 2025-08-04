@@ -592,9 +592,10 @@ class BaseSimulation {
         this.fpsUpdateInterval = 30; // Update FPS every 30 frames
         this.brightness = 1.0; // Default brightness
         
-        // Fade-to-black configuration
+        // Re-engineered fade-to-black configuration
         this.fadeOutCycles = 5; // Number of cycles to fade to black (configurable)
-        this.cellFadeStates = new Map(); // Track fade state for each cell: {row,col} -> fadeCount
+        this.fadeDecrement = 0.2; // Amount to decrease brightness each cycle (configurable)
+        this.cellBrightness = new Map(); // Track brightness for each cell: {row,col} -> brightness (0-1)
         
         // Performance optimization properties
         this.lastUpdateTime = 0;
@@ -782,11 +783,23 @@ class BaseSimulation {
         return this.fadeOutCycles;
     }
     
-    // Update fade states for all cells based on current grid state
+    // Legacy fade state methods for compatibility with other simulation types
+    // These now use the new brightness system internally
     updateFadeStates(grid) {
-        // Only update fade states on simulation update cycles, not every animation frame
-        // This ensures the fade effect is visible at slower simulation speeds
+        // For Conway's Game of Life, use the new 3-step process
+        // For other simulations, use the legacy approach but with brightness system
+        if (this.constructor.name === 'ConwayGameOfLife') {
+            // Conway's Game of Life uses the new system in its update() method
+            return;
+        }
+        
+        // Legacy approach for other simulations
         const currentGeneration = this.generation;
+        
+        // Debug logging for timing issues
+        if (window.DEBUG_FADE && currentGeneration > 0) {
+            console.log(`updateFadeStates called for generation ${currentGeneration}`);
+        }
         
         // Ensure initialInactiveCells is always initialized
         if (!this.initialInactiveCells) {
@@ -813,33 +826,25 @@ class BaseSimulation {
                 const isActive = grid[row][col];
                 
                 if (isActive) {
-                    // Cell is active - remove fade state (instant full brightness)
-                    this.cellFadeStates.delete(cellKey);
+                    // Cell is active - set brightness to 1
+                    this.cellBrightness.set(cellKey, 1);
                     // Remove from initial inactive set if it was there
                     this.initialInactiveCells.delete(cellKey);
                 } else {
-                    // Cell is inactive - check if we need to increment fade count
-                    const fadeData = this.cellFadeStates.get(cellKey);
-                    if (!fadeData) {
-                        // Only create fade data if this cell was not initially inactive
-                        // This prevents cells that have always been inactive from getting fade data
+                    // Cell is inactive - check if we need to start or continue fading
+                    const brightness = this.cellBrightness.get(cellKey);
+                    if (!brightness) {
+                        // Only create brightness data if this cell was not initially inactive
                         if (!this.initialInactiveCells.has(cellKey)) {
                             // First time seeing this inactive cell - start fade
-                            // Start with fadeCount: 1 so the first cycle shows some fading
-                            this.cellFadeStates.set(cellKey, {
-                                fadeCount: 1,
-                                lastUpdateGeneration: currentGeneration
-                            });
+                            this.cellBrightness.set(cellKey, 1);
                         }
-                        // If it was initially inactive, don't create fade data - cell remains black
-                    } else if (fadeData.lastUpdateGeneration < currentGeneration) {
-                        // Only increment fade count on new simulation generations
-                        if (fadeData.fadeCount < this.fadeOutCycles) {
-                            const newFadeCount = fadeData.fadeCount + 1;
-                            this.cellFadeStates.set(cellKey, {
-                                fadeCount: newFadeCount,
-                                lastUpdateGeneration: currentGeneration
-                            });
+                        // If it was initially inactive, don't create brightness data - cell remains black
+                    } else {
+                        // Cell has brightness data - continue fading
+                        if (brightness > 0) {
+                            const newBrightness = Math.max(0, brightness - this.fadeDecrement);
+                            this.cellBrightness.set(cellKey, newBrightness);
                         }
                     }
                 }
@@ -849,36 +854,51 @@ class BaseSimulation {
     
     // Get fade factor for a specific cell (0 = fully faded to black, 1 = full brightness)
     getCellFadeFactor(row, col, isActive = null) {
-        const cellKey = `${row},${col}`;
-        const fadeData = this.cellFadeStates.get(cellKey);
-        
-        if (isActive === null) {
-            // If we don't know the cell state, we need to determine it from the grid
-            // This is a fallback case - the isActive parameter should always be provided
-            console.warn('getCellFadeFactor called without isActive parameter - this may cause incorrect fade behavior');
-            if (!fadeData) {
-                return 1; // No fade data means active cell (full brightness)
-            }
-        } else if (isActive) {
-            // Active cells should have no fade data and return full brightness
-            return 1;
-        } else {
-            // Inactive cells: if no fade data, they're black; if fading, calculate fade factor
-            if (!fadeData) {
-                return 0; // No fade data means inactive cell (black)
-            }
-        }
-        
-        const fadeCount = fadeData.fadeCount || 0;
-        const fadeFactor = Math.max(0, 1 - (fadeCount / this.fadeOutCycles));
-        
-        return fadeFactor;
+        // Use the new brightness system directly
+        return this.getCellBrightness(row, col);
     }
     
     // Clear all fade states (useful for reset/clear operations)
     clearFadeStates() {
-        this.cellFadeStates.clear();
-        this.initialInactiveCells = null;
+        this.cellBrightness.clear();
+    }
+    
+    // Re-engineered fade-to-black methods
+    updateCellBrightness() {
+        // Step 1: Decrease each cell's brightness value by configurable amount
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                const cellKey = `${row},${col}`;
+                const currentBrightness = this.cellBrightness.get(cellKey) || 0;
+                const newBrightness = Math.max(0, currentBrightness - this.fadeDecrement);
+                this.cellBrightness.set(cellKey, newBrightness);
+            }
+        }
+    }
+    
+    setActiveCellBrightness(grid) {
+        // Step 3: For all active cells, set the brightness value to 1
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                if (grid[row][col]) {
+                    const cellKey = `${row},${col}`;
+                    this.cellBrightness.set(cellKey, 1);
+                }
+            }
+        }
+    }
+    
+    getCellBrightness(row, col) {
+        const cellKey = `${row},${col}`;
+        return this.cellBrightness.get(cellKey) || 0;
+    }
+    
+    setFadeDecrement(decrement) {
+        this.fadeDecrement = Math.max(0.01, Math.min(1.0, decrement));
+    }
+    
+    getFadeDecrement() {
+        return this.fadeDecrement;
     }
     
     // Optimized brightness application with caching
@@ -1283,12 +1303,12 @@ class BaseSimulation {
     
     // Common cell rendering method with caching
     drawCell(x, y, color = null, isActive = null) {
-        // Get grid position for fade calculations
+        // Get grid position for brightness calculations
         const { col, row } = this.screenToGrid(x, y);
-        const fadeFactor = this.getCellFadeFactor(row, col, isActive);
+        const cellBrightness = this.getCellBrightness(row, col);
         
-        // If cell is completely faded (fadeFactor = 0), don't render anything
-        if (fadeFactor === 0) {
+        // If cell is completely faded (brightness = 0), don't render anything
+        if (cellBrightness === 0) {
             return;
         }
         
@@ -1300,17 +1320,16 @@ class BaseSimulation {
         // Apply brightness to the color
         const brightColor = this.applyBrightness(color);
         
-        // Apply fade-to-black effect
+        // Apply fade-to-black effect using the cell's brightness value
         let finalColor = brightColor;
-        if (fadeFactor < 1) {
-            // Interpolate between the cell color and black based on fade factor
-            // fadeFactor = 1 means full brightness, fadeFactor = 0 means black
-            // So we need to interpolate with (1 - fadeFactor) to get the correct direction
-            finalColor = this.interpolateColor(brightColor, '#000000', 1 - fadeFactor);
+        if (cellBrightness < 1) {
+            // Interpolate between the cell color and black based on brightness
+            // cellBrightness = 1 means full brightness, cellBrightness = 0 means black
+            finalColor = this.interpolateColor(brightColor, '#000000', 1 - cellBrightness);
         }
         
         this.ctx.fillStyle = finalColor;
-        this.setGlowEffect(finalColor, 20 * this.brightness * fadeFactor);
+        this.setGlowEffect(finalColor, 20 * this.brightness * cellBrightness);
         
         this.ctx.fillRect(x, y, this.cellSize - 1, this.cellSize - 1);
         
@@ -1539,12 +1558,12 @@ class ConwayGameOfLife extends BaseSimulation {
     }
     
     update() {
-        // Update fade states before incrementing generation
-        // This ensures we can properly track initial inactive cells on generation 0
-        this.updateFadeStates(this.grids.current);
+        // Step 1: Decrease each cell's brightness value by configurable amount
+        this.updateCellBrightness();
         
         this.generation++;
         
+        // Step 2: Activate and deactivate cells according to simulation rules
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
                 const neighbours = this.countNeighbours(this.grids.current, row, col, this.rows, this.cols);
@@ -1561,6 +1580,9 @@ class ConwayGameOfLife extends BaseSimulation {
         // Swap grids
         this.swapGrids(this.grids);
         
+        // Step 3: For all active cells, set the brightness value to 1
+        this.setActiveCellBrightness(this.grids.current);
+        
         // Update cell count
         this.cellCount = this.countLiveCells(this.grids.current);
     }
@@ -1573,11 +1595,20 @@ class ConwayGameOfLife extends BaseSimulation {
         const { col, row } = this.screenToGrid(x, y);
         
         if (this.isValidGridPosition(row, col)) {
+            const wasActive = this.grids.current[row][col];
             this.grids.current[row][col] = !this.grids.current[row][col];
             this.cellCount = this.countLiveCells(this.grids.current);
             
-            // Update fade states before drawing to ensure proper fade behavior
-            this.updateFadeStates(this.grids.current);
+            // Immediately update brightness for the toggled cell
+            const cellKey = `${row},${col}`;
+            if (this.grids.current[row][col]) {
+                // Cell became active - set brightness to 1
+                this.cellBrightness.set(cellKey, 1);
+            } else {
+                // Cell became inactive - immediately set brightness to 0
+                this.cellBrightness.set(cellKey, 0);
+            }
+            
             this.draw();
         }
     }
@@ -1594,6 +1625,21 @@ class ConwayGameOfLife extends BaseSimulation {
         // Fill with random cells using the provided likelihood
         this.cellCount = this.randomizeGrid(this.grids.current, likelihood);
         this.generation = 0;
+        
+        // Immediately update brightness for all cells
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                const cellKey = `${row},${col}`;
+                if (this.grids.current[row][col]) {
+                    // Active cells get full brightness
+                    this.cellBrightness.set(cellKey, 1);
+                } else {
+                    // Inactive cells get zero brightness
+                    this.cellBrightness.set(cellKey, 0);
+                }
+            }
+        }
+        
         this.draw();
     }
 }
@@ -1739,6 +1785,9 @@ class TermiteAlgorithm extends BaseSimulation {
                 virtualGrid[row][col] = true;
             }
         });
+        
+        // Update fade states using the new brightness system
+        this.updateFadeStates(virtualGrid);
         
         // Draw wood chips with fade effect
         this.woodChips.forEach(chipKey => {

@@ -19,7 +19,7 @@ The test suite is organised into logical categories:
 - **UI Component Tests** - User interface components and interactions
 - **Performance Tests** - Performance benchmarks and optimisation validation
 - **Integration Tests** - Component interactions and system integration
-- **Visual Effects Tests** - Visual rendering and fade effects
+- **Visual Effects Tests** - Visual rendering and re-engineered fade-to-black effects
 - **System Tests** - System-level functionality and error handling
 
 ## Quick Start
@@ -210,15 +210,17 @@ Tests component interactions and system integration:
 
 Tests visual rendering and effects:
 
-#### ✅ Fade-to-Black Effect
-- Tests fade effect implementation
-- Validates fade cycle progression
-- Tests fade state management
+#### ✅ Re-engineered Fade-to-Black Effect
+- Tests the new brightness-based fade effect implementation
+- Validates the three-step update process (decrease brightness, apply rules, set active brightness)
+- Tests fade state management using the `cellBrightness` map
+- Validates immediate visual feedback for user interactions
 
 #### ✅ Comprehensive Fade Functionality
-- Tests fade factor calculations
-- Validates fade state tracking
-- Tests fade clearing and reset
+- Tests brightness calculations and fade decrement application
+- Validates brightness state tracking across simulation cycles
+- Tests fade clearing and reset functionality
+- Validates configurable fade parameters (fadeDecrement, fadeOutCycles)
 
 #### ✅ Visual Regression Test
 - Tests canvas rendering accuracy

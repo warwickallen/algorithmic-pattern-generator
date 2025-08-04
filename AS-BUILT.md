@@ -185,9 +185,40 @@ Abstract base class for all simulations:
 - Canvas management and resizing
 - Grid creation and manipulation
 - Cell counting and neighbour calculation
-- Drawing utilities with fade effects
+- Drawing utilities with re-engineered fade-to-black effects
 - Drag toggling for interactive cell manipulation
 - Actor trail system for visual effects
+
+**Re-engineered Fade-to-Black System:**
+The new fading mechanism uses a brightness-based approach to eliminate race conditions:
+
+**Key Components:**
+- `cellBrightness`: Map tracking brightness for each cell (`{row,col} -> brightness (0-1)`)
+- `fadeDecrement`: Configurable amount by which brightness decreases each cycle (default: 0.2)
+- `fadeOutCycles`: Number of cycles to fade to black (configurable, default: 5)
+
+**Three-Step Update Process:**
+1. **Decrease Brightness**: All cells have their brightness decreased by `fadeDecrement` (bounded by 0)
+2. **Apply Simulation Rules**: Cells are activated/deactivated according to simulation rules
+3. **Set Active Cell Brightness**: All active cells have their brightness set to 1
+
+**Immediate Visual Feedback Exceptions:**
+- **Cell Toggle**: When a cell is toggled by user interaction, its brightness is immediately set to 1 (if active) or 0 (if inactive)
+- **Random Pattern**: After randomization, all active cells get brightness 1 and all inactive cells get brightness 0
+
+**Key Methods:**
+```javascript
+updateCellBrightness()           // Step 1: Decrease all cell brightness
+setActiveCellBrightness(grid)    // Step 3: Set active cells to brightness 1
+getCellBrightness(row, col)      // Get cell's current brightness
+setFadeDecrement(decrement)      // Configure fade decrement amount
+getFadeDecrement()               // Get current fade decrement
+clearFadeStates()                // Clear all brightness data
+```
+
+**Legacy Compatibility:**
+- `updateFadeStates(grid)`: Legacy method adapted for non-Conway simulations
+- `getCellFadeFactor(row, col, isActive)`: Legacy method that returns cell brightness
 
 **Key Methods:**
 ```javascript
@@ -195,20 +226,43 @@ init()                    // Initialise simulation
 resize()                  // Handle canvas resize
 update()                  // Update simulation state
 draw()                    // Render simulation
-toggleCell(x, y)          // Toggle cell state
+toggleCell(x, y)          // Toggle cell state with immediate brightness update
 setBrightness(value)      // Adjust visual brightness
 getStats()               // Get simulation statistics
 ```
 
 #### Conway's Game of Life
-Classic cellular automaton implementation:
+Classic cellular automaton implementation with re-engineered fading:
 
 **Features:**
 - Standard Conway rules (B3/S23)
 - Wrap-around boundaries
 - State preservation during resize
-- Random pattern generation
+- Random pattern generation with immediate brightness updates
 - Speed control
+- Re-engineered fade-to-black system using the three-step process
+
+**Update Method:**
+```javascript
+update() {
+    // Step 1: Decrease each cell's brightness value by configurable amount
+    this.updateCellBrightness();
+    
+    this.generation++;
+    
+    // Step 2: Activate and deactivate cells according to simulation rules
+    // ... Conway's rules implementation ...
+    
+    // Swap grids
+    this.swapGrids(this.grids);
+    
+    // Step 3: For all active cells, set the brightness value to 1
+    this.setActiveCellBrightness(this.grids.current);
+    
+    // Update cell count
+    this.cellCount = this.countLiveCells(this.grids.current);
+}
+```
 
 #### Termite Algorithm
 Termite simulation with wood chip manipulation:
@@ -219,6 +273,7 @@ Termite simulation with wood chip manipulation:
 - Visual termite representation with direction indicators
 - Trail system for visual effects
 - Performance optimised for large numbers of termites
+- Legacy fade system adapted to use new brightness approach
 
 #### Langton's Ant
 Ant simulation with multiple ant support:
@@ -357,6 +412,7 @@ Comprehensive visual test suite with categories:
 - **Performance Tests**: Performance benchmarks
 - **Integration Tests**: Component interactions
 - **Colour Scheme Tests**: Dynamic colour system
+- **Fade-to-Black Tests**: Re-engineered fading mechanism
 
 ### 2. Test Runner (`test-runner.js`)
 Programmatic testing framework:

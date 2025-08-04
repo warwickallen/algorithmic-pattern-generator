@@ -67,7 +67,8 @@ A sophisticated web application featuring three classic algorithmic simulations:
 ### Conway's Game of Life
 - **Rules**: Standard Conway rules (B3/S23) with wrap-around boundaries
 - **Controls**: Speed, Random pattern generation, Interactive cell toggling
-- **Features**: State preservation during resize, fade effects, brightness control
+- **Features**: State preservation during resize, re-engineered fade-to-black effects, brightness control
+- **Fade-to-Black System**: Advanced brightness-based fading mechanism that eliminates race conditions and provides immediate visual feedback for user interactions
 
 ### Termite Algorithm
 - **Mechanics**: Termites pick up and drop wood chips based on simple rules
@@ -87,6 +88,14 @@ The application features a sophisticated colour system with:
 - **Bilinear interpolation** for smooth colour transitions
 - **Vector-based interpolation** to handle circular hue values correctly
 - **Brightness control** for visual adjustment
+
+### Re-engineered Fade-to-Black System
+The Conway's Game of Life simulation features an advanced fade-to-black system:
+- **Brightness-based approach** that eliminates race conditions
+- **Three-step update process** for consistent fading behaviour
+- **Immediate visual feedback** for user interactions (cell toggling, randomization)
+- **Configurable fade parameters** for customising the fade effect
+- **Consistent behaviour** for oscillating patterns like blinkers
 
 ### Performance Optimisations
 - **Hardware acceleration** with CSS transforms
@@ -171,6 +180,7 @@ Open `test-suite.html` in your browser for comprehensive visual testing:
 - Performance benchmarking
 - Integration testing
 - Colour scheme validation
+- Fade-to-black system testing
 
 ### Programmatic Testing
 Use `test-runner.js` for automated testing:
