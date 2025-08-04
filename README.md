@@ -183,11 +183,14 @@ testRunner.runTestsByCategory('core');
 testRunner.runTestsByCategory('performance');
 ```
 
-### Specialised Tests
-- `test-colour-scheme.html` - Dynamic colour scheme testing
-- `test-brightness.html` - Brightness control testing
-- `test-drag-toggling.html` - Interactive cell manipulation
-- Various other feature-specific test files
+### Test Categories
+The test suite covers:
+- Core simulation functionality
+- UI component testing  
+- Performance benchmarking
+- Integration testing
+- Visual effects testing
+- System-level functionality
 
 ## Performance Benchmarks
 
@@ -196,7 +199,7 @@ The application is optimised for performance with the following targets:
 - **Cell Counting**: < 10ms
 - **Drawing**: < 50ms
 - **Updates**: < 20ms
-- **Colour Generation**: < 5ms per frame
+
 
 ## Deployment
 

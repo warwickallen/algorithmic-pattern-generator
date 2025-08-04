@@ -1,18 +1,15 @@
 # Testing Guide for Algorithmic Pattern Generator
 
-This comprehensive guide explains how to use the extensive test suite to ensure code quality, catch regressions, and maintain performance standards during development and refactoring.
+This comprehensive guide explains how to use the test suite to ensure code quality, catch regressions, and maintain performance standards during development and refactoring.
 
 ## Test Suite Overview
 
-The Algorithmic Pattern Generator includes a sophisticated testing framework with multiple components:
+The Algorithmic Pattern Generator includes a sophisticated testing framework with two main components:
 
 ### Core Testing Components
 
 1. **`test-suite.html`** - Comprehensive visual test suite with interactive UI
 2. **`test-runner.js`** - Programmatic test runner for automation and CI/CD
-3. **`test-colour-scheme.html`** - Specialised tests for dynamic colour scheme
-4. **Individual Test Files** - Feature-specific test files for targeted testing
-5. **Performance Benchmarks** - Built-in performance monitoring and validation
 
 ### Test Categories
 
@@ -22,8 +19,8 @@ The test suite is organised into logical categories:
 - **UI Component Tests** - User interface components and interactions
 - **Performance Tests** - Performance benchmarks and optimisation validation
 - **Integration Tests** - Component interactions and system integration
-- **Colour Scheme Tests** - Dynamic colour system and interpolation
-- **Feature Tests** - Specific feature implementations and edge cases
+- **Visual Effects Tests** - Visual rendering and fade effects
+- **System Tests** - System-level functionality and error handling
 
 ## Quick Start
 
@@ -42,24 +39,9 @@ open test-suite.html
 - Performance metrics display
 - Category-based test organisation
 - Export capabilities for test results
+- Warning detection and reporting
 
-### 2. Colour Scheme Testing
-
-Open `test-colour-scheme.html` for specialised dynamic colour scheme testing:
-
-```bash
-# Open in browser
-open test-colour-scheme.html
-```
-
-**What it tests:**
-- Corner hue calculations and time-based rotation
-- Colour interpolation accuracy
-- HSL to RGB conversion
-- Performance of colour generation
-- Visual colour transitions
-
-### 3. Programmatic Test Runner
+### 2. Programmatic Test Runner
 
 Include `test-runner.js` in your HTML or use it programmatically:
 
@@ -79,7 +61,6 @@ testRunner.runAllTests();
 testRunner.runTestsByCategory('core');
 testRunner.runTestsByCategory('performance');
 testRunner.runTestsByCategory('ui');
-testRunner.runTestsByCategory('colour');
 ```
 
 ## Detailed Test Categories
@@ -162,6 +143,16 @@ Tests the user interface components and interactions:
 - Validates modal state management
 - Tests modal event handling and cleanup
 
+#### ✅ Termite Slider Integration
+- Tests termite count slider functionality
+- Validates slider event handling
+- Tests real-time termite count updates
+
+#### ✅ Learn Modal Content Verification
+- Tests educational modal content
+- Validates modal content accuracy
+- Tests modal navigation and display
+
 ### Performance Tests
 
 Tests performance characteristics and benchmarks:
@@ -185,11 +176,6 @@ Tests performance characteristics and benchmarks:
 - **Target**: Must complete in < 20ms
 - Tests simulation update algorithms
 - Validates update optimisation effectiveness
-
-#### ✅ Colour Generation Performance
-- **Target**: Must complete in < 5ms per frame
-- Tests dynamic colour scheme generation
-- Validates interpolation algorithm efficiency
 
 ### Integration Tests
 
@@ -220,39 +206,43 @@ Tests component interactions and system integration:
 - Validates event propagation
 - Tests event memory management
 
-### Colour Scheme Tests
+### Visual Effects Tests
 
-Tests the dynamic colour system:
+Tests visual rendering and effects:
 
-#### ✅ Corner Hues
-- Tests initial corner hue values
-- Validates hue calculation accuracy
-- Tests hue normalisation and wrapping
+#### ✅ Fade-to-Black Effect
+- Tests fade effect implementation
+- Validates fade cycle progression
+- Tests fade state management
 
-#### ✅ Time-based Rotation
-- Tests hue rotation over time
-- Validates rotation period accuracy
-- Tests rotation synchronisation
+#### ✅ Comprehensive Fade Functionality
+- Tests fade factor calculations
+- Validates fade state tracking
+- Tests fade clearing and reset
 
-#### ✅ Interpolation
-- Tests colour interpolation between corners
-- Validates bilinear interpolation accuracy
-- Tests vector-based interpolation for circular hues
+#### ✅ Visual Regression Test
+- Tests canvas rendering accuracy
+- Validates pixel data integrity
+- Tests visual output consistency
 
-#### ✅ HSL to RGB
-- Tests colour space conversion
-- Validates conversion accuracy
-- Tests edge cases in colour conversion
+### System Tests
 
-#### ✅ Vector Interpolation
-- Tests mathematical interpolation
-- Validates vector arithmetic
-- Tests circular hue handling
+Tests system-level functionality:
 
-#### ✅ Performance
-- Tests colour generation speed
-- Validates optimisation effectiveness
-- Tests memory usage for colour operations
+#### ✅ Console Warning Detection
+- Tests warning detection and reporting
+- Validates warning categorisation
+- Tests warning filtering and display
+
+#### ✅ Test Canvas Configuration
+- Tests canvas setup and validation
+- Validates canvas drawing capabilities
+- Tests canvas dimension handling
+
+#### ✅ Full Simulation Lifecycle Test
+- Tests complete simulation workflow
+- Validates all simulation phases
+- Tests error handling and recovery
 
 ## Before Refactoring
 
@@ -281,8 +271,7 @@ const baselinePerformance = {
     gridCreation: baselineResults.performance.gridCreation,
     cellCounting: baselineResults.performance.cellCounting,
     drawing: baselineResults.performance.drawing,
-    updates: baselineResults.performance.updates,
-    colourGeneration: baselineResults.performance.colourGeneration
+    updates: baselineResults.performance.updates
 };
 
 console.log('Baseline Performance:', baselinePerformance);
@@ -331,8 +320,7 @@ const performanceDiff = {
     gridCreation: performanceResults.performance.gridCreation - baselinePerformance.gridCreation,
     cellCounting: performanceResults.performance.cellCounting - baselinePerformance.cellCounting,
     drawing: performanceResults.performance.drawing - baselinePerformance.drawing,
-    updates: performanceResults.performance.updates - baselinePerformance.updates,
-    colourGeneration: performanceResults.performance.colourGeneration - baselinePerformance.colourGeneration
+    updates: performanceResults.performance.updates - baselinePerformance.updates
 };
 
 console.log('Performance Change:', performanceDiff);
@@ -346,11 +334,11 @@ Test specific areas you're refactoring:
 // If refactoring UI components
 const uiResults = await testRunner.runTestsByCategory('ui');
 
-// If refactoring colour system
-const colourResults = await testRunner.runTestsByCategory('colour');
-
 // If refactoring simulation algorithms
 const coreResults = await testRunner.runTestsByCategory('core');
+
+// If refactoring visual effects
+const visualResults = await testRunner.runTestsByCategory('visual');
 ```
 
 ## After Refactoring
@@ -501,8 +489,8 @@ console.log('Test result:', result);
 
 ### Visual Regressions
 
-1. **Use the visual test suite** to see colour changes
-2. **Check the colour scheme tests** for interpolation issues
+1. **Use the visual test suite** to see rendering changes
+2. **Check the visual effects tests** for fade and rendering issues
 3. **Verify brightness controls** still work correctly
 4. **Test on different screen sizes** for layout issues
 
@@ -593,7 +581,7 @@ runCITests().catch(error => {
 If you encounter issues with the test suite:
 
 1. **Check the browser console** for error messages
-2. **Verify all required files** are loaded (`simulations.js`, `app.js`)
+2. **Verify all required files** are loaded (`simulations.js`, `app.js`, `i18n.js`)
 3. **Ensure the canvas element** is available for testing
 4. **Review the test details** for specific failure information
 5. **Check browser compatibility** and supported features

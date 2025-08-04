@@ -368,13 +368,12 @@ Programmatic testing framework:
 - Category-based testing
 - Continuous integration support
 
-### 3. Specialised Test Files
-Individual test files for specific features:
+### 3. Test Infrastructure
+Comprehensive testing framework:
 
-- `test-colour-scheme.html`: Dynamic colour scheme testing
-- `test-brightness.html`: Brightness control testing
-- `test-drag-toggling.html`: Interactive cell manipulation
-- `test-fade-effects.html`: Visual fade effect testing
+- `test-suite.html`: Visual test suite with interactive UI
+- `test-runner.js`: Programmatic test runner for automation
+- `TESTING.md`: Complete testing documentation and guide
 
 ## Configuration Files
 
