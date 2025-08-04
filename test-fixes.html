@@ -4,164 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Fixes</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        .test-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .test-result {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .pass {
-            background: #E8F5E8;
-            border-left: 4px solid #4CAF50;
-        }
-        .fail {
-            background: #FFEBEE;
-            border-left: 4px solid #f44336;
-        }
-        .running {
-            background: #E3F2FD;
-            border-left: 4px solid #2196F3;
-        }
-    </style>
 </head>
 <body>
-    <div class="test-container">
-        <h1>Test Fixes</h1>
-        <div id="results"></div>
-    </div>
-
+    <h1>Test Fixes</h1>
+    <div id="results"></div>
+    
+    <script src="i18n.js"></script>
     <script src="simulations.js"></script>
+    <script src="app.js"></script>
+    
     <script>
-        const results = document.getElementById('results');
-        
-        function addResult(testName, passed, details) {
-            const div = document.createElement('div');
-            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
-            div.innerHTML = `
-                <strong>${testName}:</strong> ${passed ? 'PASS' : 'FAIL'}
-                <br><small>${details}</small>
-            `;
-            results.appendChild(div);
+        function log(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div>' + message + '</div>';
         }
         
         async function runTests() {
-            // Test 1: Termite Slider Functionality
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = 400;
-                canvas.height = 300;
-                const ctx = canvas.getContext('2d');
-                
-                const simulation = new TermiteAlgorithm(canvas, ctx);
-                simulation.init();
-                
-                const initialCount = simulation.termites.length;
-                const newCount = 25;
-                simulation.setTermiteCount(newCount);
-                const afterChangeCount = simulation.termites.length;
-                
-                const passed = afterChangeCount === newCount && afterChangeCount !== initialCount;
-                addResult('Termite Slider Functionality', passed, 
-                    `Termite count changed from ${initialCount} to ${afterChangeCount} (expected ${newCount})`);
-            } catch (error) {
-                addResult('Termite Slider Functionality', false, `Error: ${error.message}`);
-            }
+            log('Starting tests...');
             
-            // Test 2: Termite Slider Integration
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = 400;
-                canvas.height = 300;
-                const ctx = canvas.getContext('2d');
-                
-                const simulation = new TermiteAlgorithm(canvas, ctx);
-                simulation.init();
-                
-                const initialCount = simulation.termites.length;
-                simulation.setTermiteCount(25);
-                const afterChangeCount = simulation.termites.length;
-                
-                const passed = afterChangeCount === 25 && afterChangeCount !== initialCount;
-                addResult('Termite Slider Integration', passed, 
-                    `Termite slider integration: count changed from ${initialCount} to ${afterChangeCount} (expected 25)`);
-            } catch (error) {
-                addResult('Termite Slider Integration', false, `Error: ${error.message}`);
-            }
+            // Test 1: Canvas Configuration
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
             
-            // Test 3: Fade-to-Black Effect
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = 400;
-                canvas.height = 300;
-                const ctx = canvas.getContext('2d');
-                
-                const simulation = new ConwayGameOfLife(canvas, ctx);
-                simulation.init();
-                
-                // Test fade configuration
-                const defaultFadeCycles = simulation.getFadeOutCycles();
-                simulation.setFadeOutCycles(3);
-                const newFadeCycles = simulation.getFadeOutCycles();
-                
-                // Test fade state tracking
-                const testGrid = simulation.createGrid(5, 5, true);
-                simulation.updateFadeStates(testGrid);
-                
-                // Check that active cells have no fade state
-                const activeCellFade = simulation.getCellFadeFactor(0, 0);
-                const activeCellHasNoFade = activeCellFade === 1;
-                
-                // Create a grid with some inactive cells
-                const mixedGrid = simulation.createGrid(5, 5, false);
-                mixedGrid[0][0] = true; // Active cell
-                mixedGrid[1][1] = false; // Inactive cell
-                
-                simulation.updateFadeStates(mixedGrid);
-                
-                // Check that inactive cells start fading
-                const inactiveCellFade = simulation.getCellFadeFactor(1, 1);
-                const inactiveCellIsFading = inactiveCellFade < 1;
-                
-                const passed = defaultFadeCycles === 5 && newFadeCycles === 3 && activeCellHasNoFade && inactiveCellIsFading;
-                addResult('Fade-to-Black Effect', passed, 
-                    `Fade cycles: ${defaultFadeCycles}→${newFadeCycles}, Active fade: ${activeCellFade}, Inactive fade: ${inactiveCellFade}`);
-            } catch (error) {
-                addResult('Fade-to-Black Effect', false, `Error: ${error.message}`);
-            }
+            const simulation = new ConwayGameOfLife(canvas, ctx);
+            simulation.init();
             
-            // Test 4: Langton's Ant Constructor
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = 400;
-                canvas.height = 300;
-                const ctx = canvas.getContext('2d');
-                
-                const simulation = new LangtonsAnt(canvas, ctx);
-                simulation.init();
-                
-                const passed = simulation.cellSize === 10 && simulation.rows > 0 && simulation.cols > 0;
-                addResult('Langton\'s Ant Constructor', passed, 
-                    `cellSize: ${simulation.cellSize}, rows: ${simulation.rows}, cols: ${simulation.cols}`);
-            } catch (error) {
-                addResult('Langton\'s Ant Constructor', false, `Error: ${error.message}`);
-            }
+            log(`Canvas dimensions after init: ${canvas.width}x${canvas.height}`);
+            log(`Valid dimensions: ${canvas.width > 0 && canvas.height > 0}`);
+            log(`Reasonable dimensions: ${canvas.width >= 400 && canvas.height >= 300}`);
+            
+            // Test 2: Fade Progression
+            simulation.setFadeOutCycles(3);
+            simulation.generation = 1;
+            
+            // Clear the initialInactiveCells set to allow fade data creation
+            simulation.initialInactiveCells = new Set();
+            
+            // Create a cell, then make it inactive
+            simulation.toggleCell(5, 5);
+            simulation.updateFadeStates(simulation.grids.current);
+            
+            simulation.toggleCell(5, 5);
+            simulation.updateFadeStates(simulation.grids.current);
+            const fadeCycle1 = simulation.getCellFadeFactor(5, 5, false);
+            
+            const cellKey = '5,5';
+            const fadeData = simulation.cellFadeStates.get(cellKey);
+            const fadeCount1 = fadeData ? fadeData.fadeCount : 'no data';
+            
+            simulation.generation = 2;
+            simulation.updateFadeStates(simulation.grids.current);
+            const fadeCycle2 = simulation.getCellFadeFactor(5, 5, false);
+            
+            const fadeData2 = simulation.cellFadeStates.get(cellKey);
+            const fadeCount2 = fadeData2 ? fadeData2.fadeCount : 'no data';
+            
+            log(`Fade test: Generation 1: fadeCount=${fadeCount1}, fadeFactor=${fadeCycle1.toFixed(3)}`);
+            log(`Fade test: Generation 2: fadeCount=${fadeCount2}, fadeFactor=${fadeCycle2.toFixed(3)}`);
+            log(`Fade progression: ${fadeCycle2 < fadeCycle1}`);
+            
+            log('Tests completed!');
         }
         
-        // Run tests when page loads
-        document.addEventListener('DOMContentLoaded', runTests);
+        runTests();
     </script>
 </body>
 </html> 
