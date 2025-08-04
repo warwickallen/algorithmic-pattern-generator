@@ -300,9 +300,13 @@
         
         <div class="controls">
             <button class="btn btn-primary" onclick="runAllTests()">Run All Tests</button>
-            <button class="btn btn-success" onclick="runSimulationTests()">Run Simulation Tests</button>
+            <button class="btn btn-success" onclick="runSimulationCoreTests()">Run Simulation Core</button>
+            <button class="btn btn-success" onclick="runSimulationFeaturesTests()">Run Simulation Features</button>
             <button class="btn btn-warning" onclick="runUITests()">Run UI Tests</button>
+            <button class="btn btn-warning" onclick="runInteractionTests()">Run Interaction Tests</button>
             <button class="btn btn-danger" onclick="runPerformanceTests()">Run Performance Tests</button>
+            <button class="btn btn-info" onclick="runVisualTests()">Run Visual Tests</button>
+            <button class="btn btn-secondary" onclick="runSystemTests()">Run System Tests</button>
             <button class="btn btn-primary" onclick="clearResults()">Clear Results</button>
             <button class="btn btn-secondary" onclick="exportLog()">Export Log</button>
             <button class="btn btn-info" onclick="copyLog()">Copy Log</button>
@@ -321,13 +325,23 @@
         
         <div class="test-grid">
             <div class="test-category">
-                <h3>Core Simulation Tests</h3>
-                <div id="core-tests"></div>
+                <h3>Simulation Core Tests</h3>
+                <div id="simulation-core-tests"></div>
             </div>
             
             <div class="test-category">
-                <h3>UI Component Tests</h3>
+                <h3>Simulation Features Tests</h3>
+                <div id="simulation-features-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>User Interface Tests</h3>
                 <div id="ui-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>User Interaction Tests</h3>
+                <div id="interaction-tests"></div>
             </div>
             
             <div class="test-category">
@@ -338,6 +352,16 @@
             <div class="test-category">
                 <h3>Integration Tests</h3>
                 <div id="integration-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>Visual Effects Tests</h3>
+                <div id="visual-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>System Tests</h3>
+                <div id="system-tests"></div>
             </div>
         </div>
     </div>
@@ -779,14 +803,14 @@
         // Initialize test suite
         const testSuite = new TestSuite();
         
-        // Core Simulation Tests
+        // Simulation Core Tests
         testSuite.addTest('Conway Game of Life Creation', async () => {
             const simulation = SimulationFactory.createSimulation('conway', testSuite.canvas, testSuite.ctx);
             return {
                 passed: simulation instanceof ConwayGameOfLife,
                 details: `Created ${simulation.constructor.name}`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Termite Algorithm Creation', async () => {
             const simulation = SimulationFactory.createSimulation('termite', testSuite.canvas, testSuite.ctx);
@@ -794,7 +818,7 @@
                 passed: simulation instanceof TermiteAlgorithm,
                 details: `Created ${simulation.constructor.name}`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Langton\'s Ant Creation', async () => {
             const simulation = SimulationFactory.createSimulation('langton', testSuite.canvas, testSuite.ctx);
@@ -802,7 +826,7 @@
                 passed: simulation instanceof LangtonsAnt,
                 details: `Created ${simulation.constructor.name}`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Conway Grid Initialization', async () => {
             const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
@@ -811,7 +835,7 @@
                 passed: simulation.grids && simulation.grids.current && simulation.grids.next,
                 details: `Grid dimensions: ${simulation.rows}x${simulation.cols}`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Conway Cell Toggle', async () => {
             const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
@@ -825,7 +849,7 @@
                 passed: afterToggleCount !== initialCount,
                 details: `Cell count changed from ${initialCount} to ${afterToggleCount}`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Termite Cell Toggle', async () => {
             const simulation = new TermiteAlgorithm(testSuite.canvas, testSuite.ctx);
@@ -839,7 +863,7 @@
                 passed: afterToggleCount !== initialCount,
                 details: `Wood chip count changed from ${initialCount} to ${afterToggleCount}`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Langton Cell Toggle', async () => {
             const simulation = new LangtonsAnt(testSuite.canvas, testSuite.ctx);
@@ -853,7 +877,7 @@
                 passed: afterToggleCount !== initialCount,
                 details: `Cell count changed from ${initialCount} to ${afterToggleCount}`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Conway Neighbour Counting', async () => {
             const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
@@ -870,7 +894,7 @@
                 passed: neighbours === 2,
                 details: `Neighbour count: ${neighbours} (expected 2)`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Termite Movement', async () => {
             const simulation = new TermiteAlgorithm(testSuite.canvas, testSuite.ctx);
@@ -888,7 +912,7 @@
                 passed: newX !== initialX || newY !== initialY,
                 details: `Termite moved from (${initialX.toFixed(1)}, ${initialY.toFixed(1)}) to (${newX.toFixed(1)}, ${newY.toFixed(1)})`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Langton Ant Movement', async () => {
             const simulation = new LangtonsAnt(testSuite.canvas, testSuite.ctx);
@@ -906,7 +930,7 @@
                 passed: newX !== initialX || newY !== initialY,
                 details: `Ant moved from (${initialX}, ${initialY}) to (${newX}, ${newY})`
             };
-        }, 'core');
+        }, 'simulation-core');
         
         testSuite.addTest('Termite Slider Functionality', async () => {
             // Create a test canvas and context
@@ -933,7 +957,7 @@
                 passed: afterChangeCount === newCount && afterChangeCount !== initialCount,
                 details: `Termite count changed from ${initialCount} to ${afterChangeCount} (expected ${newCount})`
             };
-        }, 'core');
+        }, 'simulation-features');
         
         testSuite.addTest('Brightness Application', async () => {
             const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
@@ -946,7 +970,7 @@
                 passed: brightColor !== originalColor,
                 details: `Brightness applied: ${originalColor} → ${brightColor}`
             };
-        }, 'core');
+        }, 'simulation-features');
         
         testSuite.addTest('Cell Toggle', async () => {
             const canvas = document.createElement('canvas');
@@ -975,7 +999,7 @@
                 passed: allHaveToggle && baseHasToggle && conwayOverrides && termiteOverrides && langtonOverrides,
                 details: `DRY implementation: Base method exists, all simulations override it`
             };
-        }, 'core');
+        }, 'simulation-features');
         
         testSuite.addTest('Drag Cell Toggle', async () => {
             const canvas = document.createElement('canvas');
@@ -1033,7 +1057,7 @@
                 passed: hasDragToggling && afterSingleClick !== initialCount && afterDrag !== beforeDrag,
                 details: `Drag toggling implemented: Single click ${afterSingleClick !== initialCount ? 'works' : 'fails'}, Drag ${afterDrag !== beforeDrag ? 'works' : 'fails'}`
             };
-        }, 'core');
+        }, 'interaction');
 
         testSuite.addTest('Drag Coordinate Fix', async () => {
             const canvas = document.createElement('canvas');
@@ -1107,7 +1131,7 @@
                 passed: horizontalWorks && verticalWorks,
                 details: `Coordinate fix: Horizontal drag ${horizontalWorks ? 'works' : 'fails'}, Vertical drag ${verticalWorks ? 'works' : 'fails'}`
             };
-        }, 'core');
+        }, 'interaction');
         
         testSuite.addTest('Speed Setting', async () => {
             const simulation = new ConwayGameOfLife(testSuite.canvas, testSuite.ctx);
@@ -1119,7 +1143,7 @@
                 passed: simulation.speed === 15 && simulation.updateInterval === 1000 / 15,
                 details: `Speed set to 15, interval: ${simulation.updateInterval.toFixed(1)}ms`
             };
-        }, 'core');
+        }, 'simulation-features');
         
         // UI Component Tests
         testSuite.addTest('Configuration Manager', async () => {
@@ -1595,7 +1619,7 @@
                 passed: defaultFadeCycles === 5 && newFadeCycles === 3 && activeCellHasNoFade && inactiveCellIsFading && fadeStatesCleared,
                 details: `Fade cycles: ${defaultFadeCycles}→${newFadeCycles}, Active fade: ${activeCellFade}, Inactive fade: ${inactiveCellFade}, Cleared: ${clearedFade}`
             };
-        }, 'core');
+        }, 'visual');
         
         testSuite.addTest('Comprehensive Fade Functionality', async () => {
             // Create test canvas
@@ -1665,7 +1689,7 @@
                 passed: activeFadeCorrect && inactiveFadeCorrect && warningsAreExpected && fadeProgressionCorrect && fadeClearedCorrect,
                 details: `Active fade: ${activeFadeCorrect}, Inactive fade: ${inactiveFadeCorrect}, Warnings expected: ${warningsAreExpected}, Progression: ${fadeProgressionCorrect}, Cleared: ${fadeClearedCorrect}`
             };
-        }, 'core');
+        }, 'visual');
         
         testSuite.addTest('Visual Regression Test', async () => {
             // Create test canvas with known dimensions
@@ -1711,7 +1735,7 @@
                 passed: hasValidData && hasRenderedContent,
                 details: `Canvas: ${canvas.width}x${canvas.height}, Valid data: ${hasValidData}, Non-black pixels: ${nonBlackPixels}`
             };
-        }, 'integration');
+        }, 'visual');
         
         testSuite.addTest('Full Simulation Lifecycle Test', async () => {
             // Create test canvas
@@ -1803,7 +1827,7 @@
                 passed: criticalWarnings === 0,
                 details: `Fade warnings: ${fadeWarnings.length} (expected), Canvas warnings: ${canvasWarnings.length}, Critical: ${criticalWarnings}`
             };
-        }, 'integration');
+        }, 'system');
         
         testSuite.addTest('Test Canvas Configuration', async () => {
             // Validate the main test canvas
@@ -1831,7 +1855,7 @@
                 passed: canvasExists && contextExists && validDimensions && reasonableDimensions && canDraw,
                 details: `Canvas: ${canvasExists}, Context: ${contextExists}, Dimensions: ${canvas.width}x${canvas.height}, Can draw: ${canDraw}`
             };
-        }, 'core');
+        }, 'system');
         
         testSuite.addTest('Fade Progression Debug', async () => {
             // Create test canvas
@@ -1877,13 +1901,17 @@
                 passed: fadeCycle2 < fadeCycle1,
                 details: `Generation 1: fadeCount=${fadeCount1}, fadeFactor=${fadeCycle1.toFixed(3)}; Generation 2: fadeCount=${fadeCount2}, fadeFactor=${fadeCycle2.toFixed(3)}; Progression: ${fadeCycle2 < fadeCycle1}`
             };
-        }, 'core');
+        }, 'system');
         
         // Global functions for button clicks
         window.runAllTests = () => testSuite.runAllTests();
-        window.runSimulationTests = () => testSuite.runTestsByCategory('core');
+        window.runSimulationCoreTests = () => testSuite.runTestsByCategory('simulation-core');
+        window.runSimulationFeaturesTests = () => testSuite.runTestsByCategory('simulation-features');
         window.runUITests = () => testSuite.runTestsByCategory('ui');
+        window.runInteractionTests = () => testSuite.runTestsByCategory('interaction');
         window.runPerformanceTests = () => testSuite.runTestsByCategory('performance');
+        window.runVisualTests = () => testSuite.runTestsByCategory('visual');
+        window.runSystemTests = () => testSuite.runTestsByCategory('system');
         window.clearResults = () => testSuite.clearResults();
         
         // Export log function
