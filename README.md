@@ -1,6 +1,6 @@
 # Algorithmic Pattern Generator
 
-A combined web application featuring three classic algorithmic simulations: Conway's Game of Life, the Termite Algorithm, and Langton's Ant. This educational tool provides an interactive way to explore emergent behaviour and cellular automata.
+A sophisticated web application featuring three classic algorithmic simulations: Conway's Game of Life, the Termite Algorithm, and Langton's Ant. This educational tool provides an interactive way to explore emergent behaviour and cellular automata with advanced visual effects and performance optimisations.
 
 ## Features
 
@@ -18,33 +18,131 @@ A combined web application featuring three classic algorithmic simulations: Conw
 - **Interactive Controls** - Click to toggle cells in Conway's Game of Life, add ants randomly or under mouse pointer in Langton's Ant
 - **Real-time Statistics** - Generation count, cell count, and FPS display
 - **Keyboard Shortcuts** - Space to start/pause, Ctrl+R to reset, Ctrl+C to clear, Ctrl+I for immersive mode
+- **Dynamic Colour Scheme** - Time-based four-corner hue rotation with smooth interpolation
+- **Performance Optimised** - Hardware acceleration, debounced inputs, and efficient rendering
+- **Responsive Design** - Works on desktop, tablet, and mobile devices
+- **Comprehensive Testing** - Visual and programmatic test suites for quality assurance
 
-## Usage
+## Quick Start
 
-1. Open `index.html` in a modern web browser
-2. Select your preferred simulation from the dropdown
-3. Use the control buttons to start, pause, reset, or clear the simulation
-4. Click "Immersive Mode" for a distraction-free experience
-5. Use the language selector (🇬🇧/🇺🇸) to switch between British and American English
+1. **Open the Application**
+   ```bash
+   # Simply open index.html in a modern web browser
+   open index.html
+   ```
+
+2. **Select a Simulation**
+   - Choose from the dropdown menu: Conway's Game of Life, Termite Algorithm, or Langton's Ant
+
+3. **Control the Simulation**
+   - **Start/Pause**: Click the Start button or press Space
+   - **Reset**: Click Reset or press Ctrl+R
+   - **Clear**: Press Ctrl+C
+   - **Speed**: Adjust the speed slider for each simulation
+   - **Random**: Click Random to generate random patterns
+   - **Coverage**: Adjust the likelihood slider to control pattern density
+
+4. **Interactive Features**
+   - **Conway's Game of Life**: Click on the canvas to toggle cells
+   - **Langton's Ant**: Press 'A' to add an ant under the mouse pointer
+   - **Termite Algorithm**: Adjust the termite count slider
+
+5. **Immersive Mode**
+   - Click "Immersive Mode" or press Ctrl+I for distraction-free viewing
+   - Press Escape to exit immersive mode
 
 ## Keyboard Shortcuts
 
-- **Space** - Start/Pause simulation
-- **Ctrl+R** - Reset simulation
-- **Ctrl+C** - Clear simulation
-- **Ctrl+I** - Toggle immersive mode
-- **Escape** - Exit immersive mode
-- **A** - Add ant (Langton's Ant only, places ant under mouse pointer)
+| Shortcut | Action |
+|----------|--------|
+| **Space** | Start/Pause simulation |
+| **Ctrl+R** | Reset simulation |
+| **Ctrl+C** | Clear simulation |
+| **Ctrl+I** | Toggle immersive mode |
+| **Escape** | Exit immersive mode |
+| **A** | Add ant (Langton's Ant only, places ant under mouse pointer) |
 
-## Technical Details
+## Simulation Details
 
-The application is built using vanilla JavaScript with a modular architecture:
+### Conway's Game of Life
+- **Rules**: Standard Conway rules (B3/S23) with wrap-around boundaries
+- **Controls**: Speed, Random pattern generation, Interactive cell toggling
+- **Features**: State preservation during resize, fade effects, brightness control
 
-- `index.html` - Main HTML structure
-- `styles.css` - Responsive styling with immersive mode support
-- `i18n.js` - Internationalisation system
-- `simulations.js` - Simulation algorithms (BaseSimulation, ConwayGameOfLife, TermiteAlgorithm, LangtonsAnt)
-- `app.js` - Main application logic and UI management
+### Termite Algorithm
+- **Mechanics**: Termites pick up and drop wood chips based on simple rules
+- **Controls**: Speed, Termite count (1-100), Random wood chip placement
+- **Features**: Visual termite representation with direction indicators, trail effects
+
+### Langton's Ant
+- **Rules**: Ants follow simple rules: turn right on white, left on black, flip cell colour
+- **Controls**: Speed, Add ant (random or mouse position), Random pattern generation
+- **Features**: Multiple ant support, state preservation, visual ant representation
+
+## Advanced Features
+
+### Dynamic Colour Scheme
+The application features a sophisticated colour system with:
+- **Four-corner hue rotation** at different time periods
+- **Bilinear interpolation** for smooth colour transitions
+- **Vector-based interpolation** to handle circular hue values correctly
+- **Brightness control** for visual adjustment
+
+### Performance Optimisations
+- **Hardware acceleration** with CSS transforms
+- **Debounced input handling** for smooth slider interactions
+- **RequestAnimationFrame** for 60fps rendering
+- **Element caching** to reduce DOM queries
+- **Memory management** with proper cleanup
+
+### Responsive Design
+- **Dynamic layout** that adapts to screen size
+- **Floating controls** that don't obstruct the simulation
+- **Touch-friendly** interface for mobile devices
+- **Cross-browser compatibility** with modern browsers
+
+## Technical Architecture
+
+### High-Level Design
+The application uses a modular architecture with clear separation of concerns:
+
+- **`app.js`** - Main application logic, UI management, and event handling
+- **`simulations.js`** - Simulation algorithms, rendering utilities, and base classes
+- **`styles.css`** - Responsive styling with immersive mode support
+- **`i18n.js`** - Internationalisation system
+- **`dynamic-layout.js`** - Dynamic layout management
+- **`test-runner.js`** - Programmatic testing framework
+
+### Core Components
+1. **AlgorithmicPatternGenerator** - Main application controller
+2. **BaseSimulation** - Abstract base class for all simulations
+3. **UI Component Library** - Reusable UI components with lifecycle management
+4. **Event Framework** - Centralised event handling with performance optimisations
+5. **Configuration Manager** - Centralised configuration for all simulations
+6. **Performance Monitor** - Real-time performance tracking
+
+### Design Patterns
+- **Factory Pattern** - Simulation creation via SimulationFactory
+- **Observer Pattern** - Event handling and state management
+- **Component Pattern** - Modular UI components
+- **Strategy Pattern** - Different simulation algorithms
+- **Singleton Pattern** - Global services like i18n
+
+## Browser Compatibility
+
+This application works in all modern browsers that support:
+- ES6+ JavaScript features
+- HTML5 Canvas API
+- CSS Grid and Flexbox
+- Local Storage API
+- RequestAnimationFrame
+- Performance API
+
+**Supported Browsers:**
+- Chrome 60+
+- Firefox 55+
+- Safari 12+
+- Edge 79+
 
 ## Adding New Languages
 
@@ -54,18 +152,88 @@ To add support for additional languages, use the `i18n.addLanguage()` method:
 i18n.addLanguage('es', {
     'title': 'Generador de Patrones Algorítmicos',
     'start-btn': 'Iniciar',
+    'pause-btn': 'Pausar',
+    'reset-btn': 'Reiniciar',
+    'clear-btn': 'Limpiar',
+    'immersive-btn': 'Modo Inmersivo',
     // ... other translations
 });
 ```
 
-## Browser Compatibility
+## Testing
 
-This application works in all modern browsers that support:
-- ES6+ JavaScript features
-- HTML5 Canvas API
-- CSS Grid and Flexbox
-- Local Storage API
+The application includes a comprehensive testing framework:
+
+### Visual Test Suite
+Open `test-suite.html` in your browser for comprehensive visual testing:
+- Core simulation functionality
+- UI component testing
+- Performance benchmarking
+- Integration testing
+- Colour scheme validation
+
+### Programmatic Testing
+Use `test-runner.js` for automated testing:
+```javascript
+// Run all tests
+testRunner.runAllTests();
+
+// Run specific categories
+testRunner.runTestsByCategory('core');
+testRunner.runTestsByCategory('performance');
+```
+
+### Specialised Tests
+- `test-colour-scheme.html` - Dynamic colour scheme testing
+- `test-brightness.html` - Brightness control testing
+- `test-drag-toggling.html` - Interactive cell manipulation
+- Various other feature-specific test files
+
+## Performance Benchmarks
+
+The application is optimised for performance with the following targets:
+- **Grid Creation**: < 100ms
+- **Cell Counting**: < 10ms
+- **Drawing**: < 50ms
+- **Updates**: < 20ms
+- **Colour Generation**: < 5ms per frame
+
+## Deployment
+
+### Requirements
+- Modern web browser
+- No server-side dependencies
+- Static file hosting sufficient
+- HTTPS recommended for local storage
+
+### Deployment Options
+The application can be deployed to any static hosting service:
+- GitHub Pages
+- Netlify
+- Vercel
+- Traditional web servers
+
+All files are self-contained and require no build process or server-side dependencies.
+
+## Contributing
+
+When contributing to this project:
+1. Follow the existing code style and architecture
+2. Add tests for new features
+3. Run the comprehensive test suite before submitting
+4. Update documentation as needed
+5. Follow the modular design principles
 
 ## License
 
-This project is open source and available under the MIT License.
+This project is open source and available under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For issues or questions:
+1. Check the browser console for error messages
+2. Verify all required files are loaded
+3. Ensure you're using a supported browser
+4. Review the test suite for functionality verification
+
+The application is designed to be robust and self-contained, with comprehensive error handling and fallback mechanisms.

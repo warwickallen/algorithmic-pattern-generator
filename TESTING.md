@@ -1,34 +1,49 @@
 # Testing Guide for Algorithmic Pattern Generator
 
-This guide explains how to use the comprehensive test suite to ensure your refactoring doesn't introduce regressions.
+This comprehensive guide explains how to use the extensive test suite to ensure code quality, catch regressions, and maintain performance standards during development and refactoring.
 
-## Overview
+## Test Suite Overview
 
-The test suite consists of several components:
+The Algorithmic Pattern Generator includes a sophisticated testing framework with multiple components:
 
-1. **`test-suite.html`** - Comprehensive visual test suite with UI
-2. **`test-colour-scheme.html`** - Specialised tests for dynamic colour scheme
-3. **`test-runner.js`** - Programmatic test runner for automation
-4. **`TESTING.md`** - This guide
+### Core Testing Components
+
+1. **`test-suite.html`** - Comprehensive visual test suite with interactive UI
+2. **`test-runner.js`** - Programmatic test runner for automation and CI/CD
+3. **`test-colour-scheme.html`** - Specialised tests for dynamic colour scheme
+4. **Individual Test Files** - Feature-specific test files for targeted testing
+5. **Performance Benchmarks** - Built-in performance monitoring and validation
+
+### Test Categories
+
+The test suite is organised into logical categories:
+
+- **Core Simulation Tests** - Basic simulation functionality and algorithms
+- **UI Component Tests** - User interface components and interactions
+- **Performance Tests** - Performance benchmarks and optimisation validation
+- **Integration Tests** - Component interactions and system integration
+- **Colour Scheme Tests** - Dynamic colour system and interpolation
+- **Feature Tests** - Specific feature implementations and edge cases
 
 ## Quick Start
 
 ### 1. Visual Test Suite
 
-Open `test-suite.html` in your browser to run the comprehensive test suite:
+Open `test-suite.html` in your browser for comprehensive visual testing:
 
 ```bash
 # Open in browser
 open test-suite.html
 ```
 
-This provides:
-- **Core Simulation Tests** - Tests for Conway's Game of Life, Termite Algorithm, and Langton's Ant
-- **UI Component Tests** - Tests for configuration management, performance optimisers, and shared components
-- **Performance Tests** - Tests for grid creation, updates, and drawing performance
-- **Integration Tests** - Tests for simulation switching, state preservation, and modal management
+**What it provides:**
+- Interactive test interface with real-time results
+- Visual feedback for test outcomes
+- Performance metrics display
+- Category-based test organisation
+- Export capabilities for test results
 
-### 2. Colour Scheme Tests
+### 2. Colour Scheme Testing
 
 Open `test-colour-scheme.html` for specialised dynamic colour scheme testing:
 
@@ -37,12 +52,12 @@ Open `test-colour-scheme.html` for specialised dynamic colour scheme testing:
 open test-colour-scheme.html
 ```
 
-This tests:
-- Corner hue calculations
-- Time-based hue rotation
-- Colour interpolation
+**What it tests:**
+- Corner hue calculations and time-based rotation
+- Colour interpolation accuracy
 - HSL to RGB conversion
 - Performance of colour generation
+- Visual colour transitions
 
 ### 3. Programmatic Test Runner
 
@@ -67,126 +82,336 @@ testRunner.runTestsByCategory('ui');
 testRunner.runTestsByCategory('colour');
 ```
 
-## Test Categories
+## Detailed Test Categories
 
 ### Core Simulation Tests
 
 Tests the fundamental simulation functionality:
 
-- ✅ **Simulation Creation** - Verifies all simulation types can be created
-- ✅ **Grid Initialization** - Tests grid setup and dimensions
-- ✅ **Cell Toggle** - Tests interactive cell manipulation
-- ✅ **Neighbour Counting** - Tests the core algorithm logic
-- ✅ **Movement** - Tests termite and ant movement patterns
-- ✅ **Brightness Application** - Tests visual brightness controls
-- ✅ **Speed Setting** - Tests simulation speed controls
+#### ✅ Simulation Creation
+- Verifies all simulation types can be created successfully
+- Tests factory pattern implementation
+- Validates simulation inheritance hierarchy
+
+#### ✅ Grid Initialization
+- Tests grid setup and dimensions
+- Validates grid data structure integrity
+- Tests grid resizing functionality
+
+#### ✅ Cell Toggle
+- Tests interactive cell manipulation
+- Validates coordinate conversion (screen to grid)
+- Tests boundary conditions and wrap-around
+
+#### ✅ Neighbour Counting
+- Tests the core algorithm logic for each simulation
+- Validates neighbour calculation accuracy
+- Tests edge cases and boundary conditions
+
+#### ✅ Movement Patterns
+- Tests termite and ant movement algorithms
+- Validates direction changes and state updates
+- Tests collision detection and resolution
+
+#### ✅ Brightness Application
+- Tests visual brightness controls
+- Validates colour modification algorithms
+- Tests brightness persistence across updates
+
+#### ✅ Speed Setting
+- Tests simulation speed controls
+- Validates timing and frame rate management
+- Tests speed change responsiveness
 
 ### UI Component Tests
 
-Tests the user interface components:
+Tests the user interface components and interactions:
 
-- ✅ **Configuration Manager** - Tests simulation configuration access
-- ✅ **Shared Components** - Tests reusable UI components
-- ✅ **Performance Optimizer** - Tests debounce and throttle functions
-- ✅ **Element Cache** - Tests DOM element caching
-- ✅ **Event Listener Manager** - Tests event handling
-- ✅ **Initial Controls Visibility on Page Load** - **Critical test** - Ensures controls are visible immediately when the application initialises, not waiting for simulation updates
-- ✅ **Controls Visibility Timing** - Tests that controls become visible immediately after `app.init()`, preventing the issue where controls only appear after canvas updates
+#### ✅ Configuration Manager
+- Tests simulation configuration access
+- Validates configuration validation
+- Tests configuration updates and persistence
+
+#### ✅ Shared Components
+- Tests reusable UI components
+- Validates component lifecycle management
+- Tests component state management
+
+#### ✅ Performance Optimizer
+- Tests debounce and throttle functions
+- Validates performance optimisation effectiveness
+- Tests memory management and cleanup
+
+#### ✅ Element Cache
+- Tests DOM element caching
+- Validates cache hit/miss scenarios
+- Tests cache invalidation and updates
+
+#### ✅ Event Listener Manager
+- Tests event handling registration
+- Validates event cleanup and memory management
+- Tests event delegation and propagation
+
+#### ✅ Controls Visibility
+- **Critical test** - Ensures controls are visible immediately when the application initialises
+- Tests that controls become visible immediately after `app.init()`
+- Prevents the issue where controls only appear after canvas updates
+
+#### ✅ Modal Management
+- Tests modal show/hide functionality
+- Validates modal state management
+- Tests modal event handling and cleanup
 
 ### Performance Tests
 
-Tests performance characteristics:
+Tests performance characteristics and benchmarks:
 
-- ✅ **Grid Creation Performance** - Must complete in < 100ms
-- ✅ **Cell Counting Performance** - Must complete in < 10ms
-- ✅ **Drawing Performance** - Must complete in < 50ms
-- ✅ **Update Performance** - Must complete in < 20ms
+#### ✅ Grid Creation Performance
+- **Target**: Must complete in < 100ms
+- Tests grid creation speed for different sizes
+- Validates memory allocation efficiency
+
+#### ✅ Cell Counting Performance
+- **Target**: Must complete in < 10ms
+- Tests live cell counting algorithms
+- Validates counting optimisation effectiveness
+
+#### ✅ Drawing Performance
+- **Target**: Must complete in < 50ms
+- Tests canvas rendering speed
+- Validates drawing optimisation techniques
+
+#### ✅ Update Performance
+- **Target**: Must complete in < 20ms
+- Tests simulation update algorithms
+- Validates update optimisation effectiveness
+
+#### ✅ Colour Generation Performance
+- **Target**: Must complete in < 5ms per frame
+- Tests dynamic colour scheme generation
+- Validates interpolation algorithm efficiency
 
 ### Integration Tests
 
-Tests component interactions:
+Tests component interactions and system integration:
 
-- ✅ **Simulation Switching** - Tests switching between simulation types
-- ✅ **State Preservation** - Tests state preservation during resize
-- ✅ **Modal Management** - Tests modal show/hide functionality
-- ✅ **Control Management** - Tests UI control visibility
-- ✅ **Keyboard Handler** - Tests keyboard shortcut registration
+#### ✅ Simulation Switching
+- Tests switching between simulation types
+- Validates state preservation during switches
+- Tests resource cleanup and initialisation
+
+#### ✅ State Preservation
+- Tests state preservation during resize
+- Validates state restoration accuracy
+- Tests state serialisation and deserialisation
+
+#### ✅ Control Management
+- Tests UI control visibility and updates
+- Validates control value synchronisation
+- Tests control event handling
+
+#### ✅ Keyboard Handler
+- Tests keyboard shortcut registration
+- Validates shortcut functionality
+- Tests shortcut conflict resolution
+
+#### ✅ Event Framework
+- Tests event registration and cleanup
+- Validates event propagation
+- Tests event memory management
 
 ### Colour Scheme Tests
 
 Tests the dynamic colour system:
 
-- ✅ **Corner Hues** - Tests initial corner hue values
-- ✅ **Time-based Rotation** - Tests hue rotation over time
-- ✅ **Interpolation** - Tests colour interpolation between corners
-- ✅ **HSL to RGB** - Tests colour space conversion
-- ✅ **Vector Interpolation** - Tests mathematical interpolation
-- ✅ **Performance** - Tests colour generation speed
+#### ✅ Corner Hues
+- Tests initial corner hue values
+- Validates hue calculation accuracy
+- Tests hue normalisation and wrapping
+
+#### ✅ Time-based Rotation
+- Tests hue rotation over time
+- Validates rotation period accuracy
+- Tests rotation synchronisation
+
+#### ✅ Interpolation
+- Tests colour interpolation between corners
+- Validates bilinear interpolation accuracy
+- Tests vector-based interpolation for circular hues
+
+#### ✅ HSL to RGB
+- Tests colour space conversion
+- Validates conversion accuracy
+- Tests edge cases in colour conversion
+
+#### ✅ Vector Interpolation
+- Tests mathematical interpolation
+- Validates vector arithmetic
+- Tests circular hue handling
+
+#### ✅ Performance
+- Tests colour generation speed
+- Validates optimisation effectiveness
+- Tests memory usage for colour operations
 
 ## Before Refactoring
 
-1. **Run the full test suite** and ensure all tests pass:
-   ```javascript
-   testRunner.runAllTests();
-   ```
+### 1. Establish Baseline
 
-2. **Note the baseline performance**:
-   - Grid creation time
-   - Update performance
-   - Drawing performance
-   - Colour generation speed
+Run the full test suite and ensure all tests pass:
 
-3. **Save the test results** for comparison:
-   ```javascript
-   const baselineResults = testRunner.exportResults();
-   console.log(JSON.stringify(baselineResults, null, 2));
-   ```
+```javascript
+// Run comprehensive test suite
+const baselineResults = await testRunner.runAllTests();
+
+// Verify all tests pass
+if (baselineResults.summary.failed > 0) {
+    console.error('Baseline tests failed! Fix before refactoring.');
+    return;
+}
+```
+
+### 2. Record Performance Metrics
+
+Note the baseline performance metrics:
+
+```javascript
+// Record baseline performance
+const baselinePerformance = {
+    gridCreation: baselineResults.performance.gridCreation,
+    cellCounting: baselineResults.performance.cellCounting,
+    drawing: baselineResults.performance.drawing,
+    updates: baselineResults.performance.updates,
+    colourGeneration: baselineResults.performance.colourGeneration
+};
+
+console.log('Baseline Performance:', baselinePerformance);
+```
+
+### 3. Save Test Results
+
+Save the test results for comparison:
+
+```javascript
+// Save baseline results
+const baselineData = {
+    timestamp: new Date().toISOString(),
+    results: baselineResults,
+    performance: baselinePerformance
+};
+
+// Store for later comparison
+localStorage.setItem('testBaseline', JSON.stringify(baselineData));
+```
 
 ## During Refactoring
 
-1. **Run tests frequently** after each significant change:
-   ```javascript
-   // Quick validation
-   testRunner.runTestsByCategory('core');
-   
-   // Full validation
-   testRunner.runAllTests();
-   ```
+### 1. Frequent Testing
 
-2. **Monitor performance** to ensure you're not introducing regressions:
-   ```javascript
-   testRunner.runTestsByCategory('performance');
-   ```
+Run tests frequently after each significant change:
 
-3. **Test specific areas** you're refactoring:
-   ```javascript
-   // If refactoring UI components
-   testRunner.runTestsByCategory('ui');
-   
-   // If refactoring colour system
-   testRunner.runTestsByCategory('colour');
-   ```
+```javascript
+// Quick validation after small changes
+const quickResults = await testRunner.runTestsByCategory('core');
+
+// Full validation after major changes
+const fullResults = await testRunner.runAllTests();
+```
+
+### 2. Performance Monitoring
+
+Monitor performance to ensure no regressions:
+
+```javascript
+// Check performance after changes
+const performanceResults = await testRunner.runTestsByCategory('performance');
+
+// Compare with baseline
+const performanceDiff = {
+    gridCreation: performanceResults.performance.gridCreation - baselinePerformance.gridCreation,
+    cellCounting: performanceResults.performance.cellCounting - baselinePerformance.cellCounting,
+    drawing: performanceResults.performance.drawing - baselinePerformance.drawing,
+    updates: performanceResults.performance.updates - baselinePerformance.updates,
+    colourGeneration: performanceResults.performance.colourGeneration - baselinePerformance.colourGeneration
+};
+
+console.log('Performance Change:', performanceDiff);
+```
+
+### 3. Targeted Testing
+
+Test specific areas you're refactoring:
+
+```javascript
+// If refactoring UI components
+const uiResults = await testRunner.runTestsByCategory('ui');
+
+// If refactoring colour system
+const colourResults = await testRunner.runTestsByCategory('colour');
+
+// If refactoring simulation algorithms
+const coreResults = await testRunner.runTestsByCategory('core');
+```
 
 ## After Refactoring
 
-1. **Run the complete test suite**:
-   ```javascript
-   const newResults = await testRunner.runAllTests();
-   ```
+### 1. Complete Validation
 
-2. **Compare with baseline**:
-   ```javascript
-   // Compare performance metrics
-   const performanceDiff = {
-       gridCreation: newResults.summary.duration - baselineResults.summary.duration,
-       // Add other metrics as needed
-   };
-   ```
+Run the complete test suite:
 
-3. **Verify no regressions**:
-   - All tests should still pass
-   - Performance should not degrade significantly
-   - Visual appearance should remain the same
+```javascript
+// Run full test suite
+const newResults = await testRunner.runAllTests();
+
+// Verify all tests pass
+if (newResults.summary.failed > 0) {
+    console.error('Tests failed after refactoring!');
+    console.log('Failed tests:', newResults.failed);
+    return;
+}
+```
+
+### 2. Performance Comparison
+
+Compare with baseline performance:
+
+```javascript
+// Load baseline data
+const baselineData = JSON.parse(localStorage.getItem('testBaseline'));
+
+// Compare performance
+const performanceComparison = {
+    gridCreation: {
+        baseline: baselineData.performance.gridCreation,
+        current: newResults.performance.gridCreation,
+        change: newResults.performance.gridCreation - baselineData.performance.gridCreation
+    },
+    cellCounting: {
+        baseline: baselineData.performance.cellCounting,
+        current: newResults.performance.cellCounting,
+        change: newResults.performance.cellCounting - baselineData.performance.cellCounting
+    },
+    // ... other metrics
+};
+
+console.log('Performance Comparison:', performanceComparison);
+```
+
+### 3. Regression Verification
+
+Verify no regressions have been introduced:
+
+```javascript
+// Check for performance regressions
+const hasRegressions = Object.values(performanceComparison).some(metric => 
+    metric.change > 0.1 // 10% threshold
+);
+
+if (hasRegressions) {
+    console.warn('Performance regressions detected!');
+    console.log('Consider optimising affected areas.');
+}
+```
 
 ## Adding New Tests
 
@@ -196,10 +421,12 @@ Tests the dynamic colour system:
 testRunner.addTest('New Feature Test', async () => {
     // Test implementation
     const result = someFunction();
+    const expectedValue = 'expected';
     
     return {
         passed: result === expectedValue,
-        details: `Result: ${result}, Expected: ${expectedValue}`
+        details: `Result: ${result}, Expected: ${expectedValue}`,
+        category: 'feature-category'
     };
 }, 'feature-category');
 ```
@@ -215,12 +442,36 @@ testRunner.addTest('New Performance Test', async () => {
     
     const end = performance.now();
     const duration = end - start;
+    const threshold = 100; // 100ms threshold
     
     return {
         passed: duration < threshold,
-        details: `Operation took ${duration.toFixed(2)}ms (threshold: ${threshold}ms)`
+        details: `Operation took ${duration.toFixed(2)}ms (threshold: ${threshold}ms)`,
+        category: 'performance',
+        performance: { duration }
     };
 }, 'performance');
+```
+
+### For UI Component Testing
+
+```javascript
+testRunner.addTest('New UI Component Test', async () => {
+    // Create component
+    const component = new UIComponent();
+    
+    // Test functionality
+    const result = component.someMethod();
+    
+    // Cleanup
+    component.cleanup();
+    
+    return {
+        passed: result === expectedValue,
+        details: `Component test result: ${result}`,
+        category: 'ui'
+    };
+}, 'ui');
 ```
 
 ## Troubleshooting
@@ -230,11 +481,16 @@ testRunner.addTest('New Performance Test', async () => {
 1. **Check the test details** for specific failure information
 2. **Compare with baseline** to understand what changed
 3. **Run individual tests** to isolate the issue:
-   ```javascript
-   // Run a specific test
-   const test = testRunner.tests.find(t => t.name === 'Test Name');
-   await testRunner.runTest(test);
-   ```
+
+```javascript
+// Run a specific test
+const test = testRunner.tests.find(t => t.name === 'Test Name');
+const result = await testRunner.runTest(test);
+console.log('Test result:', result);
+```
+
+4. **Check browser console** for error messages
+5. **Verify file dependencies** are loaded correctly
 
 ### Performance Degradation
 
@@ -250,48 +506,111 @@ testRunner.addTest('New Performance Test', async () => {
 3. **Verify brightness controls** still work correctly
 4. **Test on different screen sizes** for layout issues
 
+### Memory Leaks
+
+1. **Check for proper cleanup** in component lifecycle
+2. **Verify event listener removal** in cleanup methods
+3. **Monitor memory usage** in browser dev tools
+4. **Test long-running scenarios** for memory accumulation
+
 ## Best Practices
 
-1. **Run tests before committing** any changes
-2. **Keep performance baselines** for comparison
-3. **Add tests for new features** as you develop them
-4. **Document test failures** and their resolutions
-5. **Use the visual test suite** for manual verification
-6. **Automate testing** in your development workflow
+### 1. Test-Driven Development
+- Write tests before implementing features
+- Use tests to guide implementation
+- Ensure tests cover edge cases and error conditions
+
+### 2. Regular Testing
+- Run tests before committing any changes
+- Include testing in your development workflow
+- Use automated testing in CI/CD pipelines
+
+### 3. Performance Awareness
+- Keep performance baselines for comparison
+- Monitor performance during development
+- Optimise bottlenecks proactively
+
+### 4. Documentation
+- Document test failures and their resolutions
+- Keep test documentation up to date
+- Document performance expectations
+
+### 5. Quality Assurance
+- Use the visual test suite for manual verification
+- Test across different browsers and devices
+- Validate accessibility and usability
 
 ## Continuous Integration
 
-For automated testing, you can integrate the test runner into your CI/CD pipeline:
+For automated testing, integrate the test runner into your CI/CD pipeline:
 
 ```javascript
 // Example CI script
 const { TestRunner, PredefinedTestSuites } = require('./test-runner.js');
 
 async function runCITests() {
+    // Create test environment
     const canvas = createCanvas(100, 100);
     const ctx = canvas.getContext('2d');
     
+    // Create test runner
     const runner = PredefinedTestSuites.createComprehensiveSuite({ canvas, ctx });
+    
+    // Run all tests
     const results = await runner.runAllTests();
     
+    // Check for failures
     if (results.summary.failed > 0 || results.summary.errors > 0) {
         console.error('Tests failed!');
+        console.log('Failed tests:', results.failed);
+        process.exit(1);
+    }
+    
+    // Check for performance regressions
+    const performanceThreshold = 0.2; // 20% threshold
+    const hasPerformanceRegression = Object.values(results.performance).some(
+        metric => metric > performanceThreshold
+    );
+    
+    if (hasPerformanceRegression) {
+        console.warn('Performance regression detected!');
         process.exit(1);
     }
     
     console.log('All tests passed!');
+    console.log('Performance metrics:', results.performance);
 }
 
-runCITests();
+runCITests().catch(error => {
+    console.error('Test execution failed:', error);
+    process.exit(1);
+});
 ```
 
-## Support
+## Support and Resources
 
+### Getting Help
 If you encounter issues with the test suite:
 
-1. Check the browser console for error messages
-2. Verify all required files are loaded (`simulations.js`, `app.js`)
-3. Ensure the canvas element is available for testing
-4. Review the test details for specific failure information
+1. **Check the browser console** for error messages
+2. **Verify all required files** are loaded (`simulations.js`, `app.js`)
+3. **Ensure the canvas element** is available for testing
+4. **Review the test details** for specific failure information
+5. **Check browser compatibility** and supported features
 
-The test suite is designed to be comprehensive and help you maintain code quality during refactoring. Use it regularly to catch regressions early and ensure your algorithmic pattern generator continues to work correctly. 
+### Test Suite Features
+The test suite is designed to be comprehensive and help you maintain code quality:
+
+- **Automated testing** for regression detection
+- **Performance benchmarking** for optimisation validation
+- **Visual testing** for UI verification
+- **Integration testing** for system validation
+- **Extensible framework** for adding new tests
+
+### Maintenance
+- **Regular updates** to test coverage
+- **Performance baseline updates** as optimisations are made
+- **Test documentation updates** as features evolve
+- **Cross-browser testing** for compatibility validation
+
+The test suite is your primary tool for ensuring the algorithmic pattern generator continues to work correctly and perform optimally throughout its development lifecycle. 
