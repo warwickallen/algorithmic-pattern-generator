@@ -592,6 +592,10 @@ class BaseSimulation {
         this.fpsUpdateInterval = 30; // Update FPS every 30 frames
         this.brightness = 1.0; // Default brightness
         
+        // Fade-to-black configuration
+        this.fadeOutCycles = 5; // Number of cycles to fade to black (configurable)
+        this.cellFadeStates = new Map(); // Track fade state for each cell: {row,col} -> fadeCount
+        
         // Performance optimization properties
         this.lastUpdateTime = 0;
         this.updateInterval = 1000 / 30; // Default 30 FPS
@@ -700,18 +704,18 @@ class BaseSimulation {
     reset() {
         this.generation = 0;
         this.cellCount = 0;
-        this.isRunning = false;
-        this.stateManager.setState({ 
-            generation: 0, 
-            cellCount: 0, 
-            isRunning: false 
+        this.clearFadeStates(); // Clear fade states when simulation is reset
+        this.stateManager.setState({
+            generation: 0,
+            cellCount: 0
         });
         simulationLifecycleFramework.executeHook(this.simulationId, 'onReset');
     }
     
     clear() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.generation = 0;
         this.cellCount = 0;
+        this.clearFadeStates(); // Clear fade states when grid is cleared
         this.stateManager.setState({ cellCount: 0 });
         simulationLifecycleFramework.executeHook(this.simulationId, 'onClear');
     }
@@ -759,6 +763,114 @@ class BaseSimulation {
         this.brightness = Math.max(0.1, Math.min(2.0, value));
         // Clear color cache when brightness changes
         this.colorCache.clear();
+    }
+    
+    // Fade-to-black configuration methods
+    setFadeOutCycles(cycles) {
+        this.fadeOutCycles = Math.max(1, Math.min(20, cycles)); // Limit between 1-20 cycles
+    }
+    
+    getFadeOutCycles() {
+        return this.fadeOutCycles;
+    }
+    
+    // Update fade states for all cells based on current grid state
+    updateFadeStates(grid) {
+        // Only update fade states on simulation update cycles, not every animation frame
+        // This ensures the fade effect is visible at slower simulation speeds
+        const currentGeneration = this.generation;
+        
+        // Ensure initialInactiveCells is always initialized
+        if (!this.initialInactiveCells) {
+            this.initialInactiveCells = new Set();
+        }
+        
+        // If this is the first generation (generation 0), populate the initial state tracking
+        if (currentGeneration === 0) {
+            // Populate tracking of cells that were inactive from the start
+            this.initialInactiveCells.clear();
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    if (!grid[row][col]) {
+                        this.initialInactiveCells.add(`${row},${col}`);
+                    }
+                }
+            }
+            return; // Don't process fade states on generation 0
+        }
+        
+        for (let row = 0; row < grid.length; row++) {
+            for (let col = 0; col < grid[row].length; col++) {
+                const cellKey = `${row},${col}`;
+                const isActive = grid[row][col];
+                
+                if (isActive) {
+                    // Cell is active - remove fade state (instant full brightness)
+                    this.cellFadeStates.delete(cellKey);
+                    // Remove from initial inactive set if it was there
+                    this.initialInactiveCells.delete(cellKey);
+                } else {
+                    // Cell is inactive - check if we need to increment fade count
+                    const fadeData = this.cellFadeStates.get(cellKey);
+                    if (!fadeData) {
+                        // Only create fade data if this cell was not initially inactive
+                        // This prevents cells that have always been inactive from getting fade data
+                        if (!this.initialInactiveCells.has(cellKey)) {
+                            // First time seeing this inactive cell - start fade
+                            // Start with fadeCount: 1 so the first cycle shows some fading
+                            this.cellFadeStates.set(cellKey, {
+                                fadeCount: 1,
+                                lastUpdateGeneration: currentGeneration
+                            });
+                        }
+                        // If it was initially inactive, don't create fade data - cell remains black
+                    } else if (fadeData.lastUpdateGeneration < currentGeneration) {
+                        // Only increment fade count on new simulation generations
+                        if (fadeData.fadeCount < this.fadeOutCycles) {
+                            const newFadeCount = fadeData.fadeCount + 1;
+                            this.cellFadeStates.set(cellKey, {
+                                fadeCount: newFadeCount,
+                                lastUpdateGeneration: currentGeneration
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Get fade factor for a specific cell (0 = fully faded to black, 1 = full brightness)
+    getCellFadeFactor(row, col, isActive = null) {
+        const cellKey = `${row},${col}`;
+        const fadeData = this.cellFadeStates.get(cellKey);
+        
+        if (isActive === null) {
+            // If we don't know the cell state, we need to determine it from the grid
+            // This is a fallback case - the isActive parameter should always be provided
+            console.warn('getCellFadeFactor called without isActive parameter - this may cause incorrect fade behavior');
+            if (!fadeData) {
+                return 1; // No fade data means active cell (full brightness)
+            }
+        } else if (isActive) {
+            // Active cells should have no fade data and return full brightness
+            return 1;
+        } else {
+            // Inactive cells: if no fade data, they're black; if fading, calculate fade factor
+            if (!fadeData) {
+                return 0; // No fade data means inactive cell (black)
+            }
+        }
+        
+        const fadeCount = fadeData.fadeCount || 0;
+        const fadeFactor = Math.max(0, 1 - (fadeCount / this.fadeOutCycles));
+        
+        return fadeFactor;
+    }
+    
+    // Clear all fade states (useful for reset/clear operations)
+    clearFadeStates() {
+        this.cellFadeStates.clear();
+        this.initialInactiveCells = null;
     }
     
     // Optimized brightness application with caching
@@ -895,19 +1007,18 @@ class BaseSimulation {
     drawGrid(grid, cellRenderer = null) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Use more efficient iteration
+        // Render ALL cells (both active and inactive) to show fade effects
         for (let row = 0; row < grid.length; row++) {
             const rowData = grid[row];
             for (let col = 0; col < rowData.length; col++) {
-                if (rowData[col]) {
-                    const x = col * this.cellSize;
-                    const y = row * this.cellSize;
-                    
-                    if (cellRenderer && typeof cellRenderer === 'function') {
-                        cellRenderer(x, y, row, col, rowData[col]);
-                    } else {
-                        this.drawCell(x, y);
-                    }
+                const x = col * this.cellSize;
+                const y = row * this.cellSize;
+                const isActive = rowData[col];
+                
+                if (cellRenderer && typeof cellRenderer === 'function') {
+                    cellRenderer(x, y, row, col, isActive);
+                } else {
+                    this.drawCell(x, y, null, isActive);
                 }
             }
         }
@@ -1076,19 +1187,69 @@ class BaseSimulation {
     }
     
     interpolateColor(color1, color2, factor) {
-        const r1 = parseInt(color1.slice(1, 3), 16);
-        const g1 = parseInt(color1.slice(3, 5), 16);
-        const b1 = parseInt(color1.slice(5, 7), 16);
+        // Parse color1 (supports rgb, rgba, and hex formats)
+        let r1, g1, b1;
         
-        const r2 = parseInt(color2.slice(1, 3), 16);
-        const g2 = parseInt(color2.slice(3, 5), 16);
-        const b2 = parseInt(color2.slice(5, 7), 16);
+        if (color1.startsWith('rgb')) {
+            // Handle rgb(r, g, b) or rgba(r, g, b, a) format
+            const match = color1.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+                r1 = parseInt(match[1]);
+                g1 = parseInt(match[2]);
+                b1 = parseInt(match[3]);
+            }
+        } else if (color1.startsWith('#')) {
+            // Handle hex format
+            const hex = color1.slice(1);
+            if (hex.length === 3) {
+                r1 = parseInt(hex[0] + hex[0], 16);
+                g1 = parseInt(hex[1] + hex[1], 16);
+                b1 = parseInt(hex[2] + hex[2], 16);
+            } else if (hex.length === 6) {
+                r1 = parseInt(hex.slice(0, 2), 16);
+                g1 = parseInt(hex.slice(2, 4), 16);
+                b1 = parseInt(hex.slice(4, 6), 16);
+            }
+        }
         
-        const r = Math.round(r1 + (r2 - r1) * factor);
-        const g = Math.round(g1 + (g2 - g1) * factor);
-        const b = Math.round(b1 + (b2 - b1) * factor);
+        // Parse color2 (supports rgb, rgba, and hex formats)
+        let r2, g2, b2;
         
-        return `rgb(${r}, ${g}, ${b})`;
+        if (color2.startsWith('rgb')) {
+            // Handle rgb(r, g, b) or rgba(r, g, b, a) format
+            const match = color2.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+                r2 = parseInt(match[1]);
+                g2 = parseInt(match[2]);
+                b2 = parseInt(match[3]);
+            }
+        } else if (color2.startsWith('#')) {
+            // Handle hex format
+            const hex = color2.slice(1);
+            if (hex.length === 3) {
+                r2 = parseInt(hex[0] + hex[0], 16);
+                g2 = parseInt(hex[1] + hex[1], 16);
+                b2 = parseInt(hex[2] + hex[2], 16);
+            } else if (hex.length === 6) {
+                r2 = parseInt(hex.slice(0, 2), 16);
+                g2 = parseInt(hex.slice(2, 4), 16);
+                b2 = parseInt(hex.slice(4, 6), 16);
+            }
+        }
+        
+        // Check if both colors were parsed successfully
+        if (r1 !== undefined && g1 !== undefined && b1 !== undefined &&
+            r2 !== undefined && g2 !== undefined && b2 !== undefined) {
+            
+            const r = Math.round(r1 + (r2 - r1) * factor);
+            const g = Math.round(g1 + (g2 - g1) * factor);
+            const b = Math.round(b1 + (b2 - b1) * factor);
+            
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+        
+        // Return original color if parsing failed
+        return color1;
     }
     
     // Glow effect utility with performance optimization
@@ -1107,16 +1268,35 @@ class BaseSimulation {
     }
     
     // Common cell rendering method with caching
-    drawCell(x, y, color = null) {
+    drawCell(x, y, color = null, isActive = null) {
+        // Get grid position for fade calculations
+        const { col, row } = this.screenToGrid(x, y);
+        const fadeFactor = this.getCellFadeFactor(row, col, isActive);
+        
+        // If cell is completely faded (fadeFactor = 0), don't render anything
+        if (fadeFactor === 0) {
+            return;
+        }
+        
+        // Get base color (either provided or gradient)
         if (!color) {
             color = this.getGradientColor(x, y);
         }
         
         // Apply brightness to the color
-        color = this.applyBrightness(color);
+        const brightColor = this.applyBrightness(color);
         
-        this.ctx.fillStyle = color;
-        this.setGlowEffect(color, 20 * this.brightness);
+        // Apply fade-to-black effect
+        let finalColor = brightColor;
+        if (fadeFactor < 1) {
+            // Interpolate between the cell color and black based on fade factor
+            // fadeFactor = 1 means full brightness, fadeFactor = 0 means black
+            // So we need to interpolate with (1 - fadeFactor) to get the correct direction
+            finalColor = this.interpolateColor(brightColor, '#000000', 1 - fadeFactor);
+        }
+        
+        this.ctx.fillStyle = finalColor;
+        this.setGlowEffect(finalColor, 20 * this.brightness * fadeFactor);
         
         this.ctx.fillRect(x, y, this.cellSize - 1, this.cellSize - 1);
         
@@ -1345,6 +1525,10 @@ class ConwayGameOfLife extends BaseSimulation {
     }
     
     update() {
+        // Update fade states before incrementing generation
+        // This ensures we can properly track initial inactive cells on generation 0
+        this.updateFadeStates(this.grids.current);
+        
         this.generation++;
         
         for (let row = 0; row < this.rows; row++) {
@@ -1377,6 +1561,9 @@ class ConwayGameOfLife extends BaseSimulation {
         if (this.isValidGridPosition(row, col)) {
             this.grids.current[row][col] = !this.grids.current[row][col];
             this.cellCount = this.countLiveCells(this.grids.current);
+            
+            // Update fade states before drawing to ensure proper fade behavior
+            this.updateFadeStates(this.grids.current);
             this.draw();
         }
     }
@@ -1407,6 +1594,9 @@ class TermiteAlgorithm extends BaseSimulation {
         this.speed = 30; // steps per second
         this.lastUpdateTime = 0;
         this.updateInterval = 1000 / this.speed; // milliseconds between updates
+        
+        // Set default cell size to ensure rows/cols are calculated properly
+        this.cellSize = 10;
     }
     
     init() {
@@ -1463,6 +1653,22 @@ class TermiteAlgorithm extends BaseSimulation {
     }
     
     update() {
+        // Create a virtual grid for fade state tracking
+        const virtualGrid = this.createGrid(this.rows, this.cols, false);
+        
+        // Mark active cells in virtual grid
+        this.woodChips.forEach(chipKey => {
+            const [x, y] = chipKey.split(',').map(Number);
+            const { col, row } = this.screenToGrid(x, y);
+            if (this.isValidGridPosition(row, col)) {
+                virtualGrid[row][col] = true;
+            }
+        });
+        
+        // Update fade states before incrementing generation
+        // This ensures we can properly track initial inactive cells on generation 0
+        this.updateFadeStates(virtualGrid);
+        
         this.generation++;
         this.cellCount = this.woodChips.size;
         
@@ -1508,7 +1714,19 @@ class TermiteAlgorithm extends BaseSimulation {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw wood chips
+        // Create a virtual grid for fade state tracking
+        const virtualGrid = this.createGrid(this.rows, this.cols, false);
+        
+        // Mark active cells in virtual grid
+        this.woodChips.forEach(chipKey => {
+            const [x, y] = chipKey.split(',').map(Number);
+            const { col, row } = this.screenToGrid(x, y);
+            if (this.isValidGridPosition(row, col)) {
+                virtualGrid[row][col] = true;
+            }
+        });
+        
+        // Draw wood chips with fade effect
         this.woodChips.forEach(chipKey => {
             const [x, y] = chipKey.split(',').map(Number);
             this.drawCell(x, y);
@@ -1550,6 +1768,17 @@ class TermiteAlgorithm extends BaseSimulation {
             }
             
             this.cellCount = this.woodChips.size;
+            
+            // Update fade states before drawing to ensure proper fade behavior
+            const virtualGrid = this.createGrid(this.rows, this.cols, false);
+            this.woodChips.forEach(chipKey => {
+                const [x, y] = chipKey.split(',').map(Number);
+                const { col, row } = this.screenToGrid(x, y);
+                if (this.isValidGridPosition(row, col)) {
+                    virtualGrid[row][col] = true;
+                }
+            });
+            this.updateFadeStates(virtualGrid);
             this.draw();
         }
     }
@@ -1586,6 +1815,9 @@ class LangtonsAnt extends BaseSimulation {
         this.speed = 30; // steps per second
         this.lastUpdateTime = 0;
         this.updateInterval = 1000 / this.speed; // milliseconds between updates
+        
+        // Set default cell size to ensure rows/cols are calculated properly
+        this.cellSize = 10;
     }
     
     init() {
@@ -1688,6 +1920,10 @@ class LangtonsAnt extends BaseSimulation {
     }
     
     update() {
+        // Update fade states before incrementing generation
+        // This ensures we can properly track initial inactive cells on generation 0
+        this.updateFadeStates(this.grid);
+        
         this.generation++;
         
         // Update each ant
@@ -1787,6 +2023,9 @@ class LangtonsAnt extends BaseSimulation {
         if (this.isValidGridPosition(row, col)) {
             this.grid[row][col] = !this.grid[row][col];
             this.cellCount = this.countLiveCells(this.grid);
+            
+            // Update fade states before drawing to ensure proper fade behavior
+            this.updateFadeStates(this.grid);
             this.draw();
         }
     }

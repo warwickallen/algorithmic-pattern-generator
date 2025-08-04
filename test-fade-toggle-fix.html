@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fade Toggle Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        .log {
+            background-color: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .simulation-container {
+            border: 1px solid #555;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        canvas {
+            border: 1px solid #555;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fade Toggle Fix Test</h1>
+        <p>This test verifies that the toggle fix resolves the incorrect fade pattern: 100% → 0% → 100% → 80% → 60% → 40% → 20% → 0%</p>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <button onclick="startTest()">Start Test</button>
+            <button onclick="toggleCell()">Toggle Cell [1,1]</button>
+            <button onclick="stepSimulation()">Step Simulation</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>Simulation</h2>
+            <div class="simulation-container">
+                <canvas id="canvas" width="400" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Debug Log</h2>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script src="simulations.js"></script>
+    <script>
+        let simulation = null;
+        let canvas = null;
+        let ctx = null;
+        
+        function log(message) {
+            const logElement = document.getElementById('log');
+            logElement.textContent += message + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+        
+        function startTest() {
+            log('=== STARTING FADE TOGGLE FIX TEST ===');
+            
+            // Initialize canvas
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // Create Conway simulation
+            simulation = SimulationFactory.createSimulation('conway', canvas, ctx);
+            simulation.setFadeOutCycles(5);
+            simulation.setSpeed(1);
+            simulation.init();
+            
+            // Add debug logging
+            const originalDrawCell = simulation.drawCell.bind(simulation);
+            
+            simulation.drawCell = function(x, y, color, isActive) {
+                const { col, row } = this.screenToGrid(x, y);
+                if (row === 1 && col === 1) {
+                    const fadeFactor = this.getCellFadeFactor(row, col, isActive);
+                    const brightnessPercent = Math.round(fadeFactor * 100);
+                    log(`[DRAW] Cell [1,1]: isActive=${isActive}, brightness=${brightnessPercent}%`);
+                }
+                originalDrawCell(x, y, color, isActive);
+            };
+            
+            // Start the simulation
+            simulation.start();
+            
+            log('Test started. Watch the log for fade progression.');
+            log('Expected pattern after toggle: 100% → 80% → 60% → 40% → 20% → 0%');
+            log('NOT the incorrect pattern: 100% → 0% → 100% → 80% → 60% → 40% → 20% → 0%');
+            log('');
+        }
+        
+        function toggleCell() {
+            if (!simulation) {
+                log('ERROR: No simulation running. Start the test first.');
+                return;
+            }
+            
+            log('=== TOGGLING CELL [1,1] ===');
+            
+            // Convert grid coordinates to screen coordinates
+            const screenPos = simulation.gridToScreen(1, 1);
+            simulation.toggleCell(screenPos.x, screenPos.y);
+            
+            log('Cell [1,1] toggled. Watch for fade effect.');
+            log('');
+        }
+        
+        function stepSimulation() {
+            if (!simulation) {
+                log('ERROR: No simulation running. Start the test first.');
+                return;
+            }
+            
+            log('=== STEPPING SIMULATION ===');
+            simulation.update();
+            log('Simulation stepped. Check the log for fade state changes.');
+            log('');
+        }
+        
+        // Instructions
+        log('Instructions:');
+        log('1. Click "Start Test" to begin');
+        log('2. Watch the debug log for fade progression');
+        log('3. Click "Toggle Cell [1,1]" to test fade effect');
+        log('4. Click "Step Simulation" to manually advance the simulation');
+        log('5. Verify the pattern is: 100% → 80% → 60% → 40% → 20% → 0%');
+        log('6. NOT the incorrect: 100% → 0% → 100% → 80% → 60% → 40% → 20% → 0%');
+        log('');
+    </script>
+</body>
+</html> 

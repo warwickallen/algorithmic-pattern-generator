@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fade Order Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        .controls {
+            margin: 10px 0;
+        }
+        label {
+            margin-right: 10px;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+        .log {
+            background-color: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fade Order Fix Test</h1>
+        <p>This test verifies that the fade effect follows the correct linear progression from 100% to 0% brightness.</p>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <div class="controls">
+                <label>Simulation Type:</label>
+                <select id="simType">
+                    <option value="conway">Conway's Game of Life</option>
+                    <option value="termite">Termite Algorithm</option>
+                    <option value="ant">Langton's Ant</option>
+                </select>
+                
+                <label>Fade Cycles:</label>
+                <input type="number" id="fadeCycles" value="5" min="1" max="20">
+                
+                <label>Speed (steps/sec):</label>
+                <input type="number" id="speed" value="1" min="0.1" max="10" step="0.1">
+            </div>
+            
+            <div class="controls">
+                <button onclick="startTest()">Start Test</button>
+                <button onclick="stopTest()">Stop Test</button>
+                <button onclick="clearLog()">Clear Log</button>
+                <button onclick="toggleCell()">Toggle Cell [1,1]</button>
+            </div>
+            
+            <div class="status" id="status">Ready to test</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Simulation Canvas</h2>
+            <canvas id="canvas" width="400" height="400" style="border: 1px solid #333;"></canvas>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Log</h2>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script src="simulations.js"></script>
+    <script>
+        let simulation;
+        let isRunning = false;
+        let testInterval;
+        
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        function startTest() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const simType = document.getElementById('simType').value;
+            const fadeCycles = parseInt(document.getElementById('fadeCycles').value);
+            const speed = parseFloat(document.getElementById('speed').value);
+            
+            // Create simulation
+            simulation = SimulationFactory.createSimulation(simType, canvas, ctx);
+            simulation.setFadeOutCycles(fadeCycles);
+            simulation.setSpeed(speed);
+            simulation.init();
+            
+            // Start simulation
+            simulation.start();
+            isRunning = true;
+            
+            updateStatus(`Test started - ${simType} with ${fadeCycles} fade cycles at ${speed} steps/sec`);
+            log(`Test started: ${simType}, fade cycles: ${fadeCycles}, speed: ${speed} steps/sec`);
+            
+            // Monitor fade progression
+            testInterval = setInterval(() => {
+                if (simulation && isRunning) {
+                    const cellKey = '1,1';
+                    const fadeData = simulation.cellFadeStates.get(cellKey);
+                    if (fadeData) {
+                        const fadeFactor = simulation.getCellFadeFactor(1, 1, false);
+                        const brightnessPercent = Math.round(fadeFactor * 100);
+                        log(`Generation ${simulation.generation}: Cell [1,1] fadeCount=${fadeData.fadeCount}, fadeFactor=${fadeFactor.toFixed(2)}, brightness=${brightnessPercent}%`);
+                    }
+                }
+            }, 1000); // Check every second
+        }
+        
+        function stopTest() {
+            if (simulation) {
+                simulation.pause();
+            }
+            isRunning = false;
+            if (testInterval) {
+                clearInterval(testInterval);
+            }
+            updateStatus('Test stopped');
+            log('Test stopped');
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+        
+        function toggleCell() {
+            if (simulation) {
+                // Convert grid position [1,1] to screen coordinates
+                const screenPos = simulation.gridToScreen(1, 1);
+                simulation.toggleCell(screenPos.x, screenPos.y);
+                log(`Toggled cell [1,1] at screen position (${screenPos.x}, ${screenPos.y})`);
+            }
+        }
+        
+        // Instructions
+        log('Instructions:');
+        log('1. Select simulation type, fade cycles, and speed');
+        log('2. Click "Start Test" to begin');
+        log('3. Click "Toggle Cell [1,1]" to activate/deactivate the cell');
+        log('4. Watch the log for fade progression');
+        log('5. Expected pattern: 100% → 80% → 60% → 40% → 20% → 0%');
+        log('');
+    </script>
+</body>
+</html> 

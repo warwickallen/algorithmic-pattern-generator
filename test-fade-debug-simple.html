@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Fade Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .log {
+            background-color: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Fade Debug Test</h1>
+    <p>This test isolates the fade factor calculation to understand the pattern issue.</p>
+    
+    <div class="log" id="log"></div>
+
+    <script>
+        function log(message) {
+            const logElement = document.getElementById('log');
+            logElement.textContent += message + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // Simulate the fade state management
+        const cellFadeStates = new Map();
+        const fadeOutCycles = 5;
+        let generation = 0;
+        
+        function updateFadeStates(grid) {
+            const currentGeneration = generation;
+            
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const cellKey = `${row},${col}`;
+                    const isActive = grid[row][col];
+                    
+                    if (isActive) {
+                        // Cell is active - remove fade state (instant full brightness)
+                        cellFadeStates.delete(cellKey);
+                    } else {
+                        // Cell is inactive - check if we need to increment fade count
+                        const fadeData = cellFadeStates.get(cellKey);
+                        if (!fadeData) {
+                            // First time seeing this inactive cell - start fade
+                            cellFadeStates.set(cellKey, {
+                                fadeCount: 0,
+                                lastUpdateGeneration: currentGeneration
+                            });
+                        } else if (fadeData.lastUpdateGeneration < currentGeneration) {
+                            // Only increment fade count on new simulation generations
+                            if (fadeData.fadeCount < fadeOutCycles) {
+                                const newFadeCount = fadeData.fadeCount + 1;
+                                cellFadeStates.set(cellKey, {
+                                    fadeCount: newFadeCount,
+                                    lastUpdateGeneration: currentGeneration
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function getCellFadeFactor(row, col, isActive = null) {
+            const cellKey = `${row},${col}`;
+            const fadeData = cellFadeStates.get(cellKey);
+            
+            if (isActive === null) {
+                // If we don't know the cell state, assume it's active if no fade data
+                // This maintains backward compatibility
+                if (!fadeData) {
+                    return 1; // No fade data means active cell (full brightness)
+                }
+            } else if (isActive) {
+                // Active cells should have no fade data and return full brightness
+                return 1;
+            } else {
+                // Inactive cells: if no fade data, they're black; if fading, calculate fade factor
+                if (!fadeData) {
+                    return 0; // No fade data means inactive cell (black)
+                }
+            }
+            
+            const fadeCount = fadeData.fadeCount || 0;
+            const fadeFactor = Math.max(0, 1 - (fadeCount / fadeOutCycles));
+            
+            return fadeFactor;
+        }
+        
+        // Test the fade progression
+        log('=== TESTING FADE PROGRESSION ===');
+        
+        // Create a simple 1x1 grid
+        const grid = [[false]]; // Start with cell [0,0] inactive
+        
+        log(`Initial state: cell [0,0] is inactive`);
+        log(`Fade cycles: ${fadeOutCycles}`);
+        log('');
+        
+        // Simulate the progression
+        for (let gen = 0; gen <= fadeOutCycles; gen++) {
+            generation = gen;
+            
+            // Update fade states
+            updateFadeStates(grid);
+            
+            // Get fade factor
+            const fadeFactor = getCellFadeFactor(0, 0, false);
+            const brightnessPercent = Math.round(fadeFactor * 100);
+            
+            // Get fade data for logging
+            const fadeData = cellFadeStates.get('0,0');
+            const fadeCount = fadeData ? fadeData.fadeCount : 'N/A';
+            
+            log(`Generation ${gen}: fadeCount=${fadeCount}, fadeFactor=${fadeFactor.toFixed(2)}, brightness=${brightnessPercent}%`);
+        }
+        
+        log('');
+        log('=== TESTING CELL TOGGLE ===');
+        
+        // Now test what happens when we toggle the cell
+        log('Toggling cell [0,0] to active...');
+        grid[0][0] = true;
+        updateFadeStates(grid);
+        
+        const fadeFactorActive = getCellFadeFactor(0, 0, true);
+        const brightnessPercentActive = Math.round(fadeFactorActive * 100);
+        log(`After toggle: fadeFactor=${fadeFactorActive.toFixed(2)}, brightness=${brightnessPercentActive}%`);
+        
+        log('');
+        log('Toggling cell [0,0] back to inactive...');
+        grid[0][0] = false;
+        updateFadeStates(grid);
+        
+        const fadeFactorInactive = getCellFadeFactor(0, 0, false);
+        const brightnessPercentInactive = Math.round(fadeFactorInactive * 100);
+        log(`After toggle back: fadeFactor=${fadeFactorInactive.toFixed(2)}, brightness=${brightnessPercentInactive}%`);
+        
+        // Check if fade data was reset
+        const fadeDataAfterToggle = cellFadeStates.get('0,0');
+        log(`Fade data after toggle: ${fadeDataAfterToggle ? JSON.stringify(fadeDataAfterToggle) : 'null'}`);
+    </script>
+</body>
+</html> 

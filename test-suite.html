@@ -1226,6 +1226,51 @@
             };
         }, 'integration');
         
+        testSuite.addTest('Fade-to-Black Effect', async () => {
+            // Create test canvas and simulation
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            const simulation = new ConwayGameOfLife(canvas, ctx);
+            simulation.init();
+            
+            // Test fade configuration
+            const defaultFadeCycles = simulation.getFadeOutCycles();
+            simulation.setFadeOutCycles(3);
+            const newFadeCycles = simulation.getFadeOutCycles();
+            
+            // Test fade state tracking
+            const testGrid = simulation.createGrid(5, 5, true);
+            simulation.updateFadeStates(testGrid);
+            
+            // Check that active cells have no fade state (should return 1 for full brightness)
+            const activeCellFade = simulation.getCellFadeFactor(0, 0, true);
+            const activeCellHasNoFade = activeCellFade === 1;
+            
+            // Create a grid with some inactive cells
+            const mixedGrid = simulation.createGrid(5, 5, false);
+            mixedGrid[0][0] = true; // Active cell
+            mixedGrid[1][1] = false; // Inactive cell
+            
+            simulation.updateFadeStates(mixedGrid);
+            
+            // Check that inactive cells start fading
+            const inactiveCellFade = simulation.getCellFadeFactor(1, 1, false);
+            const inactiveCellIsFading = inactiveCellFade < 1;
+            
+            // Test fade state clearing
+            simulation.clearFadeStates();
+            const clearedFade = simulation.getCellFadeFactor(1, 1, false);
+            const fadeStatesCleared = clearedFade === 0; // Should be black after clearing
+            
+            return {
+                passed: defaultFadeCycles === 5 && newFadeCycles === 3 && activeCellHasNoFade && inactiveCellIsFading && fadeStatesCleared,
+                details: `Fade cycles: ${defaultFadeCycles}→${newFadeCycles}, Active fade: ${activeCellFade}, Inactive fade: ${inactiveCellFade}, Cleared: ${clearedFade}`
+            };
+        }, 'core');
+        
         // Global functions for button clicks
         window.runAllTests = () => testSuite.runAllTests();
         window.runSimulationTests = () => testSuite.runTestsByCategory('core');

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fade Effect Visibility Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .simulation-container {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .controls {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .control-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fade Effect Visibility Test</h1>
+        
+        <div class="info">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Set the simulation speed to 1 step/second</li>
+                <li>Set fade cycles to 5</li>
+                <li>Click "Randomize" to create some cells</li>
+                <li>Start the simulation and watch cells fade to black over 5 seconds</li>
+                <li>The fade effect should now be clearly visible at slow speeds</li>
+            </ol>
+        </div>
+        
+        <div class="simulation-container">
+            <h3>Conway's Game of Life</h3>
+            <canvas id="conway-canvas" width="300" height="300"></canvas>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Speed (steps/sec):</label>
+                    <input type="range" id="conway-speed" min="1" max="30" value="1">
+                    <span id="conway-speed-value">1</span>
+                </div>
+                <div class="control-group">
+                    <label>Fade Cycles:</label>
+                    <input type="range" id="conway-fade" min="1" max="10" value="5">
+                    <span id="conway-fade-value">5</span>
+                </div>
+                <div class="control-group">
+                    <button id="conway-start">Start</button>
+                    <button id="conway-pause">Pause</button>
+                    <button id="conway-reset">Reset</button>
+                    <button id="conway-randomize">Randomize</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <h3>Termite Algorithm</h3>
+            <canvas id="termite-canvas" width="300" height="300"></canvas>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Speed (steps/sec):</label>
+                    <input type="range" id="termite-speed" min="1" max="30" value="1">
+                    <span id="termite-speed-value">1</span>
+                </div>
+                <div class="control-group">
+                    <label>Fade Cycles:</label>
+                    <input type="range" id="termite-fade" min="1" max="10" value="5">
+                    <span id="termite-fade-value">5</span>
+                </div>
+                <div class="control-group">
+                    <button id="termite-start">Start</button>
+                    <button id="termite-pause">Pause</button>
+                    <button id="termite-reset">Reset</button>
+                    <button id="termite-randomize">Randomize</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <h3>Langton's Ant</h3>
+            <canvas id="langton-canvas" width="300" height="300"></canvas>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Speed (steps/sec):</label>
+                    <input type="range" id="langton-speed" min="1" max="30" value="1">
+                    <span id="langton-speed-value">1</span>
+                </div>
+                <div class="control-group">
+                    <label>Fade Cycles:</label>
+                    <input type="range" id="langton-fade" min="1" max="10" value="5">
+                    <span id="langton-fade-value">5</span>
+                </div>
+                <div class="control-group">
+                    <button id="langton-start">Start</button>
+                    <button id="langton-pause">Pause</button>
+                    <button id="langton-reset">Reset</button>
+                    <button id="langton-randomize">Randomize</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="simulations.js"></script>
+    <script>
+        // Initialize simulations
+        const conwayCanvas = document.getElementById('conway-canvas');
+        const termiteCanvas = document.getElementById('termite-canvas');
+        const langtonCanvas = document.getElementById('langton-canvas');
+        
+        const conway = new ConwayGameOfLife(conwayCanvas, conwayCanvas.getContext('2d'));
+        const termite = new TermiteAlgorithm(termiteCanvas, termiteCanvas.getContext('2d'));
+        const langton = new LangtonsAnt(langtonCanvas, langtonCanvas.getContext('2d'));
+        
+        // Initialize all simulations
+        conway.init();
+        termite.init();
+        langton.init();
+        
+        // Set initial fade cycles
+        conway.setFadeOutCycles(5);
+        termite.setFadeOutCycles(5);
+        langton.setFadeOutCycles(5);
+        
+        // Set initial speed
+        conway.setSpeed(1);
+        termite.setSpeed(1);
+        langton.setSpeed(1);
+        
+        // Conway controls
+        document.getElementById('conway-speed').addEventListener('input', (e) => {
+            const speed = parseInt(e.target.value);
+            document.getElementById('conway-speed-value').textContent = speed;
+            conway.setSpeed(speed);
+        });
+        
+        document.getElementById('conway-fade').addEventListener('input', (e) => {
+            const fade = parseInt(e.target.value);
+            document.getElementById('conway-fade-value').textContent = fade;
+            conway.setFadeOutCycles(fade);
+        });
+        
+        document.getElementById('conway-start').addEventListener('click', () => conway.start());
+        document.getElementById('conway-pause').addEventListener('click', () => conway.pause());
+        document.getElementById('conway-reset').addEventListener('click', () => conway.reset());
+        document.getElementById('conway-randomize').addEventListener('click', () => conway.randomize());
+        
+        // Termite controls
+        document.getElementById('termite-speed').addEventListener('input', (e) => {
+            const speed = parseInt(e.target.value);
+            document.getElementById('termite-speed-value').textContent = speed;
+            termite.setSpeed(speed);
+        });
+        
+        document.getElementById('termite-fade').addEventListener('input', (e) => {
+            const fade = parseInt(e.target.value);
+            document.getElementById('termite-fade-value').textContent = fade;
+            termite.setFadeOutCycles(fade);
+        });
+        
+        document.getElementById('termite-start').addEventListener('click', () => termite.start());
+        document.getElementById('termite-pause').addEventListener('click', () => termite.pause());
+        document.getElementById('termite-reset').addEventListener('click', () => termite.reset());
+        document.getElementById('termite-randomize').addEventListener('click', () => termite.randomize());
+        
+        // Langton controls
+        document.getElementById('langton-speed').addEventListener('input', (e) => {
+            const speed = parseInt(e.target.value);
+            document.getElementById('langton-speed-value').textContent = speed;
+            langton.setSpeed(speed);
+        });
+        
+        document.getElementById('langton-fade').addEventListener('input', (e) => {
+            const fade = parseInt(e.target.value);
+            document.getElementById('langton-fade-value').textContent = fade;
+            langton.setFadeOutCycles(fade);
+        });
+        
+        document.getElementById('langton-start').addEventListener('click', () => langton.start());
+        document.getElementById('langton-pause').addEventListener('click', () => langton.pause());
+        document.getElementById('langton-reset').addEventListener('click', () => langton.reset());
+        document.getElementById('langton-randomize').addEventListener('click', () => langton.randomize());
+        
+        console.log('Fade visibility test loaded. Set speed to 1 step/second and watch cells fade over 5 seconds.');
+    </script>
+</body>
+</html> 

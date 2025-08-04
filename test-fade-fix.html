@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fade Effect Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            margin-right: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #000;
+        }
+        .instructions {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .status {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fade Effect Fix Test</h1>
+        
+        <div class="instructions">
+            <h3>Test Instructions:</h3>
+            <ol>
+                <li>Click "Start" to begin the simulation</li>
+                <li>Click on any cell to activate it (it should appear instantly at full brightness)</li>
+                <li>Click on the same cell again to deactivate it</li>
+                <li>Watch the cell gradually fade to black over 5 cycles (or your set fade cycles)</li>
+                <li>The fade should be smooth and gradual, not sudden</li>
+            </ol>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Simulation:</label>
+                <select id="simulationType">
+                    <option value="conway">Conway's Game of Life</option>
+                    <option value="termite">Termite Algorithm</option>
+                    <option value="ant">Langton's Ant</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Fade Cycles:</label>
+                <input type="range" id="fadeCycles" min="1" max="20" value="5" style="width: 200px;">
+                <span id="fadeCyclesValue">5</span>
+            </div>
+            
+            <div class="control-group">
+                <label>Speed:</label>
+                <input type="range" id="speed" min="1" max="10" value="1" style="width: 200px;">
+                <span id="speedValue">1 step/sec</span>
+            </div>
+            
+            <div class="control-group">
+                <button id="startBtn">Start</button>
+                <button id="pauseBtn" disabled>Pause</button>
+                <button id="resetBtn">Reset</button>
+                <button id="clearBtn">Clear</button>
+                <button id="randomizeBtn">Randomize</button>
+            </div>
+        </div>
+
+        <canvas id="canvas" width="800" height="600"></canvas>
+        
+        <div class="status" id="status">
+            <h3>Status:</h3>
+            <div id="statusText">Ready to test fade effect</div>
+        </div>
+    </div>
+
+    <script src="simulations.js"></script>
+    <script>
+        // Initialize simulation
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let simulation = null;
+
+        // Control elements
+        const simulationType = document.getElementById('simulationType');
+        const fadeCycles = document.getElementById('fadeCycles');
+        const fadeCyclesValue = document.getElementById('fadeCyclesValue');
+        const speed = document.getElementById('speed');
+        const speedValue = document.getElementById('speedValue');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const randomizeBtn = document.getElementById('randomizeBtn');
+        const statusText = document.getElementById('statusText');
+
+        // Event listeners
+        fadeCycles.addEventListener('input', function() {
+            fadeCyclesValue.textContent = this.value;
+            if (simulation) {
+                simulation.setFadeOutCycles(parseInt(this.value));
+                updateStatus(`Fade cycles set to ${this.value}`);
+            }
+        });
+
+        speed.addEventListener('input', function() {
+            speedValue.textContent = this.value + ' step/sec';
+            if (simulation) {
+                simulation.setSpeed(parseInt(this.value));
+                updateStatus(`Speed set to ${this.value} steps/sec`);
+            }
+        });
+
+        startBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.start();
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                updateStatus('Simulation started');
+            }
+        });
+
+        pauseBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.pause();
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                updateStatus('Simulation paused');
+            }
+        });
+
+        resetBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.reset();
+                updateStatus('Simulation reset');
+            }
+        });
+
+        clearBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.clear();
+                updateStatus('Simulation cleared');
+            }
+        });
+
+        randomizeBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.randomize();
+                updateStatus('Simulation randomized');
+            }
+        });
+
+        function updateStatus(message) {
+            statusText.textContent = message;
+            console.log(`[STATUS] ${message}`);
+        }
+
+        // Initialize simulation
+        function initSimulation() {
+            const type = simulationType.value;
+            simulation = SimulationFactory.createSimulation(type, canvas, ctx);
+            simulation.init();
+            simulation.setFadeOutCycles(parseInt(fadeCycles.value));
+            simulation.setSpeed(parseInt(speed.value));
+            
+            updateStatus(`Initialized ${type} simulation with fade cycles: ${fadeCycles.value}`);
+        }
+
+        simulationType.addEventListener('change', initSimulation);
+
+        // Initialize on load
+        initSimulation();
+    </script>
+</body>
+</html> 

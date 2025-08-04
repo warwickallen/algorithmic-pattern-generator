@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fade Effect Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            margin-right: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #000;
+        }
+        .instructions {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .console-output {
+            background-color: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fade Effect Debug Test</h1>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Click "Start" to begin the simulation</li>
+                <li>Click on cell [1,1] (second row, second column) to activate it</li>
+                <li>Watch the console logs to see fade state changes</li>
+                <li>Click on the same cell again to deactivate it and start the fade</li>
+                <li>Observe the fade effect and console output</li>
+            </ol>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Simulation:</label>
+                <select id="simulationType">
+                    <option value="conway">Conway's Game of Life</option>
+                    <option value="termite">Termite Algorithm</option>
+                    <option value="ant">Langton's Ant</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Fade Cycles:</label>
+                <input type="range" id="fadeCycles" min="1" max="20" value="5" style="width: 200px;">
+                <span id="fadeCyclesValue">5</span>
+            </div>
+            
+            <div class="control-group">
+                <label>Speed:</label>
+                <input type="range" id="speed" min="1" max="10" value="1" style="width: 200px;">
+                <span id="speedValue">1 step/sec</span>
+            </div>
+            
+            <div class="control-group">
+                <button id="startBtn">Start</button>
+                <button id="pauseBtn" disabled>Pause</button>
+                <button id="resetBtn">Reset</button>
+                <button id="clearBtn">Clear</button>
+                <button id="randomizeBtn">Randomize</button>
+            </div>
+        </div>
+
+        <canvas id="canvas" width="800" height="600"></canvas>
+        
+        <div class="console-output" id="consoleOutput">
+            <div>Console output will appear here...</div>
+        </div>
+    </div>
+
+    <script src="simulations.js"></script>
+    <script>
+        // Capture console output
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('consoleOutput');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleOutput.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        // Initialize simulation
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let simulation = null;
+
+        // Control elements
+        const simulationType = document.getElementById('simulationType');
+        const fadeCycles = document.getElementById('fadeCycles');
+        const fadeCyclesValue = document.getElementById('fadeCyclesValue');
+        const speed = document.getElementById('speed');
+        const speedValue = document.getElementById('speedValue');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const randomizeBtn = document.getElementById('randomizeBtn');
+
+        // Event listeners
+        fadeCycles.addEventListener('input', function() {
+            fadeCyclesValue.textContent = this.value;
+            if (simulation) {
+                simulation.setFadeOutCycles(parseInt(this.value));
+            }
+        });
+
+        speed.addEventListener('input', function() {
+            speedValue.textContent = this.value + ' step/sec';
+            if (simulation) {
+                simulation.setSpeed(parseInt(this.value));
+            }
+        });
+
+        startBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.start();
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+            }
+        });
+
+        pauseBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.pause();
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+            }
+        });
+
+        resetBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.reset();
+                console.log('Simulation reset');
+            }
+        });
+
+        clearBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.clear();
+                console.log('Simulation cleared');
+            }
+        });
+
+        randomizeBtn.addEventListener('click', function() {
+            if (simulation) {
+                simulation.randomize();
+                console.log('Simulation randomized');
+            }
+        });
+
+        // Initialize simulation
+        function initSimulation() {
+            const type = simulationType.value;
+            simulation = SimulationFactory.createSimulation(type, canvas, ctx);
+            simulation.init();
+            simulation.setFadeOutCycles(parseInt(fadeCycles.value));
+            simulation.setSpeed(parseInt(speed.value));
+            
+            console.log(`Initialized ${type} simulation with fade cycles: ${fadeCycles.value}`);
+        }
+
+        simulationType.addEventListener('change', initSimulation);
+
+        // Initialize on load
+        initSimulation();
+    </script>
+</body>
+</html> 
