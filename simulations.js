@@ -645,9 +645,17 @@ class BaseSimulation {
         const rect = this.canvas.getBoundingClientRect();
         this.canvas.width = rect.width;
         this.canvas.height = rect.height;
-        this.cellSize = Math.min(this.canvas.width, this.canvas.height) / 100;
-        this.cols = Math.floor(this.canvas.width / this.cellSize);
-        this.rows = Math.floor(this.canvas.height / this.cellSize);
+        
+        // Ensure minimum canvas dimensions
+        if (this.canvas.width <= 0 || this.canvas.height <= 0) {
+            console.warn('Canvas dimensions are invalid, using fallback values');
+            this.canvas.width = 800;
+            this.canvas.height = 600;
+        }
+        
+        this.cellSize = Math.max(1, Math.min(this.canvas.width, this.canvas.height) / 100);
+        this.cols = Math.max(1, Math.floor(this.canvas.width / this.cellSize));
+        this.rows = Math.max(1, Math.floor(this.canvas.height / this.cellSize));
         
         // Clear caches on resize
         this.clearCaches();
@@ -939,6 +947,12 @@ class BaseSimulation {
     
     // Common grid utilities with performance optimization
     createGrid(rows, cols, defaultValue = false) {
+        // Validate dimensions to prevent RangeError
+        if (!Number.isInteger(rows) || rows <= 0 || !Number.isInteger(cols) || cols <= 0) {
+            console.warn(`Invalid grid dimensions: rows=${rows}, cols=${cols}. Using minimum size of 1x1.`);
+            rows = Math.max(1, Math.floor(rows) || 1);
+            cols = Math.max(1, Math.floor(cols) || 1);
+        }
         return Array(rows).fill().map(() => Array(cols).fill(defaultValue));
     }
     
