@@ -84,6 +84,61 @@
             margin-bottom: 20px;
         }
         
+        .test-log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .test-log h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+        
+        .log-entry.pass {
+            color: #28a745;
+        }
+        
+        .log-entry.fail {
+            color: #dc3545;
+        }
+        
+        .log-entry.running {
+            color: #007bff;
+        }
+        
+        .log-entry.error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .log-timestamp {
+            color: #6c757d;
+            font-size: 11px;
+        }
+        
+        .log-summary {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
         .summary h3 {
             margin-top: 0;
             color: #1976D2;
@@ -134,6 +189,16 @@
         
         .btn-danger {
             background: #f44336;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
             color: white;
         }
         
@@ -223,6 +288,10 @@
                 <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
             </div>
             <div id="test-summary">Tests: 0 passed, 0 failed, 0 total</div>
+            <div id="warning-summary" style="margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; display: none;">
+                <strong>⚠️ Warning Summary:</strong>
+                <div id="warning-details"></div>
+            </div>
         </div>
         
         <div class="controls">
@@ -231,6 +300,15 @@
             <button class="btn btn-warning" onclick="runUITests()">Run UI Tests</button>
             <button class="btn btn-danger" onclick="runPerformanceTests()">Run Performance Tests</button>
             <button class="btn btn-primary" onclick="clearResults()">Clear Results</button>
+            <button class="btn btn-secondary" onclick="exportLog()">Export Log</button>
+            <button class="btn btn-info" onclick="copyLog()">Copy Log</button>
+            <button class="btn btn-warning" onclick="showWarningDetails()">View Warnings</button>
+        </div>
+        
+        <div class="test-log">
+            <h3>Test Execution Log</h3>
+            <div id="log-content"></div>
+            <div id="log-summary" class="log-summary" style="display: none;"></div>
         </div>
         
         <div class="canvas-container">
@@ -363,6 +441,60 @@
                 this.canvas = document.getElementById('test-canvas');
                 this.ctx = this.canvas.getContext('2d');
                 this.app = null;
+                this.logEntries = [];
+                this.logElement = document.getElementById('log-content');
+                this.logSummaryElement = document.getElementById('log-summary');
+                this.consoleWarnings = [];
+                this.setupConsoleMonitoring();
+            }
+            
+            // Monitor console for warnings
+            setupConsoleMonitoring() {
+                const originalWarn = console.warn;
+                const originalError = console.error;
+                
+                console.warn = (...args) => {
+                    this.consoleWarnings.push({
+                        type: 'warn',
+                        message: args.join(' '),
+                        timestamp: new Date().toISOString()
+                    });
+                    originalWarn.apply(console, args);
+                };
+                
+                console.error = (...args) => {
+                    this.consoleWarnings.push({
+                        type: 'error',
+                        message: args.join(' '),
+                        timestamp: new Date().toISOString()
+                    });
+                    originalError.apply(console, args);
+                };
+            }
+            
+            // Validate test environment
+            validateTestEnvironment() {
+                const issues = [];
+                
+                // Check canvas dimensions
+                if (this.canvas.width <= 0 || this.canvas.height <= 0) {
+                    issues.push('Test canvas has invalid dimensions');
+                }
+                
+                // Check for critical warnings
+                const criticalWarnings = this.consoleWarnings.filter(warning => 
+                    warning.message.includes('getCellFadeFactor called without isActive parameter') ||
+                    warning.message.includes('Canvas dimensions are invalid')
+                );
+                
+                if (criticalWarnings.length > 0) {
+                    issues.push(`Critical warnings detected: ${criticalWarnings.length} issues`);
+                }
+                
+                return {
+                    valid: issues.length === 0,
+                    issues
+                };
             }
             
             // Add a test to the suite
@@ -381,6 +513,9 @@
                 const testElement = this.createTestElement(test);
                 testElement.className = 'test-item running';
                 
+                // Log test start
+                this.logTest(test.name, 'running', 'Test started');
+                
                 try {
                     const result = await test.testFunction();
                     test.result = result.passed ? 'pass' : 'fail';
@@ -393,6 +528,9 @@
                     if (test.details) {
                         testElement.querySelector('.test-details').textContent = test.details;
                     }
+                    
+                    // Log test result
+                    this.logTest(test.name, test.result, test.details);
                     
                     if (result.passed) {
                         this.results.passed++;
@@ -408,6 +546,9 @@
                     testElement.querySelector('.test-result').textContent = 'ERROR';
                     testElement.querySelector('.test-result').className = 'test-result fail';
                     testElement.querySelector('.test-details').textContent = test.details;
+                    
+                    // Log test error
+                    this.logTest(test.name, 'error', test.details);
                     
                     this.results.failed++;
                     this.results.total++;
@@ -434,12 +575,89 @@
             updateSummary() {
                 const summary = document.getElementById('test-summary');
                 const progress = document.getElementById('progress-fill');
+                const warningSummary = document.getElementById('warning-summary');
+                const warningDetails = document.getElementById('warning-details');
                 
                 summary.textContent = `Tests: ${this.results.passed} passed, ${this.results.failed} failed, ${this.results.total} total`;
                 
                 if (this.results.total > 0) {
                     const percentage = (this.results.passed / this.results.total) * 100;
                     progress.style.width = `${percentage}%`;
+                }
+                
+                // Update warning summary
+                const warningStats = this.getWarningStats();
+                if (warningStats.criticalWarnings > 0) {
+                    warningDetails.innerHTML = `
+                        <div style="color: #d63031;">Critical warnings: ${warningStats.criticalWarnings}</div>
+                        <div>Fade warnings: ${warningStats.fadeWarnings}</div>
+                        <div>Canvas warnings: ${warningStats.canvasWarnings}</div>
+                        <div>Total warnings: ${warningStats.total}</div>
+                    `;
+                    warningSummary.style.display = 'block';
+                    warningSummary.style.background = '#ffebee';
+                    warningSummary.style.borderColor = '#f44336';
+                } else if (warningStats.total > 0) {
+                    warningDetails.innerHTML = `
+                        <div>Total warnings: ${warningStats.total}</div>
+                        <div>Fade warnings: ${warningStats.fadeWarnings}</div>
+                        <div>Canvas warnings: ${warningStats.canvasWarnings}</div>
+                    `;
+                    warningSummary.style.display = 'block';
+                    warningSummary.style.background = '#fff3cd';
+                    warningSummary.style.borderColor = '#ffeaa7';
+                } else {
+                    warningSummary.style.display = 'none';
+                }
+                
+                // Update log summary
+                this.updateLogSummary();
+            }
+            
+            // Log a test entry
+            logTest(testName, status, details = '') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = {
+                    timestamp,
+                    testName,
+                    status,
+                    details
+                };
+                
+                this.logEntries.push(logEntry);
+                this.renderLogEntry(logEntry);
+            }
+            
+            // Render a log entry
+            renderLogEntry(entry) {
+                const entryElement = document.createElement('div');
+                entryElement.className = `log-entry ${entry.status}`;
+                
+                const statusIcon = {
+                    'pass': '✓',
+                    'fail': '✗',
+                    'running': '▶',
+                    'error': '⚠'
+                }[entry.status] || '?';
+                
+                entryElement.innerHTML = `
+                    <span class="log-timestamp">[${entry.timestamp}]</span>
+                    <strong>${statusIcon} ${entry.testName}</strong>
+                    ${entry.details ? `: ${entry.details}` : ''}
+                `;
+                
+                this.logElement.appendChild(entryElement);
+                this.logElement.scrollTop = this.logElement.scrollHeight;
+            }
+            
+            // Update log summary
+            updateLogSummary() {
+                if (this.results.total > 0) {
+                    const percentage = ((this.results.passed / this.results.total) * 100).toFixed(1);
+                    this.logSummaryElement.innerHTML = `
+                        Test Run Summary: ${this.results.passed} passed, ${this.results.failed} failed, ${this.results.total} total (${percentage}% success rate)
+                    `;
+                    this.logSummaryElement.style.display = 'block';
                 }
             }
             
@@ -451,18 +669,49 @@
                     test.details = '';
                 });
                 
+                // Clear console warnings
+                this.consoleWarnings = [];
+                
                 document.querySelectorAll('.test-item').forEach(el => el.remove());
+                this.clearLog();
                 this.updateSummary();
+            }
+            
+            // Clear log
+            clearLog() {
+                this.logEntries = [];
+                this.logElement.innerHTML = '';
+                this.logSummaryElement.style.display = 'none';
             }
             
             // Run all tests
             async runAllTests() {
                 this.clearResults();
+                this.logTest('TEST SUITE', 'running', 'Starting all tests...');
+                
+                // Validate test environment first
+                const validation = this.validateTestEnvironment();
+                if (!validation.valid) {
+                    this.logTest('TEST SUITE', 'fail', `Test environment validation failed: ${validation.issues.join(', ')}`);
+                    return;
+                }
                 
                 for (const test of this.tests) {
                     await this.runTest(test);
                     // Small delay to prevent overwhelming the UI
                     await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // Check for warnings after all tests
+                const criticalWarnings = this.consoleWarnings.filter(warning => 
+                    warning.message.includes('getCellFadeFactor called without isActive parameter') ||
+                    warning.message.includes('Canvas dimensions are invalid')
+                );
+                
+                if (criticalWarnings.length > 0) {
+                    this.logTest('TEST SUITE', 'fail', `Critical warnings detected during test run: ${criticalWarnings.length} issues`);
+                } else {
+                    this.logTest('TEST SUITE', 'pass', `All tests completed. ${this.results.passed} passed, ${this.results.failed} failed`);
                 }
             }
             
@@ -470,11 +719,32 @@
             async runTestsByCategory(category) {
                 const categoryTests = this.tests.filter(test => test.category === category);
                 this.clearResults();
+                this.logTest('TEST SUITE', 'running', `Starting ${category} tests...`);
                 
                 for (const test of categoryTests) {
                     await this.runTest(test);
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
+                
+                this.logTest('TEST SUITE', 'pass', `${category} tests completed. ${this.results.passed} passed, ${this.results.failed} failed`);
+            }
+
+            // Get warning statistics
+            getWarningStats() {
+                const fadeWarnings = this.consoleWarnings.filter(warning => 
+                    warning.message.includes('getCellFadeFactor called without isActive parameter')
+                );
+                
+                const canvasWarnings = this.consoleWarnings.filter(warning => 
+                    warning.message.includes('Canvas dimensions are invalid')
+                );
+                
+                return {
+                    total: this.consoleWarnings.length,
+                    fadeWarnings: fadeWarnings.length,
+                    canvasWarnings: canvasWarnings.length,
+                    criticalWarnings: fadeWarnings.length + canvasWarnings.length
+                };
             }
         }
         
@@ -1233,6 +1503,11 @@
             canvas.height = 300;
             const ctx = canvas.getContext('2d');
             
+            // Validate canvas dimensions
+            if (canvas.width <= 0 || canvas.height <= 0) {
+                throw new Error('Invalid canvas dimensions for testing');
+            }
+            
             const simulation = new ConwayGameOfLife(canvas, ctx);
             simulation.init();
             
@@ -1271,12 +1546,338 @@
             };
         }, 'core');
         
+        testSuite.addTest('Comprehensive Fade Functionality', async () => {
+            // Create test canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            // Validate canvas
+            if (canvas.width <= 0 || canvas.height <= 0) {
+                throw new Error('Invalid canvas dimensions for fade test');
+            }
+            
+            const simulation = new ConwayGameOfLife(canvas, ctx);
+            simulation.init();
+            
+            // Clear any existing warnings
+            testSuite.consoleWarnings = [];
+            
+            // Test 1: Active cells should have no fade (return 1)
+            simulation.toggleCell(10, 10);
+            simulation.updateFadeStates(simulation.grids.current);
+            const activeFade = simulation.getCellFadeFactor(10, 10, true);
+            const activeFadeCorrect = activeFade === 1;
+            
+            // Test 2: Inactive cells should fade (return < 1)
+            const inactiveFade = simulation.getCellFadeFactor(0, 0, false);
+            const inactiveFadeCorrect = inactiveFade < 1;
+            
+            // Test 3: Check for warnings during fade operations
+            const fadeWarnings = testSuite.consoleWarnings.filter(warning => 
+                warning.message.includes('getCellFadeFactor called without isActive parameter')
+            );
+            const noFadeWarnings = fadeWarnings.length === 0;
+            
+            // Test 4: Test fade cycle progression
+            simulation.setFadeOutCycles(3);
+            simulation.updateFadeStates(simulation.grids.current);
+            const fadeCycle1 = simulation.getCellFadeFactor(0, 0, false);
+            
+            simulation.updateFadeStates(simulation.grids.current);
+            const fadeCycle2 = simulation.getCellFadeFactor(0, 0, false);
+            
+            const fadeProgressionCorrect = fadeCycle2 < fadeCycle1;
+            
+            // Test 5: Test fade clearing
+            simulation.clearFadeStates();
+            const clearedFade = simulation.getCellFadeFactor(0, 0, false);
+            const fadeClearedCorrect = clearedFade === 0;
+            
+            return {
+                passed: activeFadeCorrect && inactiveFadeCorrect && noFadeWarnings && fadeProgressionCorrect && fadeClearedCorrect,
+                details: `Active fade: ${activeFadeCorrect}, Inactive fade: ${inactiveFadeCorrect}, No warnings: ${noFadeWarnings}, Progression: ${fadeProgressionCorrect}, Cleared: ${fadeClearedCorrect}`
+            };
+        }, 'core');
+        
+        testSuite.addTest('Visual Regression Test', async () => {
+            // Create test canvas with known dimensions
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            // Validate canvas setup
+            if (canvas.width !== 400 || canvas.height !== 300) {
+                throw new Error(`Canvas dimensions incorrect: ${canvas.width}x${canvas.height}, expected 400x300`);
+            }
+            
+            const simulation = new ConwayGameOfLife(canvas, ctx);
+            simulation.init();
+            
+            // Create a simple test pattern
+            simulation.toggleCell(10, 10);
+            simulation.toggleCell(11, 10);
+            simulation.toggleCell(12, 10);
+            
+            // Draw the simulation
+            simulation.draw();
+            
+            // Get image data to verify rendering
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Check that we have valid image data
+            const hasValidData = data.length > 0 && data.length === canvas.width * canvas.height * 4;
+            
+            // Check that some pixels are not black (indicating cells were drawn)
+            let nonBlackPixels = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i] > 0 || data[i + 1] > 0 || data[i + 2] > 0) {
+                    nonBlackPixels++;
+                }
+            }
+            
+            const hasRenderedContent = nonBlackPixels > 0;
+            
+            return {
+                passed: hasValidData && hasRenderedContent,
+                details: `Canvas: ${canvas.width}x${canvas.height}, Valid data: ${hasValidData}, Non-black pixels: ${nonBlackPixels}`
+            };
+        }, 'integration');
+        
+        testSuite.addTest('Full Simulation Lifecycle Test', async () => {
+            // Create test canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            // Validate canvas
+            if (canvas.width <= 0 || canvas.height <= 0) {
+                throw new Error('Invalid canvas dimensions for lifecycle test');
+            }
+            
+            const simulation = new ConwayGameOfLife(canvas, ctx);
+            
+            // Test initialization
+            simulation.init();
+            const initPassed = simulation.grids && simulation.grids.current && simulation.grids.next;
+            
+            // Test cell toggling
+            const initialCount = simulation.cellCount;
+            simulation.toggleCell(50, 50);
+            const afterToggleCount = simulation.cellCount;
+            const togglePassed = afterToggleCount !== initialCount;
+            
+            // Test fade functionality with proper parameters
+            simulation.updateFadeStates(simulation.grids.current);
+            const fadeFactorActive = simulation.getCellFadeFactor(50, 50, true);
+            const fadeFactorInactive = simulation.getCellFadeFactor(0, 0, false);
+            const fadePassed = fadeFactorActive === 1 && fadeFactorInactive < 1;
+            
+            // Test simulation update
+            simulation.update();
+            const updatePassed = simulation.generation > 0;
+            
+            // Test drawing
+            simulation.draw();
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const drawPassed = imageData.data.length > 0;
+            
+            // Test speed setting
+            simulation.setSpeed(15);
+            const speedPassed = simulation.speed === 15;
+            
+            // Test state preservation
+            const state = simulation.getState();
+            simulation.setState(state);
+            const statePassed = simulation.generation === state.generation;
+            
+            return {
+                passed: initPassed && togglePassed && fadePassed && updatePassed && drawPassed && speedPassed && statePassed,
+                details: `Init: ${initPassed}, Toggle: ${togglePassed}, Fade: ${fadePassed}, Update: ${updatePassed}, Draw: ${drawPassed}, Speed: ${speedPassed}, State: ${statePassed}`
+            };
+        }, 'integration');
+        
+        testSuite.addTest('Console Warning Detection', async () => {
+            // Clear previous warnings
+            testSuite.consoleWarnings = [];
+            
+            // Create test canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            const simulation = new ConwayGameOfLife(canvas, ctx);
+            simulation.init();
+            
+            // Trigger potential warning conditions
+            simulation.updateFadeStates(simulation.grids.current);
+            
+            // Check for the specific warnings we're concerned about
+            const fadeWarnings = testSuite.consoleWarnings.filter(warning => 
+                warning.message.includes('getCellFadeFactor called without isActive parameter')
+            );
+            
+            const canvasWarnings = testSuite.consoleWarnings.filter(warning => 
+                warning.message.includes('Canvas dimensions are invalid')
+            );
+            
+            const totalWarnings = fadeWarnings.length + canvasWarnings.length;
+            
+            return {
+                passed: totalWarnings === 0,
+                details: `Fade warnings: ${fadeWarnings.length}, Canvas warnings: ${canvasWarnings.length}, Total: ${totalWarnings}`
+            };
+        }, 'integration');
+        
+        testSuite.addTest('Test Canvas Configuration', async () => {
+            // Validate the main test canvas
+            const canvas = testSuite.canvas;
+            const ctx = testSuite.ctx;
+            
+            // Check canvas exists and has context
+            const canvasExists = canvas !== null;
+            const contextExists = ctx !== null;
+            
+            // Check canvas dimensions
+            const validDimensions = canvas.width > 0 && canvas.height > 0;
+            const expectedDimensions = canvas.width === 400 && canvas.height === 300;
+            
+            // Test basic drawing capability
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(0, 0, 10, 10);
+            const imageData = ctx.getImageData(0, 0, 10, 10);
+            const canDraw = imageData.data[0] > 0; // Check if red pixel was drawn
+            
+            // Clear the test drawing
+            ctx.clearRect(0, 0, 10, 10);
+            
+            return {
+                passed: canvasExists && contextExists && validDimensions && expectedDimensions && canDraw,
+                details: `Canvas: ${canvasExists}, Context: ${contextExists}, Dimensions: ${canvas.width}x${canvas.height}, Can draw: ${canDraw}`
+            };
+        }, 'core');
+        
         // Global functions for button clicks
         window.runAllTests = () => testSuite.runAllTests();
         window.runSimulationTests = () => testSuite.runTestsByCategory('core');
         window.runUITests = () => testSuite.runTestsByCategory('ui');
         window.runPerformanceTests = () => testSuite.runTestsByCategory('performance');
         window.clearResults = () => testSuite.clearResults();
+        
+        // Export log function
+        window.exportLog = () => {
+            if (testSuite.logEntries.length === 0) {
+                alert('No test log to export. Run some tests first.');
+                return;
+            }
+            
+            const logText = testSuite.logEntries.map(entry => 
+                `[${entry.timestamp}] ${entry.status.toUpperCase()} ${entry.testName}${entry.details ? ': ' + entry.details : ''}`
+            ).join('\n');
+            
+            const warningStats = testSuite.getWarningStats();
+            const warningSummary = `\n\nWARNING SUMMARY:\n` +
+                `Total warnings: ${warningStats.total}\n` +
+                `Fade warnings: ${warningStats.fadeWarnings}\n` +
+                `Canvas warnings: ${warningStats.canvasWarnings}\n` +
+                `Critical warnings: ${warningStats.criticalWarnings}`;
+            
+            const summary = `\n\nSUMMARY: ${testSuite.results.passed} passed, ${testSuite.results.failed} failed, ${testSuite.results.total} total`;
+            const fullLog = logText + warningSummary + summary;
+            
+            const blob = new Blob([fullLog], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `test-log-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+        
+        // Copy log function
+        window.copyLog = async () => {
+            if (testSuite.logEntries.length === 0) {
+                alert('No test log to copy. Run some tests first.');
+                return;
+            }
+            
+            const logText = testSuite.logEntries.map(entry => 
+                `[${entry.timestamp}] ${entry.status.toUpperCase()} ${entry.testName}${entry.details ? ': ' + entry.details : ''}`
+            ).join('\n');
+            
+            const summary = `\n\nSUMMARY: ${testSuite.results.passed} passed, ${testSuite.results.failed} failed, ${testSuite.results.total} total`;
+            const fullLog = logText + summary;
+            
+            try {
+                await navigator.clipboard.writeText(fullLog);
+                alert('Test log copied to clipboard successfully!');
+            } catch (err) {
+                // Fallback for older browsers or when clipboard API is not available
+                const textArea = document.createElement('textarea');
+                textArea.value = fullLog;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    alert('Test log copied to clipboard successfully!');
+                } catch (fallbackErr) {
+                    alert('Failed to copy to clipboard. Please select and copy the log manually.');
+                } finally {
+                    document.body.removeChild(textArea);
+                }
+            }
+        };
+
+        // Function to show detailed warning information
+        window.showWarningDetails = () => {
+            const warningStats = testSuite.getWarningStats();
+            const warningSummary = document.getElementById('warning-summary');
+            const warningDetails = document.getElementById('warning-details');
+            
+            if (warningSummary.style.display === 'none') {
+                let detailsHtml = '';
+                
+                if (warningStats.criticalWarnings > 0) {
+                    detailsHtml += `<div style="color: #d63031; font-weight: bold;">⚠️ Critical warnings: ${warningStats.criticalWarnings}</div>`;
+                    warningSummary.style.background = '#ffebee';
+                    warningSummary.style.borderColor = '#f44336';
+                } else {
+                    warningSummary.style.background = '#fff3cd';
+                    warningSummary.style.borderColor = '#ffeaa7';
+                }
+                
+                detailsHtml += `
+                    <div>Fade warnings: ${warningStats.fadeWarnings}</div>
+                    <div>Canvas warnings: ${warningStats.canvasWarnings}</div>
+                    <div>Total warnings: ${warningStats.total}</div>
+                `;
+                
+                if (testSuite.consoleWarnings.length > 0) {
+                    detailsHtml += '<div style="margin-top: 10px;"><strong>Recent warnings:</strong></div>';
+                    const recentWarnings = testSuite.consoleWarnings.slice(-5); // Show last 5 warnings
+                    recentWarnings.forEach(warning => {
+                        detailsHtml += `<div style="font-size: 12px; color: #666; margin: 2px 0;">[${warning.timestamp.slice(11, 19)}] ${warning.message}</div>`;
+                    });
+                }
+                
+                warningDetails.innerHTML = detailsHtml;
+                warningSummary.style.display = 'block';
+            } else {
+                warningSummary.style.display = 'none';
+            }
+        };
         
         // Auto-run tests when page loads
         document.addEventListener('DOMContentLoaded', () => {
