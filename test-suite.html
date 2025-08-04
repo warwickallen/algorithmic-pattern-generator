@@ -75,6 +75,10 @@
             margin-top: 5px;
             font-size: 0.9em;
             color: #666;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            overflow: hidden;
         }
         
         .summary {
@@ -537,7 +541,11 @@
                     testElement.querySelector('.test-result').className = `test-result ${test.result}`;
                     
                     if (test.details) {
-                        testElement.querySelector('.test-details').textContent = test.details;
+                        // Truncate long details to prevent UI overflow
+                        const truncatedDetails = test.details.length > 200 ? 
+                            test.details.substring(0, 200) + '...' : 
+                            test.details;
+                        testElement.querySelector('.test-details').textContent = truncatedDetails;
                     }
                     
                     // Log test result
@@ -556,7 +564,11 @@
                     testElement.className = 'test-item fail';
                     testElement.querySelector('.test-result').textContent = 'ERROR';
                     testElement.querySelector('.test-result').className = 'test-result fail';
-                    testElement.querySelector('.test-details').textContent = test.details;
+                    // Truncate long details to prevent UI overflow
+                    const truncatedDetails = test.details.length > 200 ? 
+                        test.details.substring(0, 200) + '...' : 
+                        test.details;
+                    testElement.querySelector('.test-details').textContent = truncatedDetails;
                     
                     // Log test error
                     this.logTest(test.name, 'error', test.details);
@@ -651,10 +663,15 @@
                     'error': '⚠'
                 }[entry.status] || '?';
                 
+                // Truncate long details in log entries to prevent overflow
+                const truncatedDetails = entry.details && entry.details.length > 150 ? 
+                    entry.details.substring(0, 150) + '...' : 
+                    entry.details;
+                
                 entryElement.innerHTML = `
                     <span class="log-timestamp">[${entry.timestamp}]</span>
                     <strong>${statusIcon} ${entry.testName}</strong>
-                    ${entry.details ? `: ${entry.details}` : ''}
+                    ${truncatedDetails ? `: ${truncatedDetails}` : ''}
                 `;
                 
                 this.logElement.appendChild(entryElement);
@@ -1739,10 +1756,12 @@
             simulation.setSpeed(15);
             const speedPassed = simulation.speed === 15;
             
-            // Test state preservation
+            // Test state preservation (without including full state in details)
+            const originalGeneration = simulation.generation;
+            const originalCellCount = simulation.cellCount;
             const state = simulation.getState();
             simulation.setState(state);
-            const statePassed = simulation.generation === state.generation;
+            const statePassed = simulation.generation === originalGeneration && simulation.cellCount === originalCellCount;
             
             return {
                 passed: initPassed && togglePassed && fadePassed && updatePassed && drawPassed && speedPassed && statePassed,
