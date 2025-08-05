@@ -1824,13 +1824,25 @@ class TermiteAlgorithm extends BaseSimulation {
             const gridY = row * this.cellSize;
             const chipKey = `${gridX},${gridY}`;
             
-            if (this.woodChips.has(chipKey)) {
+            const wasActive = this.woodChips.has(chipKey);
+            
+            if (wasActive) {
                 this.woodChips.delete(chipKey);
             } else {
                 this.woodChips.add(chipKey);
             }
             
             this.cellCount = this.woodChips.size;
+            
+            // Immediately update brightness for the toggled cell
+            const cellKey = `${row},${col}`;
+            if (!wasActive) {
+                // Cell became active - set brightness to 1
+                this.cellBrightness.set(cellKey, 1);
+            } else {
+                // Cell became inactive - immediately set brightness to 0
+                this.cellBrightness.set(cellKey, 0);
+            }
             
             // Update fade states before drawing to ensure proper fade behavior
             const virtualGrid = this.createGrid(this.rows, this.cols, false);
@@ -1862,6 +1874,24 @@ class TermiteAlgorithm extends BaseSimulation {
         
         // Reset termites to not carrying anything
         this.termites.forEach(termite => termite.carrying = false);
+        
+        // Immediately update brightness for all cells
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                const cellKey = `${row},${col}`;
+                const gridX = col * this.cellSize;
+                const gridY = row * this.cellSize;
+                const chipKey = `${gridX},${gridY}`;
+                
+                if (this.woodChips.has(chipKey)) {
+                    // Active cells get full brightness
+                    this.cellBrightness.set(cellKey, 1);
+                } else {
+                    // Inactive cells get zero brightness
+                    this.cellBrightness.set(cellKey, 0);
+                }
+            }
+        }
         
         // Redraw to show the new random pattern
         this.draw();
@@ -2084,8 +2114,19 @@ class LangtonsAnt extends BaseSimulation {
         const { col, row } = this.screenToGrid(x, y);
         
         if (this.isValidGridPosition(row, col)) {
+            const wasActive = this.grid[row][col];
             this.grid[row][col] = !this.grid[row][col];
             this.cellCount = this.countLiveCells(this.grid);
+            
+            // Immediately update brightness for the toggled cell
+            const cellKey = `${row},${col}`;
+            if (this.grid[row][col]) {
+                // Cell became active - set brightness to 1
+                this.cellBrightness.set(cellKey, 1);
+            } else {
+                // Cell became inactive - immediately set brightness to 0
+                this.cellBrightness.set(cellKey, 0);
+            }
             
             // Update fade states before drawing to ensure proper fade behavior
             this.updateFadeStates(this.grid);
@@ -2100,6 +2141,21 @@ class LangtonsAnt extends BaseSimulation {
         // Fill with random cells using the provided likelihood
         this.cellCount = this.randomizeGrid(this.grid, likelihood);
         this.generation = 0;
+        
+        // Immediately update brightness for all cells
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                const cellKey = `${row},${col}`;
+                if (this.grid[row][col]) {
+                    // Active cells get full brightness
+                    this.cellBrightness.set(cellKey, 1);
+                } else {
+                    // Inactive cells get zero brightness
+                    this.cellBrightness.set(cellKey, 0);
+                }
+            }
+        }
+        
         this.draw();
     }
 }
