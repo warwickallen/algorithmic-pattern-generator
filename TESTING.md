@@ -180,6 +180,16 @@ Tests the user interface components and interactions:
 - Validates modal content accuracy
 - Tests modal navigation and display
 
+#### ✅ Dynamic Fill Button Tests
+- Tests DynamicFillButton class existence and initialisation
+- Validates simulation switching functionality
+- Tests show/hide visibility management
+- Tests event handling and click delegation
+- **Critical test** - Dynamic Fill Button Initial Visibility After App Load
+  - Ensures the Fill button is visible immediately after application initialisation
+  - Tests proper test environment handling for app instance creation
+  - Validates button visibility state management and conflict resolution
+
 ### Performance Tests
 
 Tests performance characteristics and benchmarks:

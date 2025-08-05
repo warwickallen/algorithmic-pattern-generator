@@ -462,6 +462,11 @@
                         <span class="checkmark"></span>
                         Dynamic Speed Slider Tests
                     </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="dynamic-fill-button-checkbox" value="dynamic-fill-button" checked>
+                        <span class="checkmark"></span>
+                        Dynamic Fill Button Tests
+                    </label>
                 </div>
             </div>
             <div class="action-buttons">
@@ -528,6 +533,11 @@
                 <h3>Dynamic Speed Slider Tests</h3>
                 <div id="dynamic-speed-slider-tests"></div>
             </div>
+            
+            <div class="test-category">
+                <h3>Dynamic Fill Button Tests</h3>
+                <div id="dynamic-fill-button-tests"></div>
+            </div>
         </div>
     </div>
 
@@ -574,9 +584,7 @@
     </div>
     
     <!-- Action buttons needed for tests -->
-    <button id="random-btn" style="display: none;">Random Pattern</button>
-    <button id="termite-random-btn" style="display: none;">Random Termites</button>
-    <button id="langton-random-btn" style="display: none;">Random Ants</button>
+    <button id="dynamic-fill-btn" style="display: none;">Fill</button>
     <button id="add-ant-btn" style="display: none;">Add Ant</button>
     
     <!-- Modal elements needed for tests -->
@@ -2066,6 +2074,171 @@
                 };
             }
         }, 'dynamic-speed-slider');
+        
+        // Dynamic Fill Button Tests
+        testSuite.addTest('Dynamic Fill Button Class Exists', async () => {
+            // Check if DynamicFillButton class exists
+            const dynamicFillButtonExists = typeof DynamicFillButton !== 'undefined';
+            
+            if (!dynamicFillButtonExists) {
+                return {
+                    passed: false,
+                    details: 'DynamicFillButton class not found - check if app.js is loaded'
+                };
+            }
+            
+            // Create EventFramework and DynamicFillButton
+            const eventFramework = new EventFramework();
+            const dynamicFillButton = new DynamicFillButton(eventFramework);
+            
+            // Test initialization
+            const button = document.getElementById('dynamic-fill-btn');
+            dynamicFillButton.init();
+            const isInitialized = dynamicFillButton.isInitialized;
+            
+            // Cleanup
+            dynamicFillButton.cleanup();
+            
+            return {
+                passed: isInitialized && button !== null,
+                details: `Button found: ${button !== null}, Initialized: ${isInitialized}`
+            };
+        }, 'dynamic-fill-button');
+        
+        testSuite.addTest('Dynamic Fill Button Simulation Switching', async () => {
+            const eventFramework = new EventFramework();
+            const dynamicFillButton = new DynamicFillButton(eventFramework);
+            const mockApp = {
+                handleRandomPattern: (simType) => {}
+            };
+            
+            dynamicFillButton.init();
+            
+            // Test switching between simulations
+            dynamicFillButton.switchToSimulation('conway', mockApp);
+            const conwayActive = dynamicFillButton.currentSimType === 'conway';
+            
+            dynamicFillButton.switchToSimulation('termite', mockApp);
+            const termiteActive = dynamicFillButton.currentSimType === 'termite';
+            
+            dynamicFillButton.switchToSimulation('langton', mockApp);
+            const langtonActive = dynamicFillButton.currentSimType === 'langton';
+            
+            // Cleanup
+            dynamicFillButton.cleanup();
+            
+            return {
+                passed: conwayActive && termiteActive && langtonActive,
+                details: `Conway: ${conwayActive}, Termite: ${termiteActive}, Langton: ${langtonActive}`
+            };
+        }, 'dynamic-fill-button');
+        
+        testSuite.addTest('Dynamic Fill Button Show/Hide', async () => {
+            const eventFramework = new EventFramework();
+            const dynamicFillButton = new DynamicFillButton(eventFramework);
+            const mockApp = {
+                handleRandomPattern: (simType) => {}
+            };
+            
+            dynamicFillButton.init();
+            
+            // Test show/hide functionality
+            dynamicFillButton.switchToSimulation('conway', mockApp);
+            const button = document.getElementById('dynamic-fill-btn');
+            const isVisible = button.style.display !== 'none';
+            
+            dynamicFillButton.hide();
+            const isHidden = button.style.display === 'none';
+            
+            dynamicFillButton.show();
+            const isShown = button.style.display === 'inline-block';
+            
+            // Cleanup
+            dynamicFillButton.cleanup();
+            
+            return {
+                passed: isVisible && isHidden && isShown,
+                details: `Visible: ${isVisible}, Hidden: ${isHidden}, Shown: ${isShown}`
+            };
+        }, 'dynamic-fill-button');
+        
+        testSuite.addTest('Dynamic Fill Button Event Handling', async () => {
+            const eventFramework = new EventFramework();
+            const dynamicFillButton = new DynamicFillButton(eventFramework);
+            let handlerCalled = false;
+            let calledSimType = null;
+            
+            const mockApp = {
+                handleRandomPattern: (simType) => {
+                    handlerCalled = true;
+                    calledSimType = simType;
+                }
+            };
+            
+            dynamicFillButton.init();
+            dynamicFillButton.switchToSimulation('conway', mockApp);
+            
+            // Simulate click
+            const button = document.getElementById('dynamic-fill-btn');
+            button.click();
+            
+            // Cleanup
+            dynamicFillButton.cleanup();
+            
+            return {
+                passed: handlerCalled && calledSimType === 'conway',
+                details: `Handler called: ${handlerCalled}, SimType: ${calledSimType}`
+            };
+        }, 'dynamic-fill-button');
+        
+        testSuite.addTest('Dynamic Fill Button Initial Visibility After App Load', async () => {
+            // This test specifically checks if the Fill button is visible after the app has loaded
+            // and the default simulation (conway) has been initialized
+            
+            // Create a test app instance since we're in test environment
+            const eventFramework = new EventFramework();
+            const testApp = new AlgorithmicPatternGenerator();
+            
+            // Initialize the app
+            testApp.init();
+            
+            // Wait for initialization to complete
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            // Check if the dynamic fill button is properly initialized
+            if (!testApp.dynamicFillButton || !testApp.dynamicFillButton.isInitialized) {
+                return {
+                    passed: false,
+                    details: 'DynamicFillButton not initialized in test app'
+                };
+            }
+            
+            // Check if the button element exists
+            const button = document.getElementById('dynamic-fill-btn');
+            if (!button) {
+                return {
+                    passed: false,
+                    details: 'Dynamic fill button element not found in DOM'
+                };
+            }
+            
+            // Check if the button is visible (should be visible for conway simulation)
+            const isVisible = button.style.display !== 'none' && 
+                             button.style.display !== '' && 
+                             window.getComputedStyle(button).display !== 'none';
+            
+            // Check if the current simulation type is conway (which should show the button)
+            const currentSimType = testApp.currentType;
+            const shouldBeVisible = currentSimType === 'conway';
+            
+            // Cleanup
+            testApp.cleanup();
+            
+            return {
+                passed: isVisible && shouldBeVisible,
+                details: `Button visible: ${isVisible}, Should be visible: ${shouldBeVisible}, Current sim: ${currentSimType}, Display style: "${button.style.display}"`
+            };
+        }, 'dynamic-fill-button');
         
         testSuite.addTest('Keyboard Handler', async () => {
             // Test keyboard handler without full app initialization

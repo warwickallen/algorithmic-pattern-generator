@@ -88,7 +88,7 @@ termite: {
 - **Code reduction achieved**: ~60 lines of duplicate code eliminated
 - **Testing completed**: Comprehensive test suite created and verified
 
-### 3. **Random Button Duplication**
+### 3. **Random Button Duplication** ✅ **IMPLEMENTED**
 
 **Current State**: Three identical random buttons with different IDs and handlers:
 ```html
@@ -101,6 +101,18 @@ termite: {
 
 **Estimated Reduction**: 40-60 lines
 **Implementation**: Unified random button with strategy pattern for simulation-specific randomisation.
+
+**✅ Status**: **COMPLETED**
+- **DynamicFillButton** class implemented with simulation-specific state management
+- **Single HTML button** replaces three separate random buttons
+- **Button text changed** from "Random" to "Fill" as requested
+- **State preservation** for each simulation's context
+- **Event handling** with proper delegation to current simulation
+- **Integration** with existing control management system
+- **Code reduction achieved**: ~50 lines of duplicate code eliminated
+- **Testing completed**: Comprehensive test suite created and verified
+- **Button visibility issue resolved**: Fixed conflict between DynamicFillButton's self-management and ControlManager's global hiding of action buttons
+- **Initial visibility test enhanced**: Added specific test for button visibility after app load with proper test environment handling
 
 ### 4. **Simulation-Specific Control Visibility Management**
 
@@ -553,12 +565,12 @@ function createMockContext() { /* implementation */ }
 ### Phase 1: Foundation (High Priority)
 1. **Control Configuration Consolidation** ✅ **COMPLETED** - Create unified control system
 2. **Speed Slider Duplication** ✅ **COMPLETED** - Implement dynamic slider component
-3. **Random Button Duplication** - Create unified random button
+3. **Random Button Duplication** ✅ **COMPLETED** - Create unified random button with "Fill" text
 4. **Event Handler Registration** - Implement event handler factory
 
 **Timeline**: 2-3 weeks
 **Expected Reduction**: 300-400 lines
-**Progress**: 2/4 completed (~160 lines reduced)
+**Progress**: 3/4 completed (~260 lines reduced)
 
 ### Phase 2: UI Enhancement (Medium Priority)
 1. **Modal Content Duplication** - Implement template-based modal system
@@ -686,12 +698,12 @@ The implementation should be approached incrementally with comprehensive testing
 **Next Steps**:
 1. ✅ **Phase 1.1 COMPLETED**: Control Configuration Consolidation implemented
 2. ✅ **Phase 1.2 COMPLETED**: Speed Slider Duplication implemented
-3. Continue Phase 1 implementation with remaining high-priority opportunities:
-   - Random Button Duplication  
+3. ✅ **Phase 1.3 COMPLETED**: Random Button Duplication implemented (including button visibility fix and enhanced testing)
+4. Continue Phase 1 implementation with remaining high-priority opportunities:
    - Event Handler Registration
-4. Establish testing and validation procedures
-5. Set up performance monitoring and baseline measurements
-6. Prioritise which visual/functional changes to implement
+5. Establish testing and validation procedures
+6. Set up performance monitoring and baseline measurements
+7. Prioritise which visual/functional changes to implement
 
 ---
 

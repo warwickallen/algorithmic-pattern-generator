@@ -385,6 +385,70 @@ class DynamicSpeedSlider {
     }
 }
 
+// Dynamic Fill Button - consolidates multiple random buttons into a single dynamic button
+class DynamicFillButton {
+    constructor(eventFramework) {
+        this.eventFramework = eventFramework;
+        this.button = null;
+        this.isInitialized = false;
+        this.currentSimType = null;
+        this.app = null;
+    }
+    
+    init() {
+        this.button = this.eventFramework.getElement('#dynamic-fill-btn');
+        if (!this.button) {
+            console.error('Dynamic fill button not found');
+            return;
+        }
+        
+        this.isInitialized = true;
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        if (!this.isInitialized) return;
+        
+        // Single click handler that delegates to the current simulation
+        this.eventFramework.register(this.button, 'click', () => {
+            if (this.currentSimType && this.app) {
+                this.app.handleRandomPattern(this.currentSimType);
+            }
+        });
+    }
+    
+    switchToSimulation(simType, app) {
+        if (!this.isInitialized) return;
+        
+        this.currentSimType = simType;
+        this.app = app;
+        
+        // Show the button for simulations that support randomisation
+        if (simType === 'conway' || simType === 'termite' || simType === 'langton') {
+            this.show();
+        } else {
+            this.hide();
+        }
+    }
+    
+    show() {
+        if (!this.isInitialized) return;
+        this.button.style.display = 'inline-block';
+    }
+    
+    hide() {
+        if (!this.isInitialized) return;
+        this.button.style.display = 'none';
+    }
+    
+    cleanup() {
+        if (!this.isInitialized) return;
+        
+        this.eventFramework.remove(this.button, 'click');
+        this.isInitialized = false;
+    }
+}
+
 // Performance optimization utilities
 class PerformanceOptimizer {
     // Debounce function for slider updates
@@ -470,9 +534,9 @@ class ControlTemplateManager {
             id: 'dynamic-speed-slider',
             valueElementId: 'dynamic-speed-value'
         },
-        randomButton: {
-            type: 'button',
-            label: 'Random'
+        dynamicFillButton: {
+            type: 'dynamicButton',
+            label: 'Fill'
         },
         learnButton: {
             type: 'button',
@@ -498,10 +562,7 @@ class ControlTemplateManager {
         conway: {
             controls: {
                 // Speed control handled by DynamicSpeedSlider
-                random: {
-                    template: 'randomButton',
-                    id: 'random-btn'
-                },
+                // Fill button handled by DynamicFillButton
                 learn: {
                     template: 'learnButton',
                     id: 'learn-btn'
@@ -516,10 +577,7 @@ class ControlTemplateManager {
                     id: 'termites-slider',
                     valueElementId: 'termites-value'
                 },
-                random: {
-                    template: 'randomButton',
-                    id: 'termite-random-btn'
-                },
+                // Fill button handled by DynamicFillButton
                 learn: {
                     template: 'learnButton',
                     id: 'learn-btn'
@@ -533,10 +591,7 @@ class ControlTemplateManager {
                     template: 'addAntButton',
                     id: 'add-ant-btn'
                 },
-                random: {
-                    template: 'randomButton',
-                    id: 'langton-random-btn'
-                },
+                // Fill button handled by DynamicFillButton
                 learn: {
                     template: 'learnButton',
                     id: 'learn-btn'
@@ -943,11 +998,8 @@ class ControlManager {
     
     // Show/hide action buttons based on simulation type
     showActionButtons(simType) {
-        // Hide all action buttons first
+        // Hide all action buttons first (except dynamic-fill-btn which manages its own visibility)
         const actionButtons = [
-            'random-btn',
-            'termite-random-btn', 
-            'langton-random-btn',
             'add-ant-btn',
             'learn-btn'
         ];
@@ -1023,6 +1075,9 @@ class ControlManager {
             } else if (controlConfig.type === 'dynamicSlider') {
                 // Dynamic sliders are handled by their own classes
                 // No setup needed here as they manage their own events
+            } else if (controlConfig.type === 'dynamicButton') {
+                // Dynamic buttons are handled by their own classes
+                // No setup needed here as they manage their own events
             } else if (controlConfig.type === 'button') {
                 this.setupButton(controlConfig, handlers);
             }
@@ -1069,9 +1124,7 @@ class ControlManager {
         
         if (button) {
             this.eventFramework.register(button, 'click', () => {
-                if (config.id.includes('random')) {
-                    handlers.randomPattern();
-                } else if (config.id.includes('learn')) {
+                if (config.id.includes('learn')) {
                     // Pass the current simulation type to show the correct modal
                     handlers.showLearnModal();
                 } else if (config.id.includes('add-ant')) {
@@ -1312,6 +1365,7 @@ class AlgorithmicPatternGenerator {
         this.controlManager = new ControlManager(this.eventFramework);
         this.keyboardHandler = new KeyboardHandler(this);
         this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
+        this.dynamicFillButton = new DynamicFillButton(this.eventFramework);
         
         this.init();
     }
@@ -1320,6 +1374,11 @@ class AlgorithmicPatternGenerator {
         this.setupEventListeners();
         this.setupModals();
         this.controlManager.registerAllHandlers(this);
+        
+        // Initialize dynamic components
+        this.dynamicSpeedSlider.init();
+        this.dynamicFillButton.init();
+        
         this.createSimulation(this.currentType);
         this.updateUI();
         
@@ -1453,6 +1512,7 @@ class AlgorithmicPatternGenerator {
         
         // Switch the dynamic speed slider to the new simulation
         this.dynamicSpeedSlider.switchToSimulation(type, this);
+        this.dynamicFillButton.switchToSimulation(type, this);
         
         this.updateUI();
     }
@@ -1780,6 +1840,7 @@ class AlgorithmicPatternGenerator {
         this.controlManager.cleanup();
         this.modalManager.cleanup();
         this.dynamicSpeedSlider.cleanup();
+        this.dynamicFillButton.cleanup();
         this.elementCache.clear();
         this.updateQueue.clear();
         

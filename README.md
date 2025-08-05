@@ -39,7 +39,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
    - **Reset**: Click Reset or press Ctrl+R
    - **Clear**: Press Ctrl+C
    - **Speed**: Adjust the speed slider for each simulation
-   - **Random**: Click Random to generate random patterns
+   - **Fill**: Click Fill to generate random patterns
    - **Coverage**: Adjust the likelihood slider to control pattern density
 
 4. **Interactive Features**

@@ -61,6 +61,7 @@ Modular UI component system with lifecycle management:
 **Components:**
 - **Slider Components**: Standardised slider with performance optimisation
 - **Button Components**: Reusable button with state management
+- **Dynamic Components**: DynamicSpeedSlider and DynamicFillButton with simulation-specific state
 - **Control Groups**: Container components for related controls
 - **Modal Components**: Modal management with render queue
 
@@ -82,7 +83,7 @@ static baseTemplates = {
         label: 'Speed',
         format: (value) => `${value} steps/s`
     },
-    randomButton: { type: 'button', label: 'Random' },
+    dynamicFillButton: { type: 'dynamicButton', label: 'Fill' },
     learnButton: { type: 'button', label: 'Learn' },
     addAntButton: { type: 'button', label: 'Add Ant' },
     termiteCountSlider: {
@@ -100,7 +101,7 @@ static simulationControlTemplates = {
     conway: {
         controls: {
             speed: { template: 'dynamicSpeedSlider', id: 'dynamic-speed-slider', valueElementId: 'dynamic-speed-value' },
-            random: { template: 'randomButton', id: 'random-btn' },
+            fill: { template: 'dynamicFillButton', id: 'dynamic-fill-btn' },
             learn: { template: 'learnButton', id: 'learn-btn' }
         }
     },
@@ -108,7 +109,7 @@ static simulationControlTemplates = {
         controls: {
             speed: { template: 'dynamicSpeedSlider', id: 'dynamic-speed-slider', valueElementId: 'dynamic-speed-value' },
             termiteCount: { template: 'termiteCountSlider', id: 'termites-slider', valueElementId: 'termites-value' },
-            random: { template: 'randomButton', id: 'termite-random-btn' },
+            fill: { template: 'dynamicFillButton', id: 'dynamic-fill-btn' },
             learn: { template: 'learnButton', id: 'learn-btn' }
         }
     },
@@ -116,7 +117,7 @@ static simulationControlTemplates = {
         controls: {
             speed: { template: 'dynamicSpeedSlider', id: 'dynamic-speed-slider', valueElementId: 'dynamic-speed-value' },
             addAnt: { template: 'addAntButton', id: 'add-ant-btn' },
-            random: { template: 'randomButton', id: 'langton-random-btn' },
+            fill: { template: 'dynamicFillButton', id: 'dynamic-fill-btn' },
             learn: { template: 'learnButton', id: 'learn-btn' }
         }
     }
@@ -168,6 +169,35 @@ cleanup()                           // Clean up event listeners
 - Value change detection to avoid redundant DOM updates
 - Simulation type change detection to prevent unnecessary switches
 - Efficient state management with Map-based storage
+
+#### Dynamic Fill Button
+Unified random pattern generation system that consolidates three separate random buttons:
+
+**Features:**
+- Single button that adapts to the current simulation
+- Button text changed from "Random" to "Fill" as requested
+- Simulation-specific state preservation
+- Performance-optimised event handling
+- Automatic visibility management with conflict resolution
+- Memory-efficient cleanup
+
+**Key Methods:**
+```javascript
+switchToSimulation(simType, app)    // Switch to different simulation
+show()                              // Show the fill button
+hide()                              // Hide the fill button
+handleClick()                       // Handle button click events
+cleanup()                           // Clean up event listeners
+```
+
+**Implementation Details:**
+- **DynamicFillButton** class encapsulates all random button functionality
+- **Single HTML button** (`dynamic-fill-btn`) replaces three separate buttons
+- **State preservation** for each simulation's context
+- **Event handling** with proper delegation to current simulation
+- **Visibility management** resolves conflicts with ControlManager's global hiding
+- **Integration** with existing control management system
+- **Comprehensive testing** including initial visibility after app load
 
 #### Control Manager
 Dynamic UI control management:
