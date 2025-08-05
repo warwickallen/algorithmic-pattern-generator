@@ -1581,14 +1581,20 @@ class AlgorithmicPatternGenerator {
 
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const app = new AlgorithmicPatternGenerator();
-    app.startStatsUpdate();
+    // Check if we're in a test environment to prevent auto-initialisation
+    const isTestEnvironment = window.location.pathname.includes('test-suite.html') || 
+                             document.getElementById('test-canvas') !== null;
     
-    // Make app globally accessible for debugging
-    window.app = app;
-    
-    // Performance monitoring
-    PerformanceOptimizer.startMonitoring();
+    if (!isTestEnvironment) {
+        const app = new AlgorithmicPatternGenerator();
+        app.startStatsUpdate();
+        
+        // Make app globally accessible for debugging
+        window.app = app;
+        
+        // Performance monitoring
+        PerformanceOptimizer.startMonitoring();
+    }
 });
 
 // Performance monitoring utility

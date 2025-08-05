@@ -643,9 +643,20 @@ class BaseSimulation {
     }
     
     resize() {
-        const rect = this.canvas.getBoundingClientRect();
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
+        // Check if canvas is attached to DOM
+        const isAttached = this.canvas.parentNode !== null;
+        
+        if (isAttached) {
+            // Use getBoundingClientRect for attached canvases
+            const rect = this.canvas.getBoundingClientRect();
+            this.canvas.width = rect.width;
+            this.canvas.height = rect.height;
+        } else {
+            // For detached canvases (like in tests), use the canvas attributes
+            // These should already be set by the test code
+            this.canvas.width = this.canvas.width || 800;
+            this.canvas.height = this.canvas.height || 600;
+        }
         
         // Ensure minimum canvas dimensions
         if (this.canvas.width <= 0 || this.canvas.height <= 0) {

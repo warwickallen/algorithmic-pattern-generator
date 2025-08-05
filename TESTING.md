@@ -269,6 +269,10 @@ Tests system-level functionality:
 - Tests canvas setup and validation
 - Validates canvas drawing capabilities
 - Tests canvas dimension handling
+- **Recently Fixed**: Enhanced canvas dimension detection to handle both attached and detached canvases
+  - Uses `getBoundingClientRect()` for canvases attached to DOM
+  - Falls back to canvas `width`/`height` attributes for detached canvases (common in test scenarios)
+  - Prevents "Canvas dimensions are invalid" warnings in test environments
 
 #### ✅ Full Simulation Lifecycle Test
 - Tests complete simulation workflow
@@ -518,6 +522,14 @@ testRunner.addTest('New UI Component Test', async () => {
 - **Problem**: Test coordinates not mapping to valid grid positions due to `cellSize` scaling
 - **Solution**: Use `simulation.cellSize * N` to generate screen coordinates that reliably map to grid positions
 - **Example**: `const testX = simulation.cellSize * 5; const testY = simulation.cellSize * 5;`
+
+#### Canvas Dimension Warnings
+- **Problem**: "Canvas dimensions are invalid, using fallback values" warnings in test console
+- **Cause**: Canvas elements not attached to DOM or hidden with `display: none` causing `getBoundingClientRect()` to return zero dimensions
+- **Solution**: The `resize()` method now automatically detects attached vs detached canvases
+  - For attached canvases: Uses `getBoundingClientRect()` for accurate dimensions
+  - For detached canvases: Uses canvas `width`/`height` attributes (set by test code)
+- **Prevention**: Ensure test canvases have explicit `width` and `height` attributes set before calling `resize()`
 
 ```javascript
 // Run a specific test
