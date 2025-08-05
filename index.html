@@ -30,31 +30,28 @@
         <div id="playback-container" class="control-group dynamic-position">
             <button id="start-pause-btn" class="btn primary">Start</button>
             
+            <!-- Speed Control -->
+            <div class="speed-control">
+                <div class="control-group">
+                    <label for="dynamic-speed-slider">Speed:</label>
+                    <input type="range" id="dynamic-speed-slider" min="1" max="60" value="30" class="slider">
+                    <span id="dynamic-speed-value">30 steps/s</span>
+                </div>
+            </div>
+            
             <!-- Conway's Game of Life specific controls -->
             <div id="conway-controls" class="simulation-controls" style="display: none;">
-                <div class="control-group">
-                    <label for="speed-slider">Speed:</label>
-                    <input type="range" id="speed-slider" min="1" max="60" value="30" class="slider">
-                    <span id="speed-value">30 steps/s</span>
-                </div>
+                <!-- Speed control moved to dynamic container -->
             </div>
             
             <!-- Termite Algorithm specific controls -->
             <div id="termite-controls" class="simulation-controls" style="display: none;">
-                <div class="control-group">
-                    <label for="termite-speed-slider">Speed:</label>
-                    <input type="range" id="termite-speed-slider" min="1" max="60" value="30" class="slider">
-                    <span id="termite-speed-value">30 steps/s</span>
-                </div>
+                <!-- Speed control moved to dynamic container -->
             </div>
             
             <!-- Langton's Ant specific controls -->
             <div id="langton-controls" class="simulation-controls" style="display: none;">
-                <div class="control-group">
-                    <label for="langton-speed-slider">Speed:</label>
-                    <input type="range" id="langton-speed-slider" min="1" max="60" value="30" class="slider">
-                    <span id="langton-speed-value">30 steps/s</span>
-                </div>
+                <!-- Speed control moved to dynamic container -->
             </div>
         </div>
 

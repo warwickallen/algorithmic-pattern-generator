@@ -251,6 +251,140 @@ class UIComponentLibrary {
     }
 }
 
+// Dynamic Speed Slider - consolidates multiple speed sliders into a single dynamic component
+class DynamicSpeedSlider {
+    constructor(eventFramework) {
+        this.eventFramework = eventFramework;
+        this.currentSimType = null;
+        this.slider = null;
+        this.valueElement = null;
+        this.container = null;
+        this.speedValues = new Map(); // Store speed values for each simulation
+        this.isInitialized = false;
+        
+        this.init();
+    }
+    
+    init() {
+        this.slider = document.getElementById('dynamic-speed-slider');
+        this.valueElement = document.getElementById('dynamic-speed-value');
+        this.container = document.querySelector('.speed-control .control-group');
+        
+        if (!this.slider || !this.valueElement || !this.container) {
+            console.error('DynamicSpeedSlider: Required elements not found');
+            return;
+        }
+        
+        this.isInitialized = true;
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        if (!this.isInitialized) return;
+        
+        // Debounced input handler for smooth performance - increased debounce time
+        const debouncedInputHandler = this.eventFramework.debounce((e) => {
+            if (this.currentSimType) {
+                const value = parseFloat(e.target.value);
+                this.speedValues.set(this.currentSimType, value);
+                this.onSpeedChange(value);
+            }
+        }, 100, 'dynamic-speed-debounce'); // Increased from 16ms to 100ms for better performance
+        
+        // Immediate visual feedback for value display
+        const immediateValueHandler = (e) => {
+            const value = parseFloat(e.target.value);
+            this.updateDisplay(value);
+        };
+        
+        this.eventFramework.register(this.slider, 'input', immediateValueHandler);
+        this.eventFramework.register(this.slider, 'change', debouncedInputHandler);
+    }
+    
+    switchToSimulation(simType, app) {
+        if (!this.isInitialized) return;
+        
+        // Only update if the simulation type has actually changed
+        if (this.currentSimType === simType) return;
+        
+        this.currentSimType = simType;
+        this.app = app;
+        
+        // Get the stored speed value for this simulation, or use default
+        const storedValue = this.speedValues.get(simType) || 30;
+        
+        // Update slider value and display
+        this.slider.value = storedValue;
+        this.updateDisplay(storedValue);
+        
+        // Show the speed control container
+        this.container.style.display = 'block';
+    }
+    
+    hide() {
+        if (!this.isInitialized) return;
+        this.container.style.display = 'none';
+    }
+    
+    updateDisplay(value) {
+        if (!this.isInitialized) return;
+        
+        // Only update DOM if the value has actually changed
+        const newText = `${value} steps/s`;
+        if (this.valueElement.textContent !== newText) {
+            this.valueElement.textContent = newText;
+        }
+    }
+    
+    onSpeedChange(value) {
+        if (this.currentSimType && this.app) {
+            // Only trigger speed change if the value has actually changed
+            const currentSpeed = this.app.currentSimulation ? this.app.currentSimulation.speed : null;
+            if (currentSpeed !== value) {
+                this.app.handleSpeedChange(this.currentSimType, value);
+            }
+        }
+    }
+    
+    getValue() {
+        if (!this.isInitialized) return 30;
+        return parseFloat(this.slider.value);
+    }
+    
+    setValue(value) {
+        if (!this.isInitialized) return;
+        this.slider.value = value;
+        this.updateDisplay(value);
+        if (this.currentSimType) {
+            this.speedValues.set(this.currentSimType, value);
+        }
+    }
+    
+    adjustSpeed(direction) {
+        if (!this.isInitialized) return;
+        
+        const currentValue = parseFloat(this.slider.value);
+        const step = 1; // Default step value
+        const newValue = Math.max(
+            parseInt(this.slider.min),
+            Math.min(parseInt(this.slider.max), currentValue + (direction * step))
+        );
+        
+        this.setValue(newValue);
+        this.onSpeedChange(newValue);
+    }
+    
+    cleanup() {
+        if (!this.isInitialized) return;
+        
+        this.eventFramework.remove(this.slider, 'input');
+        this.eventFramework.remove(this.slider, 'change');
+        this.speedValues.clear();
+        this.currentSimType = null;
+        this.app = null;
+    }
+}
+
 // Performance optimization utilities
 class PerformanceOptimizer {
     // Debounce function for slider updates
@@ -325,14 +459,16 @@ class PerformanceOptimizer {
 class ControlTemplateManager {
     // Base templates for common control types
     static baseTemplates = {
-        speedSlider: {
-            type: 'slider',
+        dynamicSpeedSlider: {
+            type: 'dynamicSlider',
             min: 1,
             max: 60,
             step: 1,
             value: 30,
             label: 'Speed',
-            format: (value) => `${value} steps/s`
+            format: (value) => `${value} steps/s`,
+            id: 'dynamic-speed-slider',
+            valueElementId: 'dynamic-speed-value'
         },
         randomButton: {
             type: 'button',
@@ -361,11 +497,7 @@ class ControlTemplateManager {
     static simulationControlTemplates = {
         conway: {
             controls: {
-                speed: {
-                    template: 'speedSlider',
-                    id: 'speed-slider',
-                    valueElementId: 'speed-value'
-                },
+                // Speed control handled by DynamicSpeedSlider
                 random: {
                     template: 'randomButton',
                     id: 'random-btn'
@@ -378,11 +510,7 @@ class ControlTemplateManager {
         },
         termite: {
             controls: {
-                speed: {
-                    template: 'speedSlider',
-                    id: 'termite-speed-slider',
-                    valueElementId: 'termite-speed-value'
-                },
+                // Speed control handled by DynamicSpeedSlider
                 termiteCount: {
                     template: 'termiteCountSlider',
                     id: 'termites-slider',
@@ -400,11 +528,7 @@ class ControlTemplateManager {
         },
         langton: {
             controls: {
-                speed: {
-                    template: 'speedSlider',
-                    id: 'langton-speed-slider',
-                    valueElementId: 'langton-speed-value'
-                },
+                // Speed control handled by DynamicSpeedSlider
                 addAnt: {
                     template: 'addAntButton',
                     id: 'add-ant-btn'
@@ -811,6 +935,9 @@ class ControlManager {
             termitesContainer.style.display = 'none';
         }
         
+        // Note: Dynamic speed slider visibility is managed by DynamicSpeedSlider class
+        // Don't hide it here to avoid conflicts with the dynamic speed slider's own visibility management
+        
         this.activeControls = null;
     }
     
@@ -893,6 +1020,9 @@ class ControlManager {
         Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
             if (controlConfig.type === 'slider') {
                 this.setupSlider(controlConfig, handlers);
+            } else if (controlConfig.type === 'dynamicSlider') {
+                // Dynamic sliders are handled by their own classes
+                // No setup needed here as they manage their own events
             } else if (controlConfig.type === 'button') {
                 this.setupButton(controlConfig, handlers);
             }
@@ -1181,6 +1311,7 @@ class AlgorithmicPatternGenerator {
         this.eventFramework = new EventFramework();
         this.controlManager = new ControlManager(this.eventFramework);
         this.keyboardHandler = new KeyboardHandler(this);
+        this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
         
         this.init();
     }
@@ -1319,6 +1450,9 @@ class AlgorithmicPatternGenerator {
         if (this.currentSimulation.setBrightness) {
             this.currentSimulation.setBrightness(this.brightness);
         }
+        
+        // Switch the dynamic speed slider to the new simulation
+        this.dynamicSpeedSlider.switchToSimulation(type, this);
         
         this.updateUI();
     }
@@ -1503,46 +1637,19 @@ class AlgorithmicPatternGenerator {
     handleSpeedChange(simType, value) {
         if (this.currentType !== simType || !this.currentSimulation) return;
         
-        const config = ConfigurationManager.getConfig(simType);
-        if (!config) return;
-        
         // Parse value as integer for all simulations (steps per second)
         const parsedValue = parseInt(value);
         
         // Set speed on simulation
         this.currentSimulation.setSpeed(parsedValue);
         
-        // Update the display value
-        const speedControl = config.controls.speed;
-        if (speedControl) {
-            const valueElement = this.elementCache.get(`#${speedControl.valueElementId}`);
-            if (valueElement && speedControl.format) {
-                const formattedValue = speedControl.format(parsedValue);
-                valueElement.textContent = formattedValue;
-            }
-        }
+        // Display updates are handled by the DynamicSpeedSlider
     }
     
     // Generic speed adjustment handler
     adjustSpeed(simType, direction) {
-        const config = ConfigurationManager.getConfig(simType);
-        if (!config) return;
-        
-        const speedControl = config.controls.speed;
-        if (!speedControl) return;
-        
-        const slider = this.elementCache.get(`#${speedControl.id}`);
-        if (!slider) return;
-        
-        const currentValue = parseFloat(slider.value);
-        const step = speedControl.step;
-        const newValue = Math.max(
-            speedControl.min,
-            Math.min(speedControl.max, currentValue + (direction * step))
-        );
-        
-        slider.value = newValue;
-        this.handleSpeedChange(simType, newValue);
+        // Use the dynamic speed slider for speed adjustments
+        this.dynamicSpeedSlider.adjustSpeed(direction);
     }
     
     // Generic random pattern handler
@@ -1672,6 +1779,7 @@ class AlgorithmicPatternGenerator {
         this.eventFramework.cleanup();
         this.controlManager.cleanup();
         this.modalManager.cleanup();
+        this.dynamicSpeedSlider.cleanup();
         this.elementCache.clear();
         this.updateQueue.clear();
         

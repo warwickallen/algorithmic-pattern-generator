@@ -78,6 +78,9 @@ body {
     z-index: 10;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     min-height: 2.5rem; /* Match button height for visual consistency */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     /* Performance optimizations */
     will-change: transform, opacity;
     transform: translateZ(0);
@@ -93,6 +96,9 @@ body {
     padding: 0;
     box-shadow: none;
     z-index: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Control groups inside brightness-control should not be fixed positioned */
@@ -105,6 +111,9 @@ body {
     padding: 0;
     box-shadow: none;
     z-index: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Control groups inside termites-container should not be fixed positioned */
@@ -117,6 +126,9 @@ body {
     padding: 0;
     box-shadow: none;
     z-index: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Control groups inside likelihood-control should not be fixed positioned */
@@ -129,6 +141,17 @@ body {
     padding: 0;
     box-shadow: none;
     z-index: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Speed control layout */
+.speed-control {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-left: 1rem;
 }
 
 .control-group:hover {
@@ -311,6 +334,26 @@ body {
     gap: 0.5rem;
 }
 
+/* Control groups inside speed-control should not be fixed positioned */
+.speed-control .control-group {
+    position: static !important;
+    background: none !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    z-index: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+/* More specific rule for speed control to ensure center alignment */
+#playback-container .speed-control .control-group {
+    align-items: center !important;
+}
+
 .control-group label {
     font-size: 0.9rem;
     color: #cccccc;
@@ -365,7 +408,8 @@ body {
 #langton-speed-value,
 #brightness-value,
 #termites-value,
-#likelihood-value {
+#likelihood-value,
+#dynamic-speed-value {
     font-size: 0.8rem;
     color: #cccccc;
     min-width: 50px;
@@ -559,10 +603,42 @@ body {
         margin-top: 0.5rem;
     }
     
+    /* Speed control mobile layout */
+    .speed-control {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+    
     .control-group {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.25rem;
+    }
+    
+    /* Ensure speed control maintains center alignment even in mobile */
+    .speed-control .control-group {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    
+    /* Ensure brightness control maintains center alignment even in mobile */
+    .brightness-control .control-group {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    
+    /* Ensure likelihood control maintains center alignment even in mobile */
+    .likelihood-control .control-group {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    
+    /* Ensure termites control maintains center alignment even in mobile */
+    #termites-container .control-group {
+        flex-direction: row !important;
+        align-items: center !important;
     }
     
     .slider {

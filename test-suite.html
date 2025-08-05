@@ -457,6 +457,11 @@
                         <span class="checkmark"></span>
                         System Tests
                     </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="dynamic-speed-slider-checkbox" value="dynamic-speed-slider" checked>
+                        <span class="checkmark"></span>
+                        Dynamic Speed Slider Tests
+                    </label>
                 </div>
             </div>
             <div class="action-buttons">
@@ -518,6 +523,11 @@
                 <h3>System Tests</h3>
                 <div id="system-tests"></div>
             </div>
+            
+            <div class="test-category">
+                <h3>Dynamic Speed Slider Tests</h3>
+                <div id="dynamic-speed-slider-tests"></div>
+            </div>
         </div>
     </div>
 
@@ -543,6 +553,15 @@
             <label for="langton-speed">Speed:</label>
             <input type="range" id="langton-speed" min="1" max="30" value="10">
             <span id="langton-speed-value">10</span>
+        </div>
+    </div>
+    
+    <!-- Dynamic Speed Slider elements for testing -->
+    <div class="speed-control">
+        <div class="control-group" style="display: none;">
+            <label for="dynamic-speed-slider">Speed:</label>
+            <input type="range" id="dynamic-speed-slider" min="1" max="60" value="30" class="slider">
+            <span id="dynamic-speed-value">30 steps/s</span>
         </div>
     </div>
     
@@ -1773,6 +1792,280 @@
                 };
             }
         }, 'ui');
+        
+        // Dynamic Speed Slider Tests
+        testSuite.addTest('Dynamic Speed Slider Initialization', async () => {
+            try {
+                // Check if DynamicSpeedSlider class exists
+                const dynamicSpeedSliderExists = typeof DynamicSpeedSlider !== 'undefined';
+                
+                if (!dynamicSpeedSliderExists) {
+                    return {
+                        passed: false,
+                        details: 'DynamicSpeedSlider class not found - check if app.js is loaded'
+                    };
+                }
+                
+                // Create EventFramework and DynamicSpeedSlider
+                const eventFramework = new EventFramework();
+                const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+                
+                // Check if slider elements exist
+                const slider = document.getElementById('dynamic-speed-slider');
+                const valueElement = document.getElementById('dynamic-speed-value');
+                const container = document.querySelector('.speed-control .control-group');
+                
+                const elementsExist = slider && valueElement && container;
+                
+                // Check if slider is initialized
+                const isInitialized = dynamicSpeedSlider.isInitialized;
+                
+                // Clean up
+                dynamicSpeedSlider.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: elementsExist && isInitialized,
+                    details: `Elements exist: ${elementsExist}, Initialized: ${isInitialized}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in dynamic speed slider initialization: ${error.message}`
+                };
+            }
+        }, 'dynamic-speed-slider');
+        
+        testSuite.addTest('Dynamic Speed Slider Simulation Switching', async () => {
+            try {
+                const eventFramework = new EventFramework();
+                const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+                
+                // Create mock app
+                const mockApp = {
+                    handleSpeedChange: (simType, value) => {
+                        // Mock implementation
+                    }
+                };
+                
+                // Test switching to Conway
+                dynamicSpeedSlider.switchToSimulation('conway', mockApp);
+                const conwayActive = dynamicSpeedSlider.currentSimType === 'conway';
+                const conwayVisible = document.querySelector('.speed-control .control-group').style.display !== 'none';
+                
+                // Test switching to Termite
+                dynamicSpeedSlider.switchToSimulation('termite', mockApp);
+                const termiteActive = dynamicSpeedSlider.currentSimType === 'termite';
+                
+                // Test switching to Langton
+                dynamicSpeedSlider.switchToSimulation('langton', mockApp);
+                const langtonActive = dynamicSpeedSlider.currentSimType === 'langton';
+                
+                // Clean up
+                dynamicSpeedSlider.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: conwayActive && termiteActive && langtonActive && conwayVisible,
+                    details: `Conway: ${conwayActive}, Termite: ${termiteActive}, Langton: ${langtonActive}, Visible: ${conwayVisible}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in simulation switching: ${error.message}`
+                };
+            }
+        }, 'dynamic-speed-slider');
+        
+        testSuite.addTest('Dynamic Speed Slider State Preservation', async () => {
+            try {
+                const eventFramework = new EventFramework();
+                const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+                
+                // Create mock app
+                const mockApp = {
+                    handleSpeedChange: (simType, value) => {
+                        // Mock implementation
+                    }
+                };
+                
+                // Set different speeds for each simulation
+                dynamicSpeedSlider.switchToSimulation('conway', mockApp);
+                dynamicSpeedSlider.setValue(15);
+                
+                dynamicSpeedSlider.switchToSimulation('termite', mockApp);
+                dynamicSpeedSlider.setValue(25);
+                
+                dynamicSpeedSlider.switchToSimulation('langton', mockApp);
+                dynamicSpeedSlider.setValue(35);
+                
+                // Switch back to Conway and check if speed is preserved
+                dynamicSpeedSlider.switchToSimulation('conway', mockApp);
+                const conwaySpeed = dynamicSpeedSlider.getValue();
+                
+                // Switch back to Termite and check if speed is preserved
+                dynamicSpeedSlider.switchToSimulation('termite', mockApp);
+                const termiteSpeed = dynamicSpeedSlider.getValue();
+                
+                // Switch back to Langton and check if speed is preserved
+                dynamicSpeedSlider.switchToSimulation('langton', mockApp);
+                const langtonSpeed = dynamicSpeedSlider.getValue();
+                
+                // Clean up
+                dynamicSpeedSlider.cleanup();
+                eventFramework.cleanup();
+                
+                const speedsPreserved = conwaySpeed === 15 && termiteSpeed === 25 && langtonSpeed === 35;
+                
+                return {
+                    passed: speedsPreserved,
+                    details: `Conway: ${conwaySpeed}, Termite: ${termiteSpeed}, Langton: ${langtonSpeed}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in state preservation: ${error.message}`
+                };
+            }
+        }, 'dynamic-speed-slider');
+        
+        testSuite.addTest('Dynamic Speed Slider Event Handling', async () => {
+            try {
+                const eventFramework = new EventFramework();
+                const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+                
+                // Create mock app to track speed changes
+                let speedChangeCount = 0;
+                let lastSpeedValue = null;
+                const mockApp = {
+                    currentSimulation: { speed: 30 }, // Set initial speed to ensure change detection works
+                    handleSpeedChange: (simType, value) => {
+                        speedChangeCount++;
+                        lastSpeedValue = value;
+                    }
+                };
+                
+                // Set up simulation
+                dynamicSpeedSlider.switchToSimulation('conway', mockApp);
+                
+                // Simulate slider change
+                const slider = document.getElementById('dynamic-speed-slider');
+                slider.value = 20;
+                slider.dispatchEvent(new Event('change'));
+                
+                // Wait for debounced event (100ms debounce + buffer)
+                await new Promise(resolve => setTimeout(resolve, 150));
+                
+                // Check if speed change was handled
+                const speedChangeHandled = speedChangeCount > 0 && lastSpeedValue === 20;
+                
+                // Test immediate display update
+                slider.value = 30;
+                slider.dispatchEvent(new Event('input'));
+                
+                const displayUpdated = document.getElementById('dynamic-speed-value').textContent === '30 steps/s';
+                
+                // Clean up
+                dynamicSpeedSlider.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: speedChangeHandled && displayUpdated,
+                    details: `Speed change handled: ${speedChangeHandled}, Display updated: ${displayUpdated}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in event handling: ${error.message}`
+                };
+            }
+        }, 'dynamic-speed-slider');
+        
+        testSuite.addTest('Dynamic Speed Slider Speed Adjustment', async () => {
+            try {
+                const eventFramework = new EventFramework();
+                const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+                
+                // Create mock app
+                let lastSpeedValue = null;
+                const mockApp = {
+                    handleSpeedChange: (simType, value) => {
+                        lastSpeedValue = value;
+                    }
+                };
+                
+                // Set up simulation
+                dynamicSpeedSlider.switchToSimulation('conway', mockApp);
+                dynamicSpeedSlider.setValue(30);
+                
+                // Test speed up
+                dynamicSpeedSlider.adjustSpeed(1);
+                const speedUpResult = dynamicSpeedSlider.getValue() === 31 && lastSpeedValue === 31;
+                
+                // Test speed down
+                dynamicSpeedSlider.adjustSpeed(-1);
+                const speedDownResult = dynamicSpeedSlider.getValue() === 30 && lastSpeedValue === 30;
+                
+                // Test boundary conditions
+                dynamicSpeedSlider.setValue(1);
+                dynamicSpeedSlider.adjustSpeed(-1);
+                const minBoundary = dynamicSpeedSlider.getValue() === 1;
+                
+                dynamicSpeedSlider.setValue(60);
+                dynamicSpeedSlider.adjustSpeed(1);
+                const maxBoundary = dynamicSpeedSlider.getValue() === 60;
+                
+                // Clean up
+                dynamicSpeedSlider.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: speedUpResult && speedDownResult && minBoundary && maxBoundary,
+                    details: `Speed up: ${speedUpResult}, Speed down: ${speedDownResult}, Min boundary: ${minBoundary}, Max boundary: ${maxBoundary}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in speed adjustment: ${error.message}`
+                };
+            }
+        }, 'dynamic-speed-slider');
+        
+        testSuite.addTest('Dynamic Speed Slider Hide/Show', async () => {
+            try {
+                const eventFramework = new EventFramework();
+                const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+                
+                // Create mock app
+                const mockApp = {
+                    handleSpeedChange: (simType, value) => {
+                        // Mock implementation
+                    }
+                };
+                
+                // Show the slider
+                dynamicSpeedSlider.switchToSimulation('conway', mockApp);
+                const isVisible = document.querySelector('.speed-control .control-group').style.display !== 'none';
+                
+                // Hide the slider
+                dynamicSpeedSlider.hide();
+                const isHidden = document.querySelector('.speed-control .control-group').style.display === 'none';
+                
+                // Clean up
+                dynamicSpeedSlider.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: isVisible && isHidden,
+                    details: `Visible: ${isVisible}, Hidden: ${isHidden}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in hide/show: ${error.message}`
+                };
+            }
+        }, 'dynamic-speed-slider');
         
         testSuite.addTest('Keyboard Handler', async () => {
             // Test keyboard handler without full app initialization

@@ -76,8 +76,8 @@ Template-based control configuration system that eliminates code duplication:
 **Base Templates:**
 ```javascript
 static baseTemplates = {
-    speedSlider: {
-        type: 'slider',
+    dynamicSpeedSlider: {
+        type: 'dynamicSlider',
         min: 1, max: 60, step: 1, value: 30,
         label: 'Speed',
         format: (value) => `${value} steps/s`
@@ -99,14 +99,14 @@ static baseTemplates = {
 static simulationControlTemplates = {
     conway: {
         controls: {
-            speed: { template: 'speedSlider', id: 'speed-slider', valueElementId: 'speed-value' },
+            speed: { template: 'dynamicSpeedSlider', id: 'dynamic-speed-slider', valueElementId: 'dynamic-speed-value' },
             random: { template: 'randomButton', id: 'random-btn' },
             learn: { template: 'learnButton', id: 'learn-btn' }
         }
     },
     termite: {
         controls: {
-            speed: { template: 'speedSlider', id: 'termite-speed-slider', valueElementId: 'termite-speed-value' },
+            speed: { template: 'dynamicSpeedSlider', id: 'dynamic-speed-slider', valueElementId: 'dynamic-speed-value' },
             termiteCount: { template: 'termiteCountSlider', id: 'termites-slider', valueElementId: 'termites-value' },
             random: { template: 'randomButton', id: 'termite-random-btn' },
             learn: { template: 'learnButton', id: 'learn-btn' }
@@ -114,7 +114,7 @@ static simulationControlTemplates = {
     },
     langton: {
         controls: {
-            speed: { template: 'speedSlider', id: 'langton-speed-slider', valueElementId: 'langton-speed-value' },
+            speed: { template: 'dynamicSpeedSlider', id: 'dynamic-speed-slider', valueElementId: 'dynamic-speed-value' },
             addAnt: { template: 'addAntButton', id: 'add-ant-btn' },
             random: { template: 'randomButton', id: 'langton-random-btn' },
             learn: { template: 'learnButton', id: 'learn-btn' }
@@ -142,6 +142,32 @@ Comprehensive event management system:
 - Debounced and throttled event handlers
 - Batch event registration
 - Memory leak prevention
+
+#### Dynamic Speed Slider
+Unified speed control system that consolidates three separate speed sliders:
+
+**Features:**
+- Single slider that adapts to the current simulation
+- Simulation-specific speed state preservation
+- Performance-optimised event handling with debouncing
+- Automatic visibility management
+- Memory-efficient cleanup
+
+**Key Methods:**
+```javascript
+switchToSimulation(simType, app)    // Switch to different simulation
+setValue(value)                     // Set speed value for current simulation
+getValue()                          // Get current speed value
+adjustSpeed(direction)              // Increment/decrement speed
+hide()                              // Hide the speed control
+cleanup()                           // Clean up event listeners
+```
+
+**Performance Optimisations:**
+- 100ms debounced input handling to prevent excessive updates
+- Value change detection to avoid redundant DOM updates
+- Simulation type change detection to prevent unnecessary switches
+- Efficient state management with Map-based storage
 
 #### Control Manager
 Dynamic UI control management:
