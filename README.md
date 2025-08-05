@@ -127,14 +127,16 @@ The application uses a modular architecture with clear separation of concerns:
 2. **BaseSimulation** - Abstract base class for all simulations
 3. **UI Component Library** - Reusable UI components with lifecycle management
 4. **Event Framework** - Centralised event handling with performance optimisations
-5. **Configuration Manager** - Centralised configuration for all simulations
-6. **Performance Monitor** - Real-time performance tracking
+5. **ControlTemplateManager** - Template-based control configuration system
+6. **ConfigurationManager** - Centralised configuration for all simulations
+7. **Performance Monitor** - Real-time performance tracking
 
 ### Design Patterns
 - **Factory Pattern** - Simulation creation via SimulationFactory
 - **Observer Pattern** - Event handling and state management
 - **Component Pattern** - Modular UI components
 - **Strategy Pattern** - Different simulation algorithms
+- **Template Pattern** - Control configuration via ControlTemplateManager
 - **Singleton Pattern** - Global services like i18n
 
 ## Browser Compatibility

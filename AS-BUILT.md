@@ -70,28 +70,69 @@ Modular UI component system with lifecycle management:
 - RequestAnimationFrame for smooth rendering
 - Memory leak prevention with cleanup methods
 
-#### Configuration Management
-Centralised configuration system for all simulations:
+#### ControlTemplateManager
+Template-based control configuration system that eliminates code duplication:
 
+**Base Templates:**
 ```javascript
-static simulationConfigs = {
-    conway: {
-        name: "Conway's Game of Life",
-        controls: [...],
-        modal: {...}
+static baseTemplates = {
+    speedSlider: {
+        type: 'slider',
+        min: 1, max: 60, step: 1, value: 30,
+        label: 'Speed',
+        format: (value) => `${value} steps/s`
     },
-    termite: {
-        name: "Termite Algorithm", 
-        controls: [...],
-        modal: {...}
-    },
-    langton: {
-        name: "Langton's Ant",
-        controls: [...],
-        modal: {...}
+    randomButton: { type: 'button', label: 'Random' },
+    learnButton: { type: 'button', label: 'Learn' },
+    addAntButton: { type: 'button', label: 'Add Ant' },
+    termiteCountSlider: {
+        type: 'slider',
+        min: 10, max: 100, step: 1, value: 50,
+        label: 'Termites',
+        format: (value) => value.toString()
     }
 }
 ```
+
+**Simulation Templates:**
+```javascript
+static simulationControlTemplates = {
+    conway: {
+        controls: {
+            speed: { template: 'speedSlider', id: 'speed-slider', valueElementId: 'speed-value' },
+            random: { template: 'randomButton', id: 'random-btn' },
+            learn: { template: 'learnButton', id: 'learn-btn' }
+        }
+    },
+    termite: {
+        controls: {
+            speed: { template: 'speedSlider', id: 'termite-speed-slider', valueElementId: 'termite-speed-value' },
+            termiteCount: { template: 'termiteCountSlider', id: 'termites-slider', valueElementId: 'termites-value' },
+            random: { template: 'randomButton', id: 'termite-random-btn' },
+            learn: { template: 'learnButton', id: 'learn-btn' }
+        }
+    },
+    langton: {
+        controls: {
+            speed: { template: 'speedSlider', id: 'langton-speed-slider', valueElementId: 'langton-speed-value' },
+            addAnt: { template: 'addAntButton', id: 'add-ant-btn' },
+            random: { template: 'randomButton', id: 'langton-random-btn' },
+            learn: { template: 'learnButton', id: 'learn-btn' }
+        }
+    }
+}
+```
+
+**Key Methods:**
+- `generateControlConfig(simType, controlName)` - Generate individual control configs
+- `generateSimulationConfig(simType)` - Generate complete simulation configs
+- `getAllSimulationConfigs()` - Generate all simulation configs
+- `validateTemplate(template)` - Validate template configurations
+- `addSimulationTemplate(simType, template)` - Add new simulation templates
+- `addBaseTemplate(templateName, template)` - Add new base templates
+
+#### ConfigurationManager
+Centralised configuration system that uses ControlTemplateManager:
 
 #### Event Framework
 Comprehensive event management system:

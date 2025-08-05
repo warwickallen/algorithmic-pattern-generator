@@ -321,116 +321,214 @@ class PerformanceOptimizer {
     }
 }
 
-// Unified Configuration Manager
-class ConfigurationManager {
-    static simulationConfigs = {
+// Control Template Manager for Simulation Control Configuration Consolidation
+class ControlTemplateManager {
+    // Base templates for common control types
+    static baseTemplates = {
+        speedSlider: {
+            type: 'slider',
+            min: 1,
+            max: 60,
+            step: 1,
+            value: 30,
+            label: 'Speed',
+            format: (value) => `${value} steps/s`
+        },
+        randomButton: {
+            type: 'button',
+            label: 'Random'
+        },
+        learnButton: {
+            type: 'button',
+            label: 'Learn'
+        },
+        addAntButton: {
+            type: 'button',
+            label: 'Add Ant'
+        },
+        termiteCountSlider: {
+            type: 'slider',
+            min: 10,
+            max: 100,
+            step: 1,
+            value: 50,
+            label: 'Termites',
+            format: (value) => value.toString()
+        }
+    };
+
+    // Simulation-specific control configurations with overrides
+    static simulationControlTemplates = {
         conway: {
-            name: "Conway's Game of Life",
             controls: {
                 speed: {
-                    type: 'slider',
+                    template: 'speedSlider',
                     id: 'speed-slider',
-                    valueElementId: 'speed-value',
-                    min: 1,
-                    max: 60,
-                    step: 1,
-                    value: 30,
-                    label: 'Speed',
-                    format: (value) => `${value} steps/s`
+                    valueElementId: 'speed-value'
                 },
                 random: {
-                    type: 'button',
-                    id: 'random-btn',
-                    label: 'Random'
+                    template: 'randomButton',
+                    id: 'random-btn'
                 },
                 learn: {
-                    type: 'button',
-                    id: 'learn-btn',
-                    label: 'Learn'
+                    template: 'learnButton',
+                    id: 'learn-btn'
                 }
-            },
-            modal: {
-                id: 'conway-modal',
-                closeId: 'conway-modal-close'
             }
         },
         termite: {
-            name: 'Termite Algorithm',
             controls: {
                 speed: {
-                    type: 'slider',
+                    template: 'speedSlider',
                     id: 'termite-speed-slider',
-                    valueElementId: 'termite-speed-value',
-                    min: 1,
-                    max: 60,
-                    step: 1,
-                    value: 30,
-                    label: 'Speed',
-                    format: (value) => `${value} steps/s`
+                    valueElementId: 'termite-speed-value'
                 },
                 termiteCount: {
-                    type: 'slider',
+                    template: 'termiteCountSlider',
                     id: 'termites-slider',
-                    valueElementId: 'termites-value',
-                    min: 10,
-                    max: 100,
-                    step: 1,
-                    value: 50,
-                    label: 'Termites',
-                    format: (value) => value.toString()
+                    valueElementId: 'termites-value'
                 },
                 random: {
-                    type: 'button',
-                    id: 'termite-random-btn',
-                    label: 'Random'
+                    template: 'randomButton',
+                    id: 'termite-random-btn'
                 },
                 learn: {
-                    type: 'button',
-                    id: 'learn-btn',
-                    label: 'Learn'
+                    template: 'learnButton',
+                    id: 'learn-btn'
                 }
-            },
-            modal: {
-                id: 'termite-modal',
-                closeId: 'termite-modal-close'
             }
         },
         langton: {
-            name: "Langton's Ant",
             controls: {
                 speed: {
-                    type: 'slider',
+                    template: 'speedSlider',
                     id: 'langton-speed-slider',
-                    valueElementId: 'langton-speed-value',
-                    min: 1,
-                    max: 60,
-                    step: 1,
-                    value: 30,
-                    label: 'Speed',
-                    format: (value) => `${value} steps/s`
+                    valueElementId: 'langton-speed-value'
                 },
                 addAnt: {
-                    type: 'button',
-                    id: 'add-ant-btn',
-                    label: 'Add Ant'
+                    template: 'addAntButton',
+                    id: 'add-ant-btn'
                 },
                 random: {
-                    type: 'button',
-                    id: 'langton-random-btn',
-                    label: 'Random'
+                    template: 'randomButton',
+                    id: 'langton-random-btn'
                 },
                 learn: {
-                    type: 'button',
-                    id: 'learn-btn',
-                    label: 'Learn'
+                    template: 'learnButton',
+                    id: 'learn-btn'
                 }
-            },
-            modal: {
-                id: 'langton-modal',
-                closeId: 'langton-modal-close'
             }
         }
     };
+
+    // Generate complete control configuration from templates
+    static generateControlConfig(simType, controlName) {
+        const simTemplate = this.simulationControlTemplates[simType];
+        if (!simTemplate || !simTemplate.controls[controlName]) {
+            throw new Error(`Control template not found for ${simType}.${controlName}`);
+        }
+
+        const controlTemplate = simTemplate.controls[controlName];
+        const baseTemplate = this.baseTemplates[controlTemplate.template];
+        
+        if (!baseTemplate) {
+            throw new Error(`Base template not found: ${controlTemplate.template}`);
+        }
+
+        // Merge base template with simulation-specific overrides
+        return {
+            ...baseTemplate,
+            ...controlTemplate
+        };
+    }
+
+    // Generate complete simulation configuration
+    static generateSimulationConfig(simType) {
+        const simTemplate = this.simulationControlTemplates[simType];
+        if (!simTemplate) {
+            throw new Error(`Simulation template not found: ${simType}`);
+        }
+
+        const controls = {};
+        Object.keys(simTemplate.controls).forEach(controlName => {
+            controls[controlName] = this.generateControlConfig(simType, controlName);
+        });
+
+        return {
+            name: this.getSimulationName(simType),
+            controls,
+            modal: this.getModalConfig(simType)
+        };
+    }
+
+    // Get simulation name
+    static getSimulationName(simType) {
+        const names = {
+            conway: "Conway's Game of Life",
+            termite: 'Termite Algorithm',
+            langton: "Langton's Ant"
+        };
+        return names[simType] || simType;
+    }
+
+    // Get modal configuration
+    static getModalConfig(simType) {
+        const modalConfigs = {
+            conway: {
+                id: 'conway-modal',
+                closeId: 'conway-modal-close'
+            },
+            termite: {
+                id: 'termite-modal',
+                closeId: 'termite-modal-close'
+            },
+            langton: {
+                id: 'langton-modal',
+                closeId: 'langton-modal-close'
+            }
+        };
+        return modalConfigs[simType];
+    }
+
+    // Get all simulation configurations
+    static getAllSimulationConfigs() {
+        const configs = {};
+        Object.keys(this.simulationControlTemplates).forEach(simType => {
+            configs[simType] = this.generateSimulationConfig(simType);
+        });
+        return configs;
+    }
+
+    // Add new simulation template
+    static addSimulationTemplate(simType, template) {
+        this.simulationControlTemplates[simType] = template;
+    }
+
+    // Add new base template
+    static addBaseTemplate(templateName, template) {
+        this.baseTemplates[templateName] = template;
+    }
+
+    // Validate template configuration
+    static validateTemplate(template) {
+        if (!template.controls || typeof template.controls !== 'object') {
+            throw new Error('Template must have controls object');
+        }
+
+        Object.entries(template.controls).forEach(([controlName, controlConfig]) => {
+            if (!controlConfig.template) {
+                throw new Error(`Control ${controlName} must have a template reference`);
+            }
+            if (!this.baseTemplates[controlConfig.template]) {
+                throw new Error(`Base template not found: ${controlConfig.template}`);
+            }
+        });
+    }
+}
+
+// Unified Configuration Manager
+class ConfigurationManager {
+    static simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
     
     static getConfig(simType) {
         return this.simulationConfigs[simType];
@@ -532,6 +630,11 @@ class ConfigurationManager {
         }
         
         return simulationConfig;
+    }
+
+    // Regenerate configurations from templates (useful for dynamic updates)
+    static regenerateConfigs() {
+        this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
     }
 }
 
