@@ -215,12 +215,14 @@ Tests visual rendering and effects:
 - Validates the three-step update process (decrease brightness, apply rules, set active brightness)
 - Tests fade state management using the `cellBrightness` map
 - Validates immediate visual feedback for user interactions
+- **Recently Fixed**: Rewritten to properly handle coordinate conversion between screen and grid coordinates
 
 #### ✅ Comprehensive Fade Functionality
 - Tests brightness calculations and fade decrement application
 - Validates brightness state tracking across simulation cycles
 - Tests fade clearing and reset functionality
 - Validates configurable fade parameters (fadeDecrement, fadeOutCycles)
+- **Recently Fixed**: Updated to use correct coordinate system and cell brightness map access patterns
 
 #### ✅ Visual Regression Test
 - Tests canvas rendering accuracy
@@ -245,6 +247,7 @@ Tests system-level functionality:
 - Tests complete simulation workflow
 - Validates all simulation phases
 - Tests error handling and recovery
+- **Recently Fixed**: Completely rewritten to simplify cell toggling logic, clarify test structure, and improve state preservation testing
 
 ## Before Refactoring
 
@@ -472,6 +475,23 @@ testRunner.addTest('New UI Component Test', async () => {
 2. **Compare with baseline** to understand what changed
 3. **Run individual tests** to isolate the issue:
 
+### Common Test Issues and Solutions
+
+#### Coordinate System Mismatches
+- **Problem**: Tests using screen coordinates where grid coordinates are expected
+- **Solution**: Use `simulation.screenToGrid(x, y)` to convert coordinates before calling grid-based methods
+- **Example**: `getCellFadeFactor()` expects grid coordinates, not screen coordinates
+
+#### Cell Brightness Map Access
+- **Problem**: Incorrect key format when accessing the `cellBrightness` map
+- **Solution**: Use string keys in format `"${row},${col}"` when directly accessing the map
+- **Example**: `cellBrightness.get("5,5")` not `cellBrightness.get([5,5])`
+
+#### Test Coordinate Positioning
+- **Problem**: Test coordinates not mapping to valid grid positions due to `cellSize` scaling
+- **Solution**: Use `simulation.cellSize * N` to generate screen coordinates that reliably map to grid positions
+- **Example**: `const testX = simulation.cellSize * 5; const testY = simulation.cellSize * 5;`
+
 ```javascript
 // Run a specific test
 const test = testRunner.tests.find(t => t.name === 'Test Name');
@@ -510,22 +530,28 @@ console.log('Test result:', result);
 - Use tests to guide implementation
 - Ensure tests cover edge cases and error conditions
 
-### 2. Regular Testing
+### 2. Test Writing Guidelines
+- **Coordinate System Awareness**: Always consider whether methods expect screen or grid coordinates
+- **State Testing**: When testing state preservation, actively modify state before restoring to verify functionality
+- **Minimal Test Logic**: Keep test logic simple and focused on the specific functionality being tested
+- **Clear Test Structure**: Use descriptive sub-test names and clear separation between test phases
+
+### 3. Regular Testing
 - Run tests before committing any changes
 - Include testing in your development workflow
 - Use automated testing in CI/CD pipelines
 
-### 3. Performance Awareness
+### 4. Performance Awareness
 - Keep performance baselines for comparison
 - Monitor performance during development
 - Optimise bottlenecks proactively
 
-### 4. Documentation
+### 5. Documentation
 - Document test failures and their resolutions
 - Keep test documentation up to date
 - Document performance expectations
 
-### 5. Quality Assurance
+### 6. Quality Assurance
 - Use the visual test suite for manual verification
 - Test across different browsers and devices
 - Validate accessibility and usability

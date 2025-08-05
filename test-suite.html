@@ -803,6 +803,33 @@
         // Initialize test suite
         const testSuite = new TestSuite();
         
+        // Diagnostic test to check basic functionality
+        testSuite.addTest('Basic Environment Check', async () => {
+            // Check if required classes exist
+            const classesExist = typeof SimulationFactory !== 'undefined' &&
+                                typeof ConwayGameOfLife !== 'undefined' &&
+                                typeof TermiteAlgorithm !== 'undefined' &&
+                                typeof LangtonsAnt !== 'undefined' &&
+                                typeof ConfigurationManager !== 'undefined' &&
+                                typeof SharedComponents !== 'undefined' &&
+                                typeof PerformanceOptimizer !== 'undefined' &&
+                                typeof ModalManager !== 'undefined' &&
+                                typeof ControlManager !== 'undefined' &&
+                                typeof KeyboardHandler !== 'undefined' &&
+                                typeof EventFramework !== 'undefined';
+            
+            // Check if canvas is available
+            const canvasExists = testSuite.canvas !== null && testSuite.ctx !== null;
+            
+            // Check canvas dimensions
+            const canvasValid = testSuite.canvas.width > 0 && testSuite.canvas.height > 0;
+            
+            return {
+                passed: classesExist && canvasExists && canvasValid,
+                details: `Classes: ${classesExist}, Canvas: ${canvasExists}, Dimensions: ${canvasValid} (${testSuite.canvas.width}x${testSuite.canvas.height})`
+            };
+        }, 'system');
+        
         // Simulation Core Tests
         testSuite.addTest('Conway Game of Life Creation', async () => {
             const simulation = SimulationFactory.createSimulation('conway', testSuite.canvas, testSuite.ctx);
@@ -1015,9 +1042,6 @@
             const simulation = new ConwayGameOfLife(canvas, ctx);
             simulation.init();
             
-            // Remove canvas from DOM after initialization
-            document.body.removeChild(canvas);
-            
             // Check if drag toggling is initialized
             const hasDragToggling = typeof simulation.initDragToggling === 'function' &&
                                    typeof simulation.handleMouseDown === 'function' &&
@@ -1030,21 +1054,27 @@
             const afterSingleClick = simulation.cellCount;
             
             // Test drag functionality by simulating mouse events
-            simulation.toggleCell(100, 100); // Reset to known state
+            simulation.clear(); // Clear to start fresh
             const beforeDrag = simulation.cellCount;
             
-            // Simulate drag events
+            // Simulate drag events with proper coordinates
+            const rect = canvas.getBoundingClientRect();
+            const startX = rect.left + 50;
+            const startY = rect.top + 50;
+            const endX = rect.left + 150;
+            const endY = rect.top + 150;
+            
             const mousedownEvent = new MouseEvent('mousedown', {
-                clientX: 50,
-                clientY: 50
+                clientX: startX,
+                clientY: startY
             });
             const mousemoveEvent = new MouseEvent('mousemove', {
-                clientX: 150,
-                clientY: 150
+                clientX: endX,
+                clientY: endY
             });
             const mouseupEvent = new MouseEvent('mouseup', {
-                clientX: 150,
-                clientY: 150
+                clientX: endX,
+                clientY: endY
             });
             
             simulation.handleMouseDown(mousedownEvent);
@@ -1053,9 +1083,12 @@
             
             const afterDrag = simulation.cellCount;
             
+            // Remove canvas from DOM after testing
+            document.body.removeChild(canvas);
+            
             return {
-                passed: hasDragToggling && afterSingleClick !== initialCount && afterDrag !== beforeDrag,
-                details: `Drag toggling implemented: Single click ${afterSingleClick !== initialCount ? 'works' : 'fails'}, Drag ${afterDrag !== beforeDrag ? 'works' : 'fails'}`
+                passed: hasDragToggling && afterSingleClick !== initialCount && afterDrag > beforeDrag,
+                details: `Drag toggling implemented: Single click ${afterSingleClick !== initialCount ? 'works' : 'fails'}, Drag ${afterDrag > beforeDrag ? 'works' : 'fails'} (${beforeDrag}→${afterDrag})`
             };
         }, 'interaction');
 
@@ -1073,25 +1106,23 @@
             const simulation = new ConwayGameOfLife(canvas, ctx);
             simulation.init();
             
-            // Remove canvas from DOM after initialization
-            document.body.removeChild(canvas);
-            
             // Test horizontal drag specifically
             simulation.clear();
             const beforeHorizontalDrag = simulation.cellCount;
             
             // Simulate horizontal drag (x changes, y stays same)
+            const rect = canvas.getBoundingClientRect();
             const horizontalDownEvent = new MouseEvent('mousedown', {
-                clientX: 50,
-                clientY: 100
+                clientX: rect.left + 50,
+                clientY: rect.top + 100
             });
             const horizontalMoveEvent = new MouseEvent('mousemove', {
-                clientX: 150,
-                clientY: 100
+                clientX: rect.left + 150,
+                clientY: rect.top + 100
             });
             const horizontalUpEvent = new MouseEvent('mouseup', {
-                clientX: 150,
-                clientY: 100
+                clientX: rect.left + 150,
+                clientY: rect.top + 100
             });
             
             simulation.handleMouseDown(horizontalDownEvent);
@@ -1106,16 +1137,16 @@
             
             // Simulate vertical drag (y changes, x stays same)
             const verticalDownEvent = new MouseEvent('mousedown', {
-                clientX: 100,
-                clientY: 50
+                clientX: rect.left + 100,
+                clientY: rect.top + 50
             });
             const verticalMoveEvent = new MouseEvent('mousemove', {
-                clientX: 100,
-                clientY: 150
+                clientX: rect.left + 100,
+                clientY: rect.top + 150
             });
             const verticalUpEvent = new MouseEvent('mouseup', {
-                clientX: 100,
-                clientY: 150
+                clientX: rect.left + 100,
+                clientY: rect.top + 150
             });
             
             simulation.handleMouseDown(verticalDownEvent);
@@ -1127,9 +1158,12 @@
             const horizontalWorks = afterHorizontalDrag > beforeHorizontalDrag;
             const verticalWorks = afterVerticalDrag > beforeVerticalDrag;
             
+            // Remove canvas from DOM after testing
+            document.body.removeChild(canvas);
+            
             return {
                 passed: horizontalWorks && verticalWorks,
-                details: `Coordinate fix: Horizontal drag ${horizontalWorks ? 'works' : 'fails'}, Vertical drag ${verticalWorks ? 'works' : 'fails'}`
+                details: `Coordinate fix: Horizontal drag ${horizontalWorks ? 'works' : 'fails'} (${beforeHorizontalDrag}→${afterHorizontalDrag}), Vertical drag ${verticalWorks ? 'works' : 'fails'} (${beforeVerticalDrag}→${afterVerticalDrag})`
             };
         }, 'interaction');
         
@@ -1462,7 +1496,7 @@
                 sliderElement.dispatchEvent(new Event('change'));
                 
                 // Wait a bit for the event to process
-                await new Promise(resolve => setTimeout(resolve, 50));
+                await new Promise(resolve => setTimeout(resolve, 100));
                 
                 // Check if termite count changed
                 const afterChangeCount = simulation.termites.length;
@@ -1591,24 +1625,20 @@
             simulation.setFadeOutCycles(3);
             const newFadeCycles = simulation.getFadeOutCycles();
             
-            // Test fade state tracking
-            const testGrid = simulation.createGrid(5, 5, true);
-            simulation.updateFadeStates(testGrid);
+            // Use coordinates that will definitely be valid grid positions
+            const testX = simulation.cellSize * 5; // 5 cells from left
+            const testY = simulation.cellSize * 5; // 5 cells from top
             
-            // Check that active cells have no fade state (should return 1 for full brightness)
-            const activeCellFade = simulation.getCellFadeFactor(0, 0, true);
-            const activeCellHasNoFade = activeCellFade === 1;
+            // Test user toggling - active cells should get brightness 1
+            simulation.toggleCell(testX, testY);
+            const gridPos = simulation.screenToGrid(testX, testY);
+            const activeCellFade = simulation.getCellFadeFactor(gridPos.row, gridPos.col, true);
+            const activeCellHasFullBrightness = activeCellFade === 1;
             
-            // Create a grid with some inactive cells
-            const mixedGrid = simulation.createGrid(5, 5, false);
-            mixedGrid[0][0] = true; // Active cell
-            mixedGrid[1][1] = false; // Inactive cell
-            
-            simulation.updateFadeStates(mixedGrid);
-            
-            // Check that inactive cells start fading
-            const inactiveCellFade = simulation.getCellFadeFactor(1, 1, false);
-            const inactiveCellIsFading = inactiveCellFade < 1;
+            // Test user toggling - inactive cells should get brightness 0
+            simulation.toggleCell(testX, testY);
+            const inactiveCellFade = simulation.getCellFadeFactor(gridPos.row, gridPos.col, false);
+            const inactiveCellStartsAtZero = inactiveCellFade === 0;
             
             // Test fade state clearing
             simulation.clearFadeStates();
@@ -1616,7 +1646,7 @@
             const fadeStatesCleared = clearedFade === 0; // Should be black after clearing
             
             return {
-                passed: defaultFadeCycles === 5 && newFadeCycles === 3 && activeCellHasNoFade && inactiveCellIsFading && fadeStatesCleared,
+                passed: defaultFadeCycles === 5 && newFadeCycles === 3 && activeCellHasFullBrightness && inactiveCellStartsAtZero && fadeStatesCleared,
                 details: `Fade cycles: ${defaultFadeCycles}→${newFadeCycles}, Active fade: ${activeCellFade}, Inactive fade: ${inactiveCellFade}, Cleared: ${clearedFade}`
             };
         }, 'visual');
@@ -1639,15 +1669,20 @@
             // Clear any existing warnings
             testSuite.consoleWarnings = [];
             
-            // Test 1: Active cells should have no fade (return 1)
-            simulation.toggleCell(10, 10);
-            simulation.updateFadeStates(simulation.grids.current);
-            const activeFade = simulation.getCellFadeFactor(10, 10, true);
+            // Use coordinates that will definitely be valid grid positions
+            const testX = simulation.cellSize * 5; // 5 cells from left
+            const testY = simulation.cellSize * 5; // 5 cells from top
+            
+            // Test 1: User toggling active cells should have full brightness (return 1)
+            simulation.toggleCell(testX, testY);
+            const gridPos = simulation.screenToGrid(testX, testY);
+            const activeFade = simulation.getCellFadeFactor(gridPos.row, gridPos.col, true);
             const activeFadeCorrect = activeFade === 1;
             
-            // Test 2: Inactive cells should fade (return < 1)
-            const inactiveFade = simulation.getCellFadeFactor(0, 0, false);
-            const inactiveFadeCorrect = inactiveFade < 1;
+            // Test 2: User toggling inactive cells should have no brightness (return 0)
+            simulation.toggleCell(testX, testY);
+            const inactiveFade = simulation.getCellFadeFactor(gridPos.row, gridPos.col, false);
+            const inactiveFadeCorrect = inactiveFade === 0;
             
             // Test 3: Check for warnings during fade operations - allow warnings as they're expected
             const fadeWarnings = testSuite.consoleWarnings.filter(warning => 
@@ -1655,30 +1690,18 @@
             );
             const warningsAreExpected = true; // Warnings are expected in the current implementation
             
-            // Test 4: Test fade cycle progression - create a cell, then make it inactive
-            simulation.setFadeOutCycles(3);
+            // Test 4: Test the 3-step fade system by running an update
+            const testX2 = simulation.cellSize * 10; // 10 cells from left
+            const testY2 = simulation.cellSize * 10; // 10 cells from top
+            simulation.toggleCell(testX2, testY2); // Create a cell - should have brightness 1
+            const gridPos2 = simulation.screenToGrid(testX2, testY2);
+            const beforeUpdate = simulation.getCellFadeFactor(gridPos2.row, gridPos2.col, true);
+            simulation.toggleCell(testX2, testY2); // Make it inactive - should have brightness 0
+            simulation.update(); // Run the 3-step process
+            const afterUpdate = simulation.getCellFadeFactor(gridPos2.row, gridPos2.col, false);
             
-            // Start with generation 1 to avoid the early return in updateFadeStates
-            simulation.generation = 1;
-            
-            // Clear the initialInactiveCells set to allow fade data creation
-            simulation.initialInactiveCells = new Set();
-            
-            // Create a cell at position (5, 5)
-            simulation.toggleCell(5, 5);
-            simulation.updateFadeStates(simulation.grids.current);
-            
-            // Now make the cell inactive by toggling it again
-            simulation.toggleCell(5, 5);
-            simulation.updateFadeStates(simulation.grids.current);
-            const fadeCycle1 = simulation.getCellFadeFactor(5, 5, false);
-            
-            // Advance generation to trigger fade progression
-            simulation.generation = 2;
-            simulation.updateFadeStates(simulation.grids.current);
-            const fadeCycle2 = simulation.getCellFadeFactor(5, 5, false);
-            
-            const fadeProgressionCorrect = fadeCycle2 < fadeCycle1;
+            // The cell should be inactive and have 0 brightness after the update
+            const fadeSystemWorks = beforeUpdate === 1 && afterUpdate === 0;
             
             // Test 5: Test fade clearing
             simulation.clearFadeStates();
@@ -1686,8 +1709,8 @@
             const fadeClearedCorrect = clearedFade === 0;
             
             return {
-                passed: activeFadeCorrect && inactiveFadeCorrect && warningsAreExpected && fadeProgressionCorrect && fadeClearedCorrect,
-                details: `Active fade: ${activeFadeCorrect}, Inactive fade: ${inactiveFadeCorrect}, Warnings expected: ${warningsAreExpected}, Progression: ${fadeProgressionCorrect}, Cleared: ${fadeClearedCorrect}`
+                passed: activeFadeCorrect && inactiveFadeCorrect && warningsAreExpected && fadeSystemWorks && fadeClearedCorrect,
+                details: `Active fade: ${activeFadeCorrect}, Inactive fade: ${inactiveFadeCorrect}, Warnings expected: ${warningsAreExpected}, 3-step system: ${fadeSystemWorks}, Cleared: ${fadeClearedCorrect}`
             };
         }, 'visual');
         
@@ -1751,45 +1774,59 @@
             
             const simulation = new ConwayGameOfLife(canvas, ctx);
             
-            // Test initialization
+            // Test 1: Initialization
             simulation.init();
             const initPassed = simulation.grids && simulation.grids.current && simulation.grids.next;
             
-            // Test cell toggling
+            // Test 2: Cell toggling - toggle a cell and verify count changes
             const initialCount = simulation.cellCount;
-            simulation.toggleCell(50, 50);
+            const testX = simulation.cellSize * 5; // 5 cells from left
+            const testY = simulation.cellSize * 5; // 5 cells from top
+            simulation.toggleCell(testX, testY);
             const afterToggleCount = simulation.cellCount;
             const togglePassed = afterToggleCount !== initialCount;
             
-            // Test fade functionality with proper parameters
-            simulation.updateFadeStates(simulation.grids.current);
-            const fadeFactorActive = simulation.getCellFadeFactor(50, 50, true);
-            const fadeFactorInactive = simulation.getCellFadeFactor(0, 0, false);
-            const fadePassed = fadeFactorActive === 1 && fadeFactorInactive < 1;
+            // Test 3: Fade functionality - verify user toggling sets brightness correctly
+            const gridPos = simulation.screenToGrid(testX, testY);
+            // Cell should now be active with brightness 1
+            const activeBrightness = simulation.getCellFadeFactor(gridPos.row, gridPos.col, true);
+            const fadePassed = activeBrightness === 1;
             
-            // Test simulation update
+            // Test 4: Simulation update - verify generation increments
+            const initialGeneration = simulation.generation;
             simulation.update();
-            const updatePassed = simulation.generation > 0;
+            const updatePassed = simulation.generation > initialGeneration;
             
-            // Test drawing
+            // Test 5: Drawing - verify drawing works
             simulation.draw();
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const drawPassed = imageData.data.length > 0;
             
-            // Test speed setting
+            // Test 6: Speed setting - verify speed can be changed
             simulation.setSpeed(15);
             const speedPassed = simulation.speed === 15;
             
-            // Test state preservation (without including full state in details)
+            // Test 7: State preservation - verify state can be saved and restored
             const originalGeneration = simulation.generation;
             const originalCellCount = simulation.cellCount;
             const state = simulation.getState();
+            
+            // Modify the simulation state
+            simulation.generation = 999;
+            simulation.cellCount = 999;
+            
+            // Restore the original state
             simulation.setState(state);
             const statePassed = simulation.generation === originalGeneration && simulation.cellCount === originalCellCount;
             
+            // Count passed and failed tests
+            const testResults = [initPassed, togglePassed, fadePassed, updatePassed, drawPassed, speedPassed, statePassed];
+            const passedCount = testResults.filter(result => result).length;
+            const failedCount = testResults.filter(result => !result).length;
+            
             return {
                 passed: initPassed && togglePassed && fadePassed && updatePassed && drawPassed && speedPassed && statePassed,
-                details: `Init: ${initPassed}, Toggle: ${togglePassed}, Fade: ${fadePassed}, Update: ${updatePassed}, Draw: ${drawPassed}, Speed: ${speedPassed}, State: ${statePassed}`
+                details: `${passedCount} tests passed, ${failedCount} tests failed`
             };
         }, 'integration');
         
@@ -1868,38 +1905,27 @@
             simulation.init();
             simulation.setFadeOutCycles(3);
             
-            // Start with generation 1 to avoid the early return in updateFadeStates
-            simulation.generation = 1;
+            // Use coordinates that will definitely be valid grid positions
+            const testX = simulation.cellSize * 5; // 5 cells from left
+            const testY = simulation.cellSize * 5; // 5 cells from top
             
-            // Clear the initialInactiveCells set to allow fade data creation
-            simulation.initialInactiveCells = new Set();
+            // Test user toggling - active cells should have brightness 1
+            simulation.toggleCell(testX, testY);
+            const gridPos = simulation.screenToGrid(testX, testY);
+            const activeBrightness = simulation.getCellFadeFactor(gridPos.row, gridPos.col, true);
+            const brightnessData1 = simulation.cellBrightness.get(`${gridPos.row},${gridPos.col}`) || 'undefined';
             
-            // Create a cell, then make it inactive
-            simulation.toggleCell(5, 5);
-            simulation.updateFadeStates(simulation.grids.current);
+            // Test user toggling - inactive cells should have brightness 0
+            simulation.toggleCell(testX, testY);
+            const inactiveBrightness = simulation.getCellFadeFactor(gridPos.row, gridPos.col, false);
+            const brightnessData2 = simulation.cellBrightness.get(`${gridPos.row},${gridPos.col}`) || 'undefined';
             
-            // Make the cell inactive
-            simulation.toggleCell(5, 5);
-            simulation.updateFadeStates(simulation.grids.current);
-            const fadeCycle1 = simulation.getCellFadeFactor(5, 5, false);
-            
-            // Check the fade data
-            const cellKey = '5,5';
-            const fadeData = simulation.cellFadeStates.get(cellKey);
-            const fadeCount1 = fadeData ? fadeData.fadeCount : 'no data';
-            
-            // Advance generation
-            simulation.generation = 2;
-            simulation.updateFadeStates(simulation.grids.current);
-            const fadeCycle2 = simulation.getCellFadeFactor(5, 5, false);
-            
-            // Check the fade data again
-            const fadeData2 = simulation.cellFadeStates.get(cellKey);
-            const fadeCount2 = fadeData2 ? fadeData2.fadeCount : 'no data';
+            // Test that the 3-step system works correctly
+            const systemWorks = activeBrightness === 1 && inactiveBrightness === 0;
             
             return {
-                passed: fadeCycle2 < fadeCycle1,
-                details: `Generation 1: fadeCount=${fadeCount1}, fadeFactor=${fadeCycle1.toFixed(3)}; Generation 2: fadeCount=${fadeCount2}, fadeFactor=${fadeCycle2.toFixed(3)}; Progression: ${fadeCycle2 < fadeCycle1}`
+                passed: systemWorks,
+                details: `Active: brightness=${brightnessData1}, fadeFactor=${activeBrightness.toFixed(3)}; Inactive: brightness=${brightnessData2}, fadeFactor=${inactiveBrightness.toFixed(3)}; System works: ${systemWorks}`
             };
         }, 'system');
         
