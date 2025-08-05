@@ -12,6 +12,8 @@ The Algorithmic Pattern Generator is a sophisticated web application that combin
 - **Internationalisation**: Custom i18n system supporting UK/US English
 - **Testing**: Comprehensive test suite with visual and programmatic testing
 - **Performance**: Optimised rendering with debouncing, throttling, and hardware acceleration
+- **Control Visibility**: CSS-based declarative control visibility management
+- **Control Visibility**: CSS-based declarative control visibility management
 
 ### File Structure
 ```
@@ -70,6 +72,133 @@ Modular UI component system with lifecycle management:
 - Element caching to reduce DOM queries
 - RequestAnimationFrame for smooth rendering
 - Memory leak prevention with cleanup methods
+
+#### ControlVisibilityManager
+CSS-based control visibility management system that replaces JavaScript-based show/hide logic:
+
+**Key Features:**
+- **Declarative CSS approach** using data attributes and CSS classes
+- **Simulation-specific control groups** with automatic visibility management
+- **Performance optimised** - No JavaScript DOM manipulation for visibility changes
+- **Extensible design** - Easy to add new simulations and control groups
+- **Backward compatibility** - Maintains existing API while improving implementation
+
+**Core Methods:**
+```javascript
+init()                           // Initialise visibility manager
+setActiveSimulation(simType)     // Set active simulation and update visibility
+clearActiveStates()              // Clear all active states
+applyVisibilityStates(simType)   // Apply visibility states for simulation
+showControls(simType)            // Show controls for simulation (backward compatibility)
+hideAllControls()                // Hide all controls (backward compatibility)
+getActiveSimulation()            // Get currently active simulation
+isControlVisible(elementId)      // Check if control is visible
+addControlGroup(simType, controlIds)     // Add new control group
+addVisibilityStates(simType, states)     // Add visibility states for simulation
+cleanup()                        // Cleanup visibility manager
+```
+
+**CSS Implementation:**
+```css
+/* Control visibility states */
+.control-group[data-simulation="conway"] {
+    display: none;
+}
+.control-group[data-simulation="termite"] {
+    display: none;
+}
+.control-group[data-simulation="langton"] {
+    display: none;
+}
+
+/* Active simulation visibility */
+.control-group[data-simulation].active {
+    display: flex !important;
+}
+
+/* Simulation-specific control groups */
+.simulation-controls[data-simulation="conway"] {
+    display: none;
+}
+.simulation-controls[data-simulation="termite"] {
+    display: none;
+}
+.simulation-controls[data-simulation="langton"] {
+    display: none;
+}
+
+.simulation-controls[data-simulation].active {
+    display: flex !important;
+}
+
+/* Special containers */
+#termites-container[data-simulation="termite"].active {
+    display: block !important;
+}
+#termites-container[data-simulation]:not(.active) {
+    display: none !important;
+}
+```
+
+**HTML Structure:**
+```html
+<!-- Conway's Game of Life specific controls -->
+<div id="conway-controls" class="simulation-controls" data-simulation="conway" style="display: none;">
+    <!-- Speed control moved to dynamic container -->
+</div>
+
+<!-- Termite Algorithm specific controls -->
+<div id="termite-controls" class="simulation-controls" data-simulation="termite" style="display: none;">
+    <!-- Speed control moved to dynamic container -->
+</div>
+
+<!-- Langton's Ant specific controls -->
+<div id="langton-controls" class="simulation-controls" data-simulation="langton" style="display: none;">
+    <!-- Speed control moved to dynamic container -->
+</div>
+
+<!-- Termites Control (top) -->
+<div id="termites-container" class="control-group dynamic-position" data-simulation="termite" style="display: none;">
+    <div class="control-group">
+        <label for="termites-slider">Termites:</label>
+        <input type="range" id="termites-slider" min="1" max="100" value="50" class="slider">
+        <span id="termites-value">50</span>
+    </div>
+</div>
+```
+
+**Control Group Mappings:**
+```javascript
+this.controlGroups = new Map([
+    ['conway', ['conway-controls']],
+    ['termite', ['termite-controls', 'termites-container']],
+    ['langton', ['langton-controls']]
+]);
+```
+
+**Visibility States:**
+```javascript
+this.visibilityStates = new Map([
+    ['conway', {
+        'conway-controls': 'visible',
+        'termite-controls': 'hidden',
+        'langton-controls': 'hidden',
+        'termites-container': 'hidden'
+    }],
+    ['termite', {
+        'conway-controls': 'hidden',
+        'termite-controls': 'visible',
+        'langton-controls': 'hidden',
+        'termites-container': 'visible'
+    }],
+    ['langton', {
+        'conway-controls': 'hidden',
+        'termite-controls': 'hidden',
+        'langton-controls': 'visible',
+        'termites-container': 'hidden'
+    }]
+]);
+```
 
 #### ControlTemplateManager
 Template-based control configuration system that eliminates code duplication:
@@ -136,13 +265,30 @@ static simulationControlTemplates = {
 Centralised configuration system that uses ControlTemplateManager:
 
 #### Event Framework
-Comprehensive event management system:
+Comprehensive event management system with enhanced element caching:
 
 **Features:**
 - Centralised event registration and cleanup
 - Debounced and throttled event handlers
 - Batch event registration
 - Memory leak prevention
+- Enhanced element caching with null value handling
+
+**Enhanced Element Caching:**
+```javascript
+getElement(selector) {
+    if (!this.elementCache.has(selector)) {
+        const element = document.querySelector(selector);
+        if (element) {
+            this.elementCache.set(selector, element);
+        } else {
+            // Don't cache null/undefined values to allow for dynamic element creation
+            return null;
+        }
+    }
+    return this.elementCache.get(selector);
+}
+```
 
 #### Dynamic Speed Slider
 Unified speed control system that consolidates three separate speed sliders:
@@ -200,13 +346,39 @@ cleanup()                           // Clean up event listeners
 - **Comprehensive testing** including initial visibility after app load
 
 #### Control Manager
-Dynamic UI control management:
+Dynamic UI control management with CSS-based visibility:
 
 **Features:**
-- Simulation-specific control visibility
+- Simulation-specific control visibility using ControlVisibilityManager
 - Dynamic control value updates
 - Event handler registration per simulation
 - State preservation during simulation switches
+
+**Integration with ControlVisibilityManager:**
+```javascript
+constructor(eventFramework) {
+    this.activeControls = null;
+    this.eventFramework = eventFramework;
+    this.simulationHandlers = new Map();
+    this.visibilityManager = new ControlVisibilityManager();
+    this.visibilityManager.init();
+}
+
+showControls(simType) {
+    // Use the new CSS-based visibility manager
+    this.visibilityManager.showControls(simType);
+    this.activeControls = simType;
+
+    // Show/hide action buttons based on simulation type
+    this.showActionButtons(simType);
+}
+
+hideAllControls() {
+    // Use the new CSS-based visibility manager
+    this.visibilityManager.hideAllControls();
+    this.activeControls = null;
+}
+```
 
 #### Keyboard Handler
 Global keyboard shortcut management:
@@ -317,6 +489,28 @@ clearFadeStates()                // Clear all brightness data
 - `updateFadeStates(grid)`: Legacy method adapted for non-Conway simulations
 - `getCellFadeFactor(row, col, isActive)`: Legacy method that returns cell brightness
 
+**Enhanced Cell Drawing:**
+```javascript
+drawCell(x, y, color = null, isActive = null) {
+    // Get grid position for brightness calculations
+    const { col, row } = this.screenToGrid(x, y);
+    let cellBrightness = this.getCellBrightness(row, col);
+    
+    // If no brightness data exists, assume full brightness for active cells
+    // This ensures cells are visible when they should be (e.g., initial wood chips in Termite Algorithm)
+    if (cellBrightness === 0 && isActive !== false) {
+        cellBrightness = 1.0;
+    }
+
+    // If cell is completely faded (brightness = 0), don't render anything
+    if (cellBrightness === 0) {
+        return;
+    }
+
+    // ... rest of drawing logic
+}
+```
+
 **Key Methods:**
 ```javascript
 init()                    // Initialise simulation
@@ -372,6 +566,15 @@ Termite simulation with wood chip manipulation:
 - Performance optimised for large numbers of termites
 - Legacy fade system adapted to use new brightness approach
 
+**Enhanced Wood Chip Drawing:**
+```javascript
+// Draw wood chips with fade effect
+this.woodChips.forEach(chipKey => {
+    const [x, y] = chipKey.split(',').map(Number);
+    this.drawCell(x, y, null, true); // Pass isActive=true for wood chips
+});
+```
+
 #### Langton's Ant
 Ant simulation with multiple ant support:
 
@@ -409,7 +612,7 @@ Dynamic layout management with floating controls:
 - Dynamic positioning based on screen size
 
 #### Control Groups
-Organised control sections:
+Organised control sections with CSS-based visibility:
 
 1. **Title Container**: Application title (top-left)
 2. **Simulation Container**: Simulation selector dropdown
@@ -418,6 +621,33 @@ Organised control sections:
 5. **Termites Container**: Termite count control (Termite Algorithm)
 6. **Display Container**: Immersive mode and brightness controls
 7. **Language Container**: Language selector (UK/US English)
+
+**CSS-Based Visibility Structure:**
+```html
+<!-- Conway's Game of Life specific controls -->
+<div id="conway-controls" class="simulation-controls" data-simulation="conway" style="display: none;">
+    <!-- Speed control moved to dynamic container -->
+</div>
+
+<!-- Termite Algorithm specific controls -->
+<div id="termite-controls" class="simulation-controls" data-simulation="termite" style="display: none;">
+    <!-- Speed control moved to dynamic container -->
+</div>
+
+<!-- Langton's Ant specific controls -->
+<div id="langton-controls" class="simulation-controls" data-simulation="langton" style="display: none;">
+    <!-- Speed control moved to dynamic container -->
+</div>
+
+<!-- Termites Control (top) -->
+<div id="termites-container" class="control-group dynamic-position" data-simulation="termite" style="display: none;">
+    <div class="control-group">
+        <label for="termites-slider">Termites:</label>
+        <input type="range" id="termites-slider" min="1" max="100" value="50" class="slider">
+        <span id="termites-value">50</span>
+    </div>
+</div>
+```
 
 #### Immersive Mode
 Distraction-free simulation experience:
@@ -463,7 +693,7 @@ i18n.addLanguage('es', {
 ### 5. Dynamic Layout (`dynamic-layout.js`)
 
 #### Layout Management
-Dynamic positioning system for controls:
+Dynamic positioning system for controls with enhanced visibility detection:
 
 **Features:**
 - YAML-based layout configuration
@@ -471,6 +701,21 @@ Dynamic positioning system for controls:
 - Control group positioning
 - Responsive breakpoints
 - Performance optimised positioning
+- Enhanced visibility detection for CSS-based controls
+
+**Enhanced Element Positioning:**
+```javascript
+positionElement(element) {
+    // Skip elements that are hidden (check both inline style and computed style)
+    const computedStyle = window.getComputedStyle(element);
+    if (computedStyle.display === 'none' || 
+        (element.hasAttribute('data-simulation') && !element.classList.contains('active'))) {
+        return;
+    }
+
+    // ... positioning logic
+}
+```
 
 ## Performance Optimisations
 
@@ -478,7 +723,7 @@ Dynamic positioning system for controls:
 - **Hardware Acceleration**: `transform: translateZ(0)` and `will-change` properties
 - **RequestAnimationFrame**: Smooth 60fps rendering
 - **Canvas Optimisation**: Efficient drawing with minimal repaints
-- **Element Caching**: Reduced DOM queries
+- **Element Caching**: Reduced DOM queries with enhanced null handling
 
 ### 2. Event Handling Optimisations
 - **Debouncing**: 16ms debounce for slider inputs
@@ -498,6 +743,12 @@ Dynamic positioning system for controls:
 - **Batch Processing**: Group operations for efficiency
 - **Caching**: Cache frequently accessed values
 
+### 5. CSS-Based Control Visibility Optimisations
+- **No JavaScript DOM Manipulation**: Visibility changes handled entirely by CSS
+- **Declarative Approach**: Clear separation of concerns between logic and presentation
+- **Performance Benefits**: Reduced JavaScript execution for visibility changes
+- **Memory Efficiency**: No need to track visibility state in JavaScript objects
+
 ## Testing Architecture
 
 ### 1. Test Suite (`test-suite.html`)
@@ -510,6 +761,7 @@ Comprehensive visual test suite with categories:
 - **Integration Tests**: Component interactions
 - **Colour Scheme Tests**: Dynamic colour system
 - **Fade-to-Black Tests**: Re-engineered fading mechanism
+- **Control Visibility Tests**: CSS-based control visibility management
 
 ### 2. Test Runner (`test-runner.js`)
 Programmatic testing framework:
@@ -527,6 +779,58 @@ Comprehensive testing framework:
 - `test-suite.html`: Visual test suite with interactive UI
 - `test-runner.js`: Programmatic test runner for automation
 - `TESTING.md`: Complete testing documentation and guide
+
+**New Control Visibility Tests:**
+```javascript
+// ControlVisibilityManager Tests
+testSuite.addTest('ControlVisibilityManager Initialization', async () => {
+    const visibilityManager = new ControlVisibilityManager();
+    visibilityManager.init();
+    
+    const isInitialized = visibilityManager.isInitialized;
+    const hasControlGroups = visibilityManager.controlGroups.size > 0;
+    const hasVisibilityStates = visibilityManager.visibilityStates.size > 0;
+    
+    visibilityManager.cleanup();
+    
+    return {
+        passed: isInitialized && hasControlGroups && hasVisibilityStates,
+        details: `Initialized: ${isInitialized}, Control groups: ${hasControlGroups}, Visibility states: ${hasVisibilityStates}`
+    };
+}, 'control-visibility');
+
+testSuite.addTest('ControlVisibilityManager Conway Simulation', async () => {
+    const visibilityManager = new ControlVisibilityManager();
+    visibilityManager.init();
+    
+    // Set active simulation to conway
+    visibilityManager.setActiveSimulation('conway');
+    
+    // Check if conway controls are visible
+    const conwayControls = document.getElementById('conway-controls');
+    const isConwayVisible = conwayControls && conwayControls.classList.contains('active');
+    
+    // Check if other controls are hidden
+    const termiteControls = document.getElementById('termite-controls');
+    const isTermiteHidden = !termiteControls || !termiteControls.classList.contains('active');
+    
+    const langtonControls = document.getElementById('langton-controls');
+    const isLangtonHidden = !langtonControls || !langtonControls.classList.contains('active');
+    
+    const termitesContainer = document.getElementById('termites-container');
+    const isTermitesHidden = !termitesContainer || !termitesContainer.classList.contains('active');
+    
+    // Check active simulation
+    const activeSim = visibilityManager.getActiveSimulation();
+    
+    visibilityManager.cleanup();
+    
+    return {
+        passed: isConwayVisible && isTermiteHidden && isLangtonHidden && isTermitesHidden && activeSim === 'conway',
+        details: `Conway visible: ${isConwayVisible}, Termite hidden: ${isTermiteHidden}, Langton hidden: ${isLangtonHidden}, Termites hidden: ${isTermitesHidden}, Active: ${activeSim}`
+    };
+}, 'control-visibility');
+```
 
 ## Configuration Files
 
@@ -574,6 +878,7 @@ positions:
 - Local Storage API
 - RequestAnimationFrame
 - Performance API
+- CSS data attributes and class-based visibility
 
 ### Browser Support
 - Chrome 60+
@@ -617,6 +922,7 @@ All files are self-contained and can be deployed to any static hosting service:
 - Comprehensive documentation
 - Extensive test coverage
 - Clear separation of concerns
+- CSS-based control visibility for improved maintainability
 
 ### Update Process
 1. Run comprehensive test suite
@@ -634,10 +940,12 @@ All files are self-contained and can be deployed to any static hosting service:
 - Export/import functionality
 - Collaborative features
 - Mobile app version
+- Enhanced CSS-based control system extensions
 
 ### Extensibility
 The modular architecture supports easy extension:
 - New simulation types via factory pattern
 - Additional UI components via component library
 - Enhanced testing via test runner framework
-- Custom colour schemes via configuration files 
+- Custom colour schemes via configuration files
+- New control groups via ControlVisibilityManager 

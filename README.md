@@ -22,6 +22,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **Performance Optimised** - Hardware acceleration, debounced inputs, and efficient rendering
 - **Responsive Design** - Works on desktop, tablet, and mobile devices
 - **Comprehensive Testing** - Visual and programmatic test suites for quality assurance
+- **CSS-Based Control Visibility** - Declarative control visibility management using CSS classes and data attributes
 
 ## Quick Start
 
@@ -97,6 +98,15 @@ The Conway's Game of Life simulation features an advanced fade-to-black system:
 - **Configurable fade parameters** for customising the fade effect
 - **Consistent behaviour** for oscillating patterns like blinkers
 
+### CSS-Based Control Visibility Management
+The application uses a declarative CSS-based control visibility system:
+- **ControlVisibilityManager** - Centralised visibility management using CSS classes and data attributes
+- **Simulation-specific controls** - Each simulation has its own control set that shows/hides automatically
+- **Data attributes** - Controls use `data-simulation` attributes to identify their simulation type
+- **CSS classes** - `.active` class controls visibility with `display: flex !important`
+- **Performance optimised** - No JavaScript DOM manipulation for visibility changes
+- **Extensible design** - Easy to add new simulations and control groups
+
 ### Performance Optimisations
 - **Hardware acceleration** with CSS transforms
 - **Debounced input handling** for smooth slider interactions
@@ -130,6 +140,7 @@ The application uses a modular architecture with clear separation of concerns:
 5. **ControlTemplateManager** - Template-based control configuration system
 6. **ConfigurationManager** - Centralised configuration for all simulations
 7. **Performance Monitor** - Real-time performance tracking
+8. **ControlVisibilityManager** - CSS-based control visibility management
 
 ### Design Patterns
 - **Factory Pattern** - Simulation creation via SimulationFactory
@@ -183,6 +194,7 @@ Open `test-suite.html` in your browser for comprehensive visual testing:
 - Integration testing
 - Colour scheme validation
 - Fade-to-black system testing
+- Control visibility management testing
 
 ### Programmatic Testing
 Use `test-runner.js` for automated testing:
@@ -193,6 +205,7 @@ testRunner.runAllTests();
 // Run specific categories
 testRunner.runTestsByCategory('core');
 testRunner.runTestsByCategory('performance');
+testRunner.runTestsByCategory('control-visibility');
 ```
 
 ### Test Categories
@@ -203,6 +216,7 @@ The test suite covers:
 - Integration testing
 - Visual effects testing
 - System-level functionality
+- Control visibility management
 
 ## Performance Benchmarks
 

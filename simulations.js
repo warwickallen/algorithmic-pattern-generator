@@ -1316,7 +1316,13 @@ class BaseSimulation {
     drawCell(x, y, color = null, isActive = null) {
         // Get grid position for brightness calculations
         const { col, row } = this.screenToGrid(x, y);
-        const cellBrightness = this.getCellBrightness(row, col);
+        let cellBrightness = this.getCellBrightness(row, col);
+        
+        // If no brightness data exists, assume full brightness for active cells
+        // This ensures cells are visible when they should be (e.g., initial wood chips in Termite Algorithm)
+        if (cellBrightness === 0 && isActive !== false) {
+            cellBrightness = 1.0;
+        }
         
         // If cell is completely faded (brightness = 0), don't render anything
         if (cellBrightness === 0) {
@@ -1803,7 +1809,7 @@ class TermiteAlgorithm extends BaseSimulation {
         // Draw wood chips with fade effect
         this.woodChips.forEach(chipKey => {
             const [x, y] = chipKey.split(',').map(Number);
-            this.drawCell(x, y);
+            this.drawCell(x, y, null, true); // Pass isActive=true for wood chips
         });
         
         // Draw termites with trails

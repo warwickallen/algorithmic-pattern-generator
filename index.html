@@ -40,17 +40,17 @@
             </div>
             
             <!-- Conway's Game of Life specific controls -->
-            <div id="conway-controls" class="simulation-controls" style="display: none;">
+            <div id="conway-controls" class="simulation-controls" data-simulation="conway" style="display: none;">
                 <!-- Speed control moved to dynamic container -->
             </div>
             
             <!-- Termite Algorithm specific controls -->
-            <div id="termite-controls" class="simulation-controls" style="display: none;">
+            <div id="termite-controls" class="simulation-controls" data-simulation="termite" style="display: none;">
                 <!-- Speed control moved to dynamic container -->
             </div>
             
             <!-- Langton's Ant specific controls -->
-            <div id="langton-controls" class="simulation-controls" style="display: none;">
+            <div id="langton-controls" class="simulation-controls" data-simulation="langton" style="display: none;">
                 <!-- Speed control moved to dynamic container -->
             </div>
         </div>
@@ -74,7 +74,7 @@
         </div>
 
         <!-- Termites Control (top) -->
-        <div id="termites-container" class="control-group dynamic-position" style="display: none;">
+        <div id="termites-container" class="control-group dynamic-position" data-simulation="termite" style="display: none;">
             <div class="control-group">
                 <label for="termites-slider">Termites:</label>
                 <input type="range" id="termites-slider" min="1" max="100" value="50" class="slider">
@@ -248,6 +248,7 @@
 
     <script src="i18n.js"></script>
     <script src="simulations.js"></script>
+    <script src="dynamic-layout.js"></script>
     <script src="blinker-fade-test.js"></script>
     <script src="app.js"></script>
 </body>

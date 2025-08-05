@@ -389,27 +389,27 @@ class DynamicSpeedSlider {
 class DynamicFillButton {
     constructor(eventFramework) {
         this.eventFramework = eventFramework;
-        this.button = null;
-        this.isInitialized = false;
         this.currentSimType = null;
         this.app = null;
+        this.isInitialized = false;
     }
     
     init() {
+        if (this.isInitialized) return;
+        
         this.button = this.eventFramework.getElement('#dynamic-fill-btn');
         if (!this.button) {
-            console.error('Dynamic fill button not found');
+            console.warn('Dynamic fill button not found');
             return;
         }
         
-        this.isInitialized = true;
         this.setupEventListeners();
+        this.isInitialized = true;
     }
     
     setupEventListeners() {
-        if (!this.isInitialized) return;
+        if (!this.button) return;
         
-        // Single click handler that delegates to the current simulation
         this.eventFramework.register(this.button, 'click', () => {
             if (this.currentSimType && this.app) {
                 this.app.handleRandomPattern(this.currentSimType);
@@ -418,13 +418,11 @@ class DynamicFillButton {
     }
     
     switchToSimulation(simType, app) {
-        if (!this.isInitialized) return;
-        
         this.currentSimType = simType;
         this.app = app;
         
-        // Show the button for simulations that support randomisation
-        if (simType === 'conway' || simType === 'termite' || simType === 'langton') {
+        // Show button for simulations that support random patterns
+        if (['conway', 'termite', 'langton'].includes(simType)) {
             this.show();
         } else {
             this.hide();
@@ -432,19 +430,257 @@ class DynamicFillButton {
     }
     
     show() {
-        if (!this.isInitialized) return;
-        this.button.style.display = 'inline-block';
+        if (this.button) {
+            this.button.style.display = 'inline-block';
+        }
     }
     
     hide() {
-        if (!this.isInitialized) return;
-        this.button.style.display = 'none';
+        if (this.button) {
+            this.button.style.display = 'none';
+        }
     }
     
     cleanup() {
-        if (!this.isInitialized) return;
+        if (this.isInitialized && this.button) {
+            this.eventFramework.removeAll(this.button);
+        }
+        this.isInitialized = false;
+    }
+}
+
+/**
+ * ControlVisibilityManager - CSS-based control visibility management
+ * Replaces JavaScript-based show/hide logic with declarative CSS classes and data attributes
+ */
+class ControlVisibilityManager {
+    constructor() {
+        this.activeSimulation = null;
+        this.controlGroups = new Map();
+        this.visibilityStates = new Map();
+        this.isInitialized = false;
+    }
+    
+    /**
+     * Initialize the visibility manager
+     */
+    init() {
+        if (this.isInitialized) return;
         
-        this.eventFramework.remove(this.button, 'click');
+        // Define control group mappings
+        this.controlGroups = new Map([
+            ['conway', ['conway-controls']],
+            ['termite', ['termite-controls', 'termites-container']],
+            ['langton', ['langton-controls']]
+        ]);
+        
+        // Define visibility states for each simulation
+        this.visibilityStates = new Map([
+            ['conway', {
+                'conway-controls': 'visible',
+                'termite-controls': 'hidden',
+                'langton-controls': 'hidden',
+                'termites-container': 'hidden'
+            }],
+            ['termite', {
+                'conway-controls': 'hidden',
+                'termite-controls': 'visible',
+                'langton-controls': 'hidden',
+                'termites-container': 'visible'
+            }],
+            ['langton', {
+                'conway-controls': 'hidden',
+                'termite-controls': 'hidden',
+                'langton-controls': 'visible',
+                'termites-container': 'hidden'
+            }]
+        ]);
+        
+        // Add CSS classes to document if not already present
+        this.ensureCSSClasses();
+        
+        this.isInitialized = true;
+    }
+    
+    /**
+     * Ensure required CSS classes are available
+     */
+    ensureCSSClasses() {
+        if (document.getElementById('control-visibility-styles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'control-visibility-styles';
+        style.textContent = `
+            /* Control visibility states */
+            .control-group[data-simulation="conway"] {
+                display: none;
+            }
+            .control-group[data-simulation="termite"] {
+                display: none;
+            }
+            .control-group[data-simulation="langton"] {
+                display: none;
+            }
+            
+            /* Active simulation visibility */
+            .control-group[data-simulation].active {
+                display: flex !important;
+            }
+            
+            /* Simulation-specific control groups */
+            .simulation-controls[data-simulation="conway"] {
+                display: none;
+            }
+            .simulation-controls[data-simulation="termite"] {
+                display: none;
+            }
+            .simulation-controls[data-simulation="langton"] {
+                display: none;
+            }
+            
+            .simulation-controls[data-simulation].active {
+                display: flex !important;
+            }
+            
+            /* Special containers */
+            #termites-container[data-simulation="termite"].active {
+                display: block !important;
+            }
+            #termites-container[data-simulation]:not(.active) {
+                display: none !important;
+            }
+        `;
+        
+        document.head.appendChild(style);
+    }
+    
+    /**
+     * Set the active simulation and update visibility
+     * @param {string} simType - The simulation type to activate
+     */
+    setActiveSimulation(simType) {
+        if (!this.isInitialized) {
+            this.init();
+        }
+        
+        // Remove active class from all control groups
+        this.clearActiveStates();
+        
+        // Set new active simulation
+        this.activeSimulation = simType;
+        
+        // Apply visibility states for the active simulation
+        this.applyVisibilityStates(simType);
+        
+        // Trigger layout repositioning if needed
+        if (window.layoutManager) {
+            setTimeout(() => window.layoutManager.repositionElements(), 50);
+        }
+    }
+    
+    /**
+     * Clear all active states from control groups
+     */
+    clearActiveStates() {
+        // Clear from simulation controls
+        document.querySelectorAll('.simulation-controls[data-simulation]').forEach(element => {
+            element.classList.remove('active');
+        });
+        
+        // Clear from special containers
+        document.querySelectorAll('#termites-container[data-simulation]').forEach(element => {
+            element.classList.remove('active');
+        });
+        
+        // Clear from control groups
+        document.querySelectorAll('.control-group[data-simulation]').forEach(element => {
+            element.classList.remove('active');
+        });
+    }
+    
+    /**
+     * Apply visibility states for a specific simulation
+     * @param {string} simType - The simulation type
+     */
+    applyVisibilityStates(simType) {
+        const states = this.visibilityStates.get(simType);
+        if (!states) return;
+        
+        Object.entries(states).forEach(([elementId, visibility]) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (visibility === 'visible') {
+                    element.setAttribute('data-simulation', simType);
+                    element.classList.add('active');
+                } else {
+                    element.classList.remove('active');
+                }
+            }
+        });
+    }
+    
+    /**
+     * Show controls for a specific simulation (backward compatibility)
+     * @param {string} simType - The simulation type
+     */
+    showControls(simType) {
+        this.setActiveSimulation(simType);
+    }
+    
+    /**
+     * Hide all controls (backward compatibility)
+     */
+    hideAllControls() {
+        this.clearActiveStates();
+        this.activeSimulation = null;
+    }
+    
+    /**
+     * Get the currently active simulation
+     * @returns {string|null} The active simulation type
+     */
+    getActiveSimulation() {
+        return this.activeSimulation;
+    }
+    
+    /**
+     * Check if a control group is visible for the current simulation
+     * @param {string} elementId - The element ID to check
+     * @returns {boolean} True if visible
+     */
+    isControlVisible(elementId) {
+        const element = document.getElementById(elementId);
+        if (!element) return false;
+        
+        return element.classList.contains('active');
+    }
+    
+    /**
+     * Add a new control group mapping
+     * @param {string} simType - The simulation type
+     * @param {Array<string>} controlIds - Array of control element IDs
+     */
+    addControlGroup(simType, controlIds) {
+        this.controlGroups.set(simType, controlIds);
+    }
+    
+    /**
+     * Add visibility states for a new simulation
+     * @param {string} simType - The simulation type
+     * @param {Object} states - Visibility states object
+     */
+    addVisibilityStates(simType, states) {
+        this.visibilityStates.set(simType, states);
+    }
+    
+    /**
+     * Cleanup the visibility manager
+     */
+    cleanup() {
+        this.clearActiveStates();
+        this.controlGroups.clear();
+        this.visibilityStates.clear();
+        this.activeSimulation = null;
         this.isInitialized = false;
     }
 }
@@ -911,6 +1147,9 @@ class EventFramework {
             const element = document.querySelector(selector);
             if (element) {
                 this.elementCache.set(selector, element);
+            } else {
+                // Don't cache null/undefined values to allow for dynamic element creation
+                return null;
             }
         }
         return this.elementCache.get(selector);
@@ -947,29 +1186,15 @@ class ControlManager {
         this.activeControls = null;
         this.eventFramework = eventFramework;
         this.simulationHandlers = new Map();
+        this.visibilityManager = new ControlVisibilityManager();
+        this.visibilityManager.init();
     }
     
     // Show controls for a specific simulation type
     showControls(simType) {
-        // Hide all simulation controls
-        this.hideAllControls();
-        
-        // Show controls for current simulation
-        const controlsElement = document.getElementById(`${simType}-controls`);
-        if (controlsElement) {
-            controlsElement.style.display = 'flex';
-            this.activeControls = simType;
-        }
-        
-        // Show termites container for termite simulation
-        const termitesContainer = document.getElementById('termites-container');
-        if (termitesContainer) {
-            termitesContainer.style.display = simType === 'termite' ? 'block' : 'none';
-            // Reposition elements when termites container visibility changes
-            if (window.layoutManager) {
-                setTimeout(() => window.layoutManager.repositionElements(), 0);
-            }
-        }
+        // Use the new CSS-based visibility manager
+        this.visibilityManager.showControls(simType);
+        this.activeControls = simType;
         
         // Show/hide action buttons based on simulation type
         this.showActionButtons(simType);
@@ -977,22 +1202,8 @@ class ControlManager {
     
     // Hide all simulation controls
     hideAllControls() {
-        Object.keys(ConfigurationManager.getAllConfigs()).forEach(simType => {
-            const controlsElement = document.getElementById(`${simType}-controls`);
-            if (controlsElement) {
-                controlsElement.style.display = 'none';
-            }
-        });
-        
-        // Hide termites container
-        const termitesContainer = document.getElementById('termites-container');
-        if (termitesContainer) {
-            termitesContainer.style.display = 'none';
-        }
-        
-        // Note: Dynamic speed slider visibility is managed by DynamicSpeedSlider class
-        // Don't hide it here to avoid conflicts with the dynamic speed slider's own visibility management
-        
+        // Use the new CSS-based visibility manager
+        this.visibilityManager.hideAllControls();
         this.activeControls = null;
     }
     
@@ -1144,6 +1355,9 @@ class ControlManager {
     // Cleanup simulation handlers
     cleanup() {
         this.simulationHandlers.clear();
+        if (this.visibilityManager) {
+            this.visibilityManager.cleanup();
+        }
     }
 }
 
@@ -1380,6 +1594,7 @@ class AlgorithmicPatternGenerator {
         this.dynamicFillButton.init();
         
         this.createSimulation(this.currentType);
+        this.controlManager.showControls(this.currentType);
         this.updateUI();
         
         // Handle window resize with throttling
@@ -1514,11 +1729,15 @@ class AlgorithmicPatternGenerator {
         this.dynamicSpeedSlider.switchToSimulation(type, this);
         this.dynamicFillButton.switchToSimulation(type, this);
         
+        // Draw the simulation immediately so active cells are visible
+        this.currentSimulation.draw();
+        
         this.updateUI();
     }
     
     switchSimulation(type) {
         this.createSimulation(type);
+        this.controlManager.showControls(type);
     }
     
     startSimulation() {

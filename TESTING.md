@@ -21,6 +21,7 @@ The test suite is organised into logical categories:
 - **Integration Tests** - Component interactions and system integration
 - **Visual Effects Tests** - Visual rendering and re-engineered fade-to-black effects
 - **System Tests** - System-level functionality and error handling
+- **Control Visibility Tests** - CSS-based control visibility management system
 
 ## Quick Start
 
@@ -62,6 +63,7 @@ testRunner.runAllTests();
 testRunner.runTestsByCategory('core');
 testRunner.runTestsByCategory('performance');
 testRunner.runTestsByCategory('ui');
+testRunner.runTestsByCategory('control-visibility');
 ```
 
 ### 3. Using the Visual Test Suite Interface
@@ -76,6 +78,7 @@ The visual test suite (`test-suite.html`) provides an intuitive interface for te
    - Visual Effects Tests
    - Integration Tests
    - System Tests
+   - Control Visibility Tests
 
 2. **Select/Deselect All**: Use the top checkbox to quickly select or deselect all test groups at once. The checkbox shows:
    - **Checked**: All test groups are selected
@@ -289,6 +292,70 @@ Tests system-level functionality:
 - Validates all simulation phases
 - Tests error handling and recovery
 - **Recently Fixed**: Completely rewritten to simplify cell toggling logic, clarify test structure, and improve state preservation testing
+
+### Control Visibility Tests
+
+Tests the CSS-based control visibility management system:
+
+#### ✅ ControlVisibilityManager Initialization
+- Tests ControlVisibilityManager class creation and initialisation
+- Validates control group mappings and visibility states setup
+- Tests CSS class injection and style management
+- Verifies proper cleanup and memory management
+
+#### ✅ ControlVisibilityManager CSS Classes
+- Tests CSS style injection for control visibility
+- Validates data attribute and class-based visibility system
+- Tests CSS rule generation and application
+- Verifies proper style element management
+
+#### ✅ ControlVisibilityManager Conway Simulation
+- Tests Conway's Game of Life control visibility
+- Validates that Conway controls are visible when active
+- Tests that other simulation controls are hidden
+- Verifies proper active state management
+
+#### ✅ ControlVisibilityManager Termite Simulation
+- Tests Termite Algorithm control visibility
+- Validates that Termite controls and termites container are visible when active
+- Tests that other simulation controls are hidden
+- Verifies special container visibility management
+
+#### ✅ ControlVisibilityManager Langton Simulation
+- Tests Langton's Ant control visibility
+- Validates that Langton controls are visible when active
+- Tests that other simulation controls are hidden
+- Verifies proper state isolation between simulations
+
+#### ✅ ControlVisibilityManager State Clearing
+- Tests clearing of all active states
+- Validates that all controls are hidden after clearing
+- Tests active simulation state reset
+- Verifies proper cleanup of CSS classes
+
+#### ✅ ControlVisibilityManager Backward Compatibility
+- Tests backward compatibility with existing API
+- Validates showControls() and hideAllControls() methods
+- Tests integration with existing ControlManager
+- Verifies seamless migration from JavaScript-based visibility
+
+#### ✅ ControlVisibilityManager Control Visibility Check
+- Tests isControlVisible() method functionality
+- Validates visibility state checking for specific controls
+- Tests control group visibility validation
+- Verifies accurate visibility reporting
+
+#### ✅ ControlVisibilityManager Extensibility
+- Tests adding new control groups and visibility states
+- Validates extensibility for new simulations
+- Tests dynamic control group management
+- Verifies proper integration with existing system
+
+#### ✅ ControlManager Integration with ControlVisibilityManager
+- Tests ControlManager integration with new visibility system
+- Validates seamless operation of showControls() and hideAllControls()
+- Tests proper cleanup and resource management
+- Verifies event framework integration
 
 ## Before Refactoring
 

@@ -58,8 +58,10 @@ class DynamicLayoutManager {
     }
     
     positionElement(element) {
-        // Skip elements that are hidden (display: none)
-        if (element.style.display === 'none') {
+        // Skip elements that are hidden (check both inline style and computed style)
+        const computedStyle = window.getComputedStyle(element);
+        if (computedStyle.display === 'none' || 
+            (element.hasAttribute('data-simulation') && !element.classList.contains('active'))) {
             return;
         }
         
