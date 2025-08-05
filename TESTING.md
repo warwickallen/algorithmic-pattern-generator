@@ -37,7 +37,8 @@ open test-suite.html
 - Interactive test interface with real-time results
 - Visual feedback for test outcomes
 - Performance metrics display
-- Category-based test organisation
+- **Checkbox-based test group selection** - Choose which test categories to run
+- **Select/Deselect All functionality** - Quickly manage all test groups
 - Export capabilities for test results
 - Warning detection and reporting
 
@@ -62,6 +63,32 @@ testRunner.runTestsByCategory('core');
 testRunner.runTestsByCategory('performance');
 testRunner.runTestsByCategory('ui');
 ```
+
+### 3. Using the Visual Test Suite Interface
+
+The visual test suite (`test-suite.html`) provides an intuitive interface for test selection:
+
+1. **Select Test Groups**: Use the checkboxes to choose which test categories to run:
+   - Simulation Core Tests
+   - UI Component Tests  
+   - Interaction Tests
+   - Performance Tests
+   - Visual Effects Tests
+   - Integration Tests
+   - System Tests
+
+2. **Select/Deselect All**: Use the top checkbox to quickly select or deselect all test groups at once. The checkbox shows:
+   - **Checked**: All test groups are selected
+   - **Unchecked**: No test groups are selected  
+   - **Indeterminate (orange with dash)**: Some test groups are selected
+
+3. **Run Selected Tests**: Click the "Run Selected Tests" button to execute only the chosen test categories
+
+4. **Additional Actions**: Use the action buttons to:
+   - Clear previous results
+   - Export test logs
+   - Copy logs to clipboard
+   - View warning details
 
 ## Detailed Test Categories
 

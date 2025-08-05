@@ -206,6 +206,114 @@
             color: white;
         }
         
+        /* Test selection styles */
+        .test-selection {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-selection h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .select-all-container {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .test-group-checkboxes {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            position: relative;
+            padding-left: 30px;
+            user-select: none;
+        }
+        
+        .checkbox-label input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 16px;
+            width: 16px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 3px;
+        }
+        
+        .checkbox-label:hover input ~ .checkmark {
+            background-color: #f0f0f0;
+        }
+        
+        .checkbox-label input:checked ~ .checkmark {
+            background-color: #2196F3;
+            border-color: #2196F3;
+        }
+        
+        .checkbox-label input:indeterminate ~ .checkmark {
+            background-color: #FF9800;
+            border-color: #FF9800;
+        }
+        
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+        
+        .checkbox-label input:checked ~ .checkmark:after {
+            display: block;
+        }
+        
+        .checkbox-label input:indeterminate ~ .checkmark:after {
+            display: block;
+            left: 3px;
+            top: 6px;
+            width: 8px;
+            height: 2px;
+            border: solid white;
+            border-width: 0 0 2px 0;
+            transform: none;
+        }
+        
+        .checkbox-label .checkmark:after {
+            left: 5px;
+            top: 1px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
         .canvas-container {
             margin: 20px 0;
             text-align: center;
@@ -299,18 +407,65 @@
         </div>
         
         <div class="controls">
-            <button class="btn btn-primary" onclick="runAllTests()">Run All Tests</button>
-            <button class="btn btn-success" onclick="runSimulationCoreTests()">Run Simulation Core</button>
-            <button class="btn btn-success" onclick="runSimulationFeaturesTests()">Run Simulation Features</button>
-            <button class="btn btn-warning" onclick="runUITests()">Run UI Tests</button>
-            <button class="btn btn-warning" onclick="runInteractionTests()">Run Interaction Tests</button>
-            <button class="btn btn-danger" onclick="runPerformanceTests()">Run Performance Tests</button>
-            <button class="btn btn-info" onclick="runVisualTests()">Run Visual Tests</button>
-            <button class="btn btn-secondary" onclick="runSystemTests()">Run System Tests</button>
-            <button class="btn btn-primary" onclick="clearResults()">Clear Results</button>
-            <button class="btn btn-secondary" onclick="exportLog()">Export Log</button>
-            <button class="btn btn-info" onclick="copyLog()">Copy Log</button>
-            <button class="btn btn-warning" onclick="showWarningDetails()">View Warnings</button>
+            <div class="test-selection">
+                <h3>Select Test Groups</h3>
+                <div class="select-all-container">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="select-all-checkbox" onchange="toggleAllTestGroups()">
+                        <span class="checkmark"></span>
+                        <strong>Select/Deselect All</strong>
+                    </label>
+                </div>
+                <div class="test-group-checkboxes">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="simulation-core-checkbox" value="simulation-core" checked>
+                        <span class="checkmark"></span>
+                        Simulation Core Tests
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="simulation-features-checkbox" value="simulation-features" checked>
+                        <span class="checkmark"></span>
+                        Simulation Features Tests
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="ui-checkbox" value="ui" checked>
+                        <span class="checkmark"></span>
+                        User Interface Tests
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="interaction-checkbox" value="interaction" checked>
+                        <span class="checkmark"></span>
+                        User Interaction Tests
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="performance-checkbox" value="performance" checked>
+                        <span class="checkmark"></span>
+                        Performance Tests
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="visual-checkbox" value="visual" checked>
+                        <span class="checkmark"></span>
+                        Visual Effects Tests
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="integration-checkbox" value="integration" checked>
+                        <span class="checkmark"></span>
+                        Integration Tests
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="system-checkbox" value="system" checked>
+                        <span class="checkmark"></span>
+                        System Tests
+                    </label>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="runSelectedTests()">Run Selected Tests</button>
+                <button class="btn btn-primary" onclick="clearResults()">Clear Results</button>
+                <button class="btn btn-secondary" onclick="exportLog()">Export Log</button>
+                <button class="btn btn-info" onclick="copyLog()">Copy Log</button>
+                <button class="btn btn-warning" onclick="showWarningDetails()">View Warnings</button>
+            </div>
         </div>
         
         <div class="test-log">
@@ -779,6 +934,40 @@
                 }
                 
                 this.logTest('TEST SUITE', 'pass', `${category} tests completed. ${this.results.passed} passed, ${this.results.failed} failed`);
+            }
+            
+            // Run selected tests
+            async runSelectedTests(categories) {
+                this.clearResults();
+                const categoryNames = categories.join(', ');
+                this.logTest('TEST SUITE', 'running', `Starting selected tests: ${categoryNames}`);
+                
+                // Validate test environment first
+                const validation = this.validateTestEnvironment();
+                if (!validation.valid) {
+                    this.logTest('TEST SUITE', 'fail', `Test environment validation failed: ${validation.issues.join(', ')}`);
+                    return;
+                }
+                
+                const selectedTests = this.tests.filter(test => categories.includes(test.category));
+                
+                for (const test of selectedTests) {
+                    await this.runTest(test);
+                    // Small delay to prevent overwhelming the UI
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // Check for warnings after all tests (exclude fade warnings and canvas dimension warnings as they're expected in test environment)
+                const criticalWarnings = this.consoleWarnings.filter(warning => 
+                    !warning.message.includes('getCellFadeFactor called without isActive parameter') &&
+                    !warning.message.includes('Canvas dimensions are invalid')
+                );
+                
+                if (criticalWarnings.length > 0) {
+                    this.logTest('TEST SUITE', 'fail', `Critical warnings detected during test run: ${criticalWarnings.length} issues`);
+                } else {
+                    this.logTest('TEST SUITE', 'pass', `Selected tests completed. ${this.results.passed} passed, ${this.results.failed} failed`);
+                }
             }
 
             // Get warning statistics
@@ -1930,14 +2119,29 @@
         }, 'system');
         
         // Global functions for button clicks
-        window.runAllTests = () => testSuite.runAllTests();
-        window.runSimulationCoreTests = () => testSuite.runTestsByCategory('simulation-core');
-        window.runSimulationFeaturesTests = () => testSuite.runTestsByCategory('simulation-features');
-        window.runUITests = () => testSuite.runTestsByCategory('ui');
-        window.runInteractionTests = () => testSuite.runTestsByCategory('interaction');
-        window.runPerformanceTests = () => testSuite.runTestsByCategory('performance');
-        window.runVisualTests = () => testSuite.runTestsByCategory('visual');
-        window.runSystemTests = () => testSuite.runTestsByCategory('system');
+        window.runSelectedTests = () => {
+            const selectedCategories = getSelectedTestCategories();
+            if (selectedCategories.length === 0) {
+                alert('Please select at least one test group to run.');
+                return;
+            }
+            testSuite.runSelectedTests(selectedCategories);
+        };
+        
+        window.toggleAllTestGroups = () => {
+            const selectAllCheckbox = document.getElementById('select-all-checkbox');
+            const testGroupCheckboxes = document.querySelectorAll('.test-group-checkboxes input[type="checkbox"]');
+            
+            testGroupCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        };
+        
+        window.getSelectedTestCategories = () => {
+            const checkboxes = document.querySelectorAll('.test-group-checkboxes input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(checkbox => checkbox.value);
+        };
+        
         window.clearResults = () => testSuite.clearResults();
         
         // Export log function
@@ -2053,6 +2257,25 @@
         // Auto-run tests when page loads
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Test suite loaded with', testSuite.tests.length, 'tests');
+            
+            // Add event listeners to update "Select All" checkbox state
+            const testGroupCheckboxes = document.querySelectorAll('.test-group-checkboxes input[type="checkbox"]');
+            const selectAllCheckbox = document.getElementById('select-all-checkbox');
+            
+            testGroupCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const allChecked = Array.from(testGroupCheckboxes).every(cb => cb.checked);
+                    const anyChecked = Array.from(testGroupCheckboxes).some(cb => cb.checked);
+                    
+                    // Update "Select All" checkbox state
+                    selectAllCheckbox.checked = allChecked;
+                    selectAllCheckbox.indeterminate = anyChecked && !allChecked;
+                });
+            });
+            
+            // Initialize "Select All" checkbox state
+            const allChecked = Array.from(testGroupCheckboxes).every(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
         });
     </script>
 </body>
