@@ -1,0 +1,43 @@
+# Modular and Reusable Coding Practices
+
+## Core Principles
+- Design functions and modules to be reusable across different pattern types
+- Separate concerns: keep pattern logic, rendering, and configuration distinct
+- Create composable building blocks that can be combined in various ways
+- Follow the Single Responsibility Principle for all modules
+
+## Function Design
+- Write pure functions where possible - avoid side effects
+- Make functions configurable through parameters rather than hardcoded values
+- Return structured data that can be easily consumed by other modules
+- Document function interfaces clearly with JSDoc
+
+## Module Organisation
+- Group related functionality into logical modules
+- Export only what's necessary for external consumption
+- Use consistent naming conventions across modules
+- Keep modules focused and cohesive
+
+## Code Reuse Strategy
+- Identify common patterns and extract them into shared utilities
+- Create abstraction layers for complex operations
+- Build a library of reusable components for pattern generation
+- Avoid duplicating logic - refactor common code into shared functions
+
+## Configuration and Customisation
+- Use configuration objects for pattern parameters
+- Make pattern generators accept customisation options
+- Design interfaces that allow easy extension and modification
+- Provide sensible defaults while allowing full customisation
+
+## Testing Modularity
+- Test individual modules in isolation
+- Mock dependencies to test module boundaries
+- Ensure modules can be tested independently
+- Write integration tests for module interactions
+
+Remember: Every piece of code should be designed with reuse in mind, making the pattern generator more flexible and maintainable.
+description: Emphasises modular and reusable coding practices for the algorithmic pattern generator
+globs: ["**/*.js", "**/*.html", "**/*.css"]
+alwaysApply: true
+---
