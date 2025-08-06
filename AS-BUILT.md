@@ -42,9 +42,10 @@ The main application controller that orchestrates all components:
 **Key Features:**
 - Simulation lifecycle management
 - UI state management
-- Event handling and keyboard shortcuts
+- Event handling and keyboard shortcuts using EventHandlerFactory
 - Performance monitoring
 - Modal management
+- Automatic event handler registration and cleanup
 
 **Core Methods:**
 ```javascript
@@ -55,6 +56,7 @@ pauseSimulation()         // Pause current simulation
 toggleImmersiveMode()     // Toggle immersive mode
 handleCanvasClick(e)      // Handle canvas interactions
 updateUI()               // Update UI elements
+setupEventListeners()    // Setup event listeners using EventHandlerFactory
 ```
 
 #### UI Component Library
@@ -290,6 +292,77 @@ getElement(selector) {
 }
 ```
 
+#### EventHandlerFactory
+Factory pattern for event handler creation and registration that eliminates code duplication:
+
+**Key Features:**
+- **Template-based handler creation** with predefined handler templates for common patterns
+- **Simulation context injection** for creating simulation-specific handlers with proper binding
+- **Automatic handler registration** with the EventFramework for memory management
+- **Batch registration support** for efficient event setup
+- **Custom handler creation** with context injection for extensibility
+- **Comprehensive cleanup** to prevent memory leaks
+
+**Handler Templates:**
+```javascript
+// Slider handler templates
+this.handlerTemplates.set('slider', {
+    input: this.createSliderInputHandler.bind(this),
+    change: this.createSliderChangeHandler.bind(this)
+});
+
+// Button handler templates
+this.handlerTemplates.set('button', {
+    click: this.createButtonClickHandler.bind(this)
+});
+
+// Simulation-specific handler templates
+this.handlerTemplates.set('simulation', {
+    speedChange: this.createSpeedChangeHandler.bind(this),
+    randomPattern: this.createRandomPatternHandler.bind(this),
+    showLearnModal: this.createShowLearnModalHandler.bind(this),
+    addAnt: this.createAddAntHandler.bind(this),
+    termiteCountChange: this.createTermiteCountChangeHandler.bind(this),
+    brightnessChange: this.createBrightnessChangeHandler.bind(this),
+    likelihoodChange: this.createLikelihoodChangeHandler.bind(this)
+});
+```
+
+**Core Methods:**
+```javascript
+createSimulationHandlers(simType, app)     // Create simulation-specific handlers with context
+setupSlider(config, handlers)              // Setup slider with factory-generated handlers
+setupButton(config, handlers)              // Setup button with factory-generated handlers
+setupControls(simType, handlers)           // Setup all controls for a simulation
+registerAllSimulationHandlers(app)         // Register handlers for all simulations
+createCustomHandler(handlerType, context, handlerFunction)  // Create custom handlers with context
+createBatchRegistration(registrations)     // Create batch event registration
+cleanup()                                  // Cleanup all registered handlers
+getRegisteredHandlers(simType)             // Get registered handlers for simulation
+hasRegisteredHandlers(simType)             // Check if handlers are registered
+```
+
+**Performance Optimisations:**
+- **Debounced slider change handlers** (16ms) to prevent excessive updates
+- **Immediate visual feedback** for slider input events
+- **Conditional routing** based on control ID patterns
+- **Memory-efficient handler storage** with Map-based registration tracking
+- **Automatic cleanup** to prevent memory leaks
+
+**Integration with ControlManager:**
+```javascript
+// Register handlers for a specific simulation type using EventHandlerFactory
+registerSimulationHandlers(simType, app) {
+    const handlers = this.eventHandlerFactory.createSimulationHandlers(simType, app);
+    this.eventHandlerFactory.setupControls(simType, handlers);
+}
+
+// Register all simulation handlers using EventHandlerFactory
+registerAllHandlers(app) {
+    this.eventHandlerFactory.registerAllSimulationHandlers(app);
+}
+```
+
 #### Dynamic Speed Slider
 Unified speed control system that consolidates three separate speed sliders:
 
@@ -346,13 +419,14 @@ cleanup()                           // Clean up event listeners
 - **Comprehensive testing** including initial visibility after app load
 
 #### Control Manager
-Dynamic UI control management with CSS-based visibility:
+Dynamic UI control management with CSS-based visibility and EventHandlerFactory integration:
 
 **Features:**
 - Simulation-specific control visibility using ControlVisibilityManager
 - Dynamic control value updates
-- Event handler registration per simulation
+- Event handler registration per simulation using EventHandlerFactory
 - State preservation during simulation switches
+- Automatic handler cleanup and memory management
 
 **Integration with ControlVisibilityManager:**
 ```javascript
@@ -362,6 +436,7 @@ constructor(eventFramework) {
     this.simulationHandlers = new Map();
     this.visibilityManager = new ControlVisibilityManager();
     this.visibilityManager.init();
+    this.eventHandlerFactory = new EventHandlerFactory(eventFramework);
 }
 
 showControls(simType) {
@@ -377,6 +452,26 @@ hideAllControls() {
     // Use the new CSS-based visibility manager
     this.visibilityManager.hideAllControls();
     this.activeControls = null;
+}
+```
+
+**Integration with EventHandlerFactory:**
+```javascript
+// Register handlers for a specific simulation type using EventHandlerFactory
+registerSimulationHandlers(simType, app) {
+    const handlers = this.eventHandlerFactory.createSimulationHandlers(simType, app);
+    this.eventHandlerFactory.setupControls(simType, handlers);
+}
+
+// Register all simulation handlers using EventHandlerFactory
+registerAllHandlers(app) {
+    this.eventHandlerFactory.registerAllSimulationHandlers(app);
+}
+
+// Cleanup with EventHandlerFactory
+cleanup() {
+    this.eventHandlerFactory.cleanup();
+    this.visibilityManager.cleanup();
 }
 ```
 

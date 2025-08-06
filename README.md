@@ -23,6 +23,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **Responsive Design** - Works on desktop, tablet, and mobile devices
 - **Comprehensive Testing** - Visual and programmatic test suites for quality assurance
 - **CSS-Based Control Visibility** - Declarative control visibility management using CSS classes and data attributes
+- **EventHandlerFactory** - Template-based event handler creation and registration system
 
 ## Quick Start
 
