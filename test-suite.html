@@ -754,28 +754,16 @@
     <button id="dynamic-fill-btn" style="display: none;">Fill</button>
     <button id="add-ant-btn" style="display: none;">Add Ant</button>
     
-    <!-- Modal elements needed for tests -->
-    <div id="conway-modal" class="modal" style="display: none;">
+    <!-- Dynamic modal element needed for tests -->
+    <div id="dynamic-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2>Conway's Game of Life</h2>
-            <p>Educational content about Conway's Game of Life.</p>
-        </div>
-    </div>
-    
-    <div id="termite-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2>Termite Algorithm</h2>
-            <p>Educational content about the Termite Algorithm.</p>
-        </div>
-    </div>
-    
-    <div id="langton-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2>Langton's Ant</h2>
-            <p>Educational content about Langton's Ant.</p>
+            <div class="modal-header">
+                <h2 data-modal-title>Simulation Information</h2>
+                <button class="modal-close" id="dynamic-modal-close">&times;</button>
+            </div>
+            <div class="modal-body" data-modal-content>
+                <!-- Content will be dynamically injected here -->
+            </div>
         </div>
     </div>
     
@@ -2063,69 +2051,422 @@
             }
         }, 'ui');
         
-        testSuite.addTest('Learn Modal Content Verification', async () => {
+        testSuite.addTest('Modal Template Manager - Content Templates', async () => {
             try {
-                // Test the modal content directly without full app initialization
+                const modalTemplateManager = new ModalTemplateManager();
+                
+                // Test available simulations
+                const availableSims = modalTemplateManager.getAvailableSimulations();
+                const hasAllSims = availableSims.includes('conway') && 
+                                  availableSims.includes('termite') && 
+                                  availableSims.includes('langton');
+                
+                // Test template existence
+                const hasConwayTemplate = modalTemplateManager.hasTemplate('conway');
+                const hasTermiteTemplate = modalTemplateManager.hasTemplate('termite');
+                const hasLangtonTemplate = modalTemplateManager.hasTemplate('langton');
+                const hasInvalidTemplate = modalTemplateManager.hasTemplate('invalid');
+                
+                // Test content creation
+                const conwayContent = modalTemplateManager.createModalContent('conway');
+                const termiteContent = modalTemplateManager.createModalContent('termite');
+                const langtonContent = modalTemplateManager.createModalContent('langton');
+                const invalidContent = modalTemplateManager.createModalContent('invalid');
+                
+                const allTemplatesExist = hasConwayTemplate && hasTermiteTemplate && hasLangtonTemplate;
+                const invalidTemplateHandled = !hasInvalidTemplate && !invalidContent;
+                const allContentCreated = conwayContent && termiteContent && langtonContent;
+                
+                // Clean up
+                modalTemplateManager.cleanup();
+                
+                return {
+                    passed: hasAllSims && allTemplatesExist && invalidTemplateHandled && allContentCreated,
+                    details: 'Modal template manager content templates working correctly'
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in modal template manager test: ${error.message}`
+                };
+            }
+        }, 'ui');
+        
+        testSuite.addTest('Modal Template Manager - HTML Generation', async () => {
+            try {
+                const modalTemplateManager = new ModalTemplateManager();
+                
+                // Test HTML generation
+                const conwayHTML = modalTemplateManager.generateModalHTML('conway');
+                const termiteHTML = modalTemplateManager.generateModalHTML('termite');
+                const langtonHTML = modalTemplateManager.generateModalHTML('langton');
+                
+                // Verify HTML structure
+                const hasConwayStructure = conwayHTML && conwayHTML.includes('id="conway-modal"') && 
+                                         conwayHTML.includes('class="modal"');
+                const hasTermiteStructure = termiteHTML && termiteHTML.includes('id="termite-modal"') && 
+                                          termiteHTML.includes('class="modal"');
+                const hasLangtonStructure = langtonHTML && langtonHTML.includes('id="langton-modal"') && 
+                                          langtonHTML.includes('class="modal"');
+                
+                const allHTMLGenerated = hasConwayStructure && hasTermiteStructure && hasLangtonStructure;
+                
+                // Clean up
+                modalTemplateManager.cleanup();
+                
+                return {
+                    passed: allHTMLGenerated,
+                    details: 'Modal template manager HTML generation working correctly'
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in HTML generation test: ${error.message}`
+                };
+            }
+        }, 'ui');
+        
+        testSuite.addTest('Modal Template Manager - Content Injection', async () => {
+            try {
+                const modalTemplateManager = new ModalTemplateManager();
+                
+                // Create a test modal element
+                const testModal = document.createElement('div');
+                testModal.className = 'modal';
+                testModal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 data-modal-title>Test Title</h2>
+                        </div>
+                        <div class="modal-body" data-modal-content>
+                            <p>Original content</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Test content injection for Conway
+                const conwayInjection = modalTemplateManager.injectModalContent('conway', testModal);
+                const conwayTitle = testModal.querySelector('h2')?.textContent;
+                const conwayBody = testModal.querySelector('.modal-body');
+                const conwayHasNestedModal = conwayBody ? conwayBody.querySelector('.modal-content') !== null : false;
+                const conwayContentValid = conwayBody && !conwayHasNestedModal && conwayBody.innerHTML.trim() !== '';
+                
+                // Test content injection for Termite
+                const termiteInjection = modalTemplateManager.injectModalContent('termite', testModal);
+                const termiteTitle = testModal.querySelector('h2')?.textContent;
+                const termiteBody = testModal.querySelector('.modal-body');
+                const termiteHasNestedModal = termiteBody ? termiteBody.querySelector('.modal-content') !== null : false;
+                const termiteContentValid = termiteBody && !termiteHasNestedModal && termiteBody.innerHTML.trim() !== '';
+                
+                // Test content injection for Langton
+                const langtonInjection = modalTemplateManager.injectModalContent('langton', testModal);
+                const langtonTitle = testModal.querySelector('h2')?.textContent;
+                const langtonBody = testModal.querySelector('.modal-body');
+                const langtonHasNestedModal = langtonBody ? langtonBody.querySelector('.modal-content') !== null : false;
+                const langtonContentValid = langtonBody && !langtonHasNestedModal && langtonBody.innerHTML.trim() !== '';
+                
+                // Verify injection results
+                const allInjectionsSuccessful = conwayInjection && termiteInjection && langtonInjection;
+                const allContentValid = conwayContentValid && termiteContentValid && langtonContentValid;
+                const titlesCorrect = conwayTitle === "Conway's Game of Life" && 
+                                    termiteTitle === "Termite Algorithm" && 
+                                    langtonTitle === "Langton's Ant";
+                
+                // Test with invalid simulation type
+                const invalidInjection = modalTemplateManager.injectModalContent('invalid', testModal);
+                const invalidHandledCorrectly = !invalidInjection;
+                
+                // Clean up
+                modalTemplateManager.cleanup();
+                
+                return {
+                    passed: allInjectionsSuccessful && invalidHandledCorrectly && allContentValid && titlesCorrect,
+                    details: `Injection: ${allInjectionsSuccessful ? '✓' : '✗'}, Content: ${allContentValid ? '✓' : '✗'}, Titles: ${titlesCorrect ? '✓' : '✗'}, Invalid: ${invalidHandledCorrectly ? '✓' : '✗'}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in content injection test: ${error.message}`
+                };
+            }
+        }, 'ui');
+        
+        testSuite.addTest('Dynamic Modal System - Integration', async () => {
+            try {
+                // Test the complete dynamic modal system
                 const modalManager = new ModalManager();
                 
-                // Register the modals
-                modalManager.register('conway-modal');
-                modalManager.register('termite-modal');
-                modalManager.register('langton-modal');
+                // Register dynamic modal
+                const conwayRegistered = modalManager.registerDynamicModal('conway');
+                const termiteRegistered = modalManager.registerDynamicModal('termite');
+                const langtonRegistered = modalManager.registerDynamicModal('langton');
+                const invalidRegistered = modalManager.registerDynamicModal('invalid');
                 
-                // Test Conway modal content
-                modalManager.show('conway-modal');
+                // Test modal showing with content injection
+                modalManager.show(modalManager.dynamicModalId, 'conway');
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
-                const conwayModal = document.getElementById('conway-modal');
-                const conwayModalVisible = conwayModal && conwayModal.classList.contains('show');
+                const conwayModal = document.getElementById('dynamic-modal');
+                const conwayVisible = conwayModal && conwayModal.classList.contains('show');
                 const conwayTitle = conwayModal ? conwayModal.querySelector('h2')?.textContent : '';
-                const conwayCorrect = conwayTitle && conwayTitle.includes('Conway');
                 
-                // Close Conway modal
-                modalManager.hide('conway-modal');
+                // Close modal
+                modalManager.hide(modalManager.dynamicModalId);
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
-                // Test Termite modal content
-                modalManager.show('termite-modal');
+                // Test with different simulation
+                modalManager.show(modalManager.dynamicModalId, 'termite');
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
-                const termiteModal = document.getElementById('termite-modal');
-                const termiteModalVisible = termiteModal && termiteModal.classList.contains('show');
+                const termiteModal = document.getElementById('dynamic-modal');
+                const termiteVisible = termiteModal && termiteModal.classList.contains('show');
                 const termiteTitle = termiteModal ? termiteModal.querySelector('h2')?.textContent : '';
-                const termiteCorrect = termiteTitle && termiteTitle.includes('Termite');
                 
-                // Close Termite modal
-                modalManager.hide('termite-modal');
+                // Close modal
+                modalManager.hide(modalManager.dynamicModalId);
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
-                // Test Langton modal content
-                modalManager.show('langton-modal');
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                const langtonModal = document.getElementById('langton-modal');
-                const langtonModalVisible = langtonModal && langtonModal.classList.contains('show');
-                const langtonTitle = langtonModal ? langtonModal.querySelector('h2')?.textContent : '';
-                const langtonCorrect = langtonTitle && langtonTitle.includes('Langton');
-                
-                // Close Langton modal
-                modalManager.hide('langton-modal');
-                
-                // Check all results
-                const allModalsVisible = conwayModalVisible && termiteModalVisible && langtonModalVisible;
-                const allTitlesCorrect = conwayCorrect && termiteCorrect && langtonCorrect;
+                const registrationWorking = conwayRegistered && termiteRegistered && langtonRegistered && !invalidRegistered;
+                const contentInjectionWorking = conwayVisible && termiteVisible && 
+                                              conwayTitle === "Conway's Game of Life" && 
+                                              termiteTitle === "Termite Algorithm";
                 
                 // Clean up
                 modalManager.cleanup();
                 
                 return {
-                    passed: allModalsVisible && allTitlesCorrect,
-                    details: `Conway: ${conwayCorrect ? '✓' : '✗'}, Termite: ${termiteCorrect ? '✓' : '✗'}, Langton: ${langtonCorrect ? '✓' : '✗'}`
+                    passed: registrationWorking && contentInjectionWorking,
+                    details: 'Dynamic modal system integration working correctly'
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in dynamic modal integration test: ${error.message}`
+                };
+            }
+        }, 'ui');
+        
+        testSuite.addTest('Learn Modal Content Verification', async () => {
+            try {
+                // Test the modal content directly without full app initialization
+                const modalManager = new ModalManager();
+                
+                // Register the dynamic modal
+                modalManager.register('dynamic-modal');
+                
+                // Test Conway modal content
+                modalManager.show('dynamic-modal', 'conway');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const conwayModal = document.getElementById('dynamic-modal');
+                const conwayModalVisible = conwayModal && conwayModal.classList.contains('show');
+                const conwayTitle = conwayModal ? conwayModal.querySelector('h2')?.textContent : '';
+                const conwayCorrect = conwayTitle && conwayTitle.includes('Conway');
+                
+                // Check for nested modal structure (this was the bug)
+                const conwayBody = conwayModal ? conwayModal.querySelector('.modal-body') : null;
+                const conwayHasNestedModal = conwayBody ? conwayBody.querySelector('.modal-content') !== null : false;
+                const conwayContentValid = conwayBody && !conwayHasNestedModal && conwayBody.innerHTML.trim() !== '';
+                
+                // Close Conway modal
+                modalManager.hide('dynamic-modal');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Test Termite modal content
+                modalManager.show('dynamic-modal', 'termite');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const termiteModal = document.getElementById('dynamic-modal');
+                const termiteModalVisible = termiteModal && termiteModal.classList.contains('show');
+                const termiteTitle = termiteModal ? termiteModal.querySelector('h2')?.textContent : '';
+                const termiteCorrect = termiteTitle && termiteTitle.includes('Termite');
+                
+                // Check for nested modal structure
+                const termiteBody = termiteModal ? termiteModal.querySelector('.modal-body') : null;
+                const termiteHasNestedModal = termiteBody ? termiteBody.querySelector('.modal-content') !== null : false;
+                const termiteContentValid = termiteBody && !termiteHasNestedModal && termiteBody.innerHTML.trim() !== '';
+                
+                // Close Termite modal
+                modalManager.hide('dynamic-modal');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Test Langton modal content
+                modalManager.show('dynamic-modal', 'langton');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const langtonModal = document.getElementById('dynamic-modal');
+                const langtonModalVisible = langtonModal && langtonModal.classList.contains('show');
+                const langtonTitle = langtonModal ? langtonModal.querySelector('h2')?.textContent : '';
+                const langtonCorrect = langtonTitle && langtonTitle.includes('Langton');
+                
+                // Check for nested modal structure
+                const langtonBody = langtonModal ? langtonModal.querySelector('.modal-body') : null;
+                const langtonHasNestedModal = langtonBody ? langtonBody.querySelector('.modal-content') !== null : false;
+                const langtonContentValid = langtonBody && !langtonHasNestedModal && langtonBody.innerHTML.trim() !== '';
+                
+                // Close Langton modal
+                modalManager.hide('dynamic-modal');
+                
+                // Check all results
+                const allModalsVisible = conwayModalVisible && termiteModalVisible && langtonModalVisible;
+                const allTitlesCorrect = conwayCorrect && termiteCorrect && langtonCorrect;
+                const allContentValid = conwayContentValid && termiteContentValid && langtonContentValid;
+                
+                // Clean up
+                modalManager.cleanup();
+                
+                return {
+                    passed: allModalsVisible && allTitlesCorrect && allContentValid,
+                    details: `Conway: ${conwayCorrect ? '✓' : '✗'} (content: ${conwayContentValid ? '✓' : '✗'}), Termite: ${termiteCorrect ? '✓' : '✗'} (content: ${termiteContentValid ? '✓' : '✗'}), Langton: ${langtonCorrect ? '✓' : '✗'} (content: ${langtonContentValid ? '✓' : '✗'})`
                 };
             } catch (error) {
                 return {
                     passed: false,
                     details: `Error in modal verification: ${error.message}`
+                };
+            }
+        }, 'ui');
+        
+        testSuite.addTest('Learn Modal Shows Correct Content for Current Simulation', async () => {
+            try {
+                // Test that the Learn modal shows the correct content based on current simulation type
+                const app = new AlgorithmicPatternGenerator();
+                app.init();
+                
+                // Test Conway simulation
+                app.switchSimulation('conway');
+                app.showLearnModal();
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const conwayModal = document.getElementById('dynamic-modal');
+                const conwayTitle = conwayModal ? conwayModal.querySelector('h2')?.textContent : '';
+                const conwayCorrect = conwayTitle && conwayTitle.includes('Conway');
+                
+                // Close modal
+                app.hideLearnModal();
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Test Termite simulation
+                app.switchSimulation('termite');
+                app.showLearnModal();
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const termiteModal = document.getElementById('dynamic-modal');
+                const termiteTitle = termiteModal ? termiteModal.querySelector('h2')?.textContent : '';
+                const termiteCorrect = termiteTitle && termiteTitle.includes('Termite');
+                
+                // Close modal
+                app.hideLearnModal();
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Test Langton simulation
+                app.switchSimulation('langton');
+                app.showLearnModal();
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const langtonModal = document.getElementById('dynamic-modal');
+                const langtonTitle = langtonModal ? langtonModal.querySelector('h2')?.textContent : '';
+                const langtonCorrect = langtonTitle && langtonTitle.includes('Langton');
+                
+                // Close modal
+                app.hideLearnModal();
+                
+                // Check all results
+                const allCorrect = conwayCorrect && termiteCorrect && langtonCorrect;
+                
+                // Clean up
+                app.cleanup();
+                
+                return {
+                    passed: allCorrect,
+                    details: `Conway: ${conwayCorrect ? '✓' : '✗'}, Termite: ${termiteCorrect ? '✓' : '✗'}, Langton: ${langtonCorrect ? '✓' : '✗'}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in Learn modal simulation test: ${error.message}`
+                };
+            }
+        }, 'ui');
+        
+        testSuite.addTest('Modal Scroll Position Management', async () => {
+            try {
+                // Test the modal scroll position management
+                const modalManager = new ModalManager();
+                
+                // Register the dynamic modal
+                modalManager.register('dynamic-modal');
+                
+                // Show Conway modal and scroll down
+                modalManager.show('dynamic-modal', 'conway');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const conwayModal = document.getElementById('dynamic-modal');
+                const conwayBody = conwayModal ? conwayModal.querySelector('.modal-body') : null;
+                
+                if (!conwayBody) {
+                    modalManager.cleanup();
+                    return {
+                        passed: false,
+                        details: 'Modal body not found'
+                    };
+                }
+                
+                // Scroll down in Conway modal
+                conwayBody.scrollTop = 100;
+                const conwayScrollPosition = conwayBody.scrollTop;
+                
+                // Switch to Termite modal and scroll down
+                modalManager.show('dynamic-modal', 'termite');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const termiteModal = document.getElementById('dynamic-modal');
+                const termiteBody = termiteModal ? termiteModal.querySelector('.modal-body') : null;
+                
+                if (!termiteBody) {
+                    modalManager.cleanup();
+                    return {
+                        passed: false,
+                        details: 'Termite modal body not found'
+                    };
+                }
+                
+                // Scroll down in Termite modal
+                termiteBody.scrollTop = 200;
+                const termiteScrollPosition = termiteBody.scrollTop;
+                
+                // Switch back to Conway modal - should restore scroll position
+                modalManager.show('dynamic-modal', 'conway');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const restoredConwayBody = document.getElementById('dynamic-modal')?.querySelector('.modal-body');
+                const conwayScrollRestored = restoredConwayBody ? restoredConwayBody.scrollTop === conwayScrollPosition : false;
+                
+                // Switch back to Termite modal - should restore scroll position
+                modalManager.show('dynamic-modal', 'termite');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const restoredTermiteBody = document.getElementById('dynamic-modal')?.querySelector('.modal-body');
+                const termiteScrollRestored = restoredTermiteBody ? restoredTermiteBody.scrollTop === termiteScrollPosition : false;
+                
+                // Test initial scroll position for new simulation
+                modalManager.show('dynamic-modal', 'langton');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const langtonBody = document.getElementById('dynamic-modal')?.querySelector('.modal-body');
+                const langtonInitialScroll = langtonBody ? langtonBody.scrollTop === 0 : false;
+                
+                // Clean up
+                modalManager.cleanup();
+                
+                return {
+                    passed: conwayScrollRestored && termiteScrollRestored && langtonInitialScroll,
+                    details: `Conway scroll restored: ${conwayScrollRestored ? '✓' : '✗'}, Termite scroll restored: ${termiteScrollRestored ? '✓' : '✗'}, Langton initial scroll: ${langtonInitialScroll ? '✓' : '✗'}`
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    details: `Error in scroll position test: ${error.message}`
                 };
             }
         }, 'ui');

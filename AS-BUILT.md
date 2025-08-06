@@ -487,13 +487,157 @@ Global keyboard shortcut management:
 - `A`: Add ant (Langton's Ant, mouse position)
 
 #### Modal Manager
-Advanced modal system with performance optimisations:
+Advanced modal system with performance optimisations and dynamic content management:
 
 **Features:**
 - Render queue to prevent layout thrashing
 - RequestAnimationFrame integration
 - Memory management and cleanup
 - Show/hide state tracking
+- Dynamic modal content injection using ModalTemplateManager
+- Simulation-specific scroll position management
+- Single dynamic modal replacing multiple static modals
+
+**Integration with ModalTemplateManager:**
+```javascript
+constructor() {
+    this.modals = new Map();
+    this.activeModal = null;
+    this.elementCache = PerformanceOptimizer.createElementCache();
+    this.renderQueue = new Set();
+    this.isRendering = false;
+    this.modalTemplateManager = new ModalTemplateManager();
+    this.dynamicModalId = 'dynamic-modal';
+    this.currentSimType = null;
+    this.scrollPositions = new Map(); // Track scroll positions for each simulation type
+    this.init();
+}
+
+// Register dynamic modal for a specific simulation type
+registerDynamicModal(simType) {
+    if (!this.modalTemplateManager.hasTemplate(simType)) {
+        console.warn(`No template found for simulation type: ${simType}`);
+        return false;
+    }
+    
+    // Register the dynamic modal if not already registered
+    if (!this.modals.has(this.dynamicModalId)) {
+        this.register(this.dynamicModalId);
+    }
+    
+    return true;
+}
+
+// Show modal with dynamic content injection
+show(modalId, simType = null) {
+    const modalConfig = this.modals.get(modalId);
+    if (!modalConfig) {
+        console.warn(`Modal '${modalId}' not registered`);
+        return;
+    }
+
+    // If showing the dynamic modal, handle content injection
+    if (modalId === this.dynamicModalId && simType) {
+        // Save scroll position of previous modal if it was the dynamic modal
+        if (this.activeModal === this.dynamicModalId && this.currentSimType) {
+            this.saveScrollPosition(this.currentSimType);
+        }
+
+        // Update current simulation type
+        this.currentSimType = simType;
+
+        // Inject dynamic content
+        this.injectDynamicContent(simType);
+    }
+
+    // Queue modal for showing
+    this.queueModalRender(modalConfig, true);
+    this.activeModal = modalId;
+
+    // Trigger custom show callback
+    if (modalConfig.onShow) {
+        modalConfig.onShow();
+    }
+}
+```
+
+#### ModalTemplateManager
+Template-based modal content management system:
+
+**Features:**
+- Content templates for all simulations (Conway, Termite, Langton)
+- Dynamic content injection with simulation-specific titles and content
+- Template management with addContentTemplate, getAvailableSimulations, and hasTemplate methods
+- HTML generation for modal structures
+- Content injection with robust element selection
+- Extensibility for adding new simulations and modal content templates
+
+**Core Methods:**
+```javascript
+constructor() {
+    this.modalTemplates = new Map();
+    this.contentTemplates = new Map();
+    this.init();
+}
+
+setupContentTemplates() {
+    // Conway's Game of Life content template
+    this.contentTemplates.set('conway', {
+        title: "Conway's Game of Life",
+        content: `...` // Detailed content about Conway's Game of Life
+    });
+    
+    // Termite Algorithm content template
+    this.contentTemplates.set('termite', {
+        title: "Termite Algorithm", 
+        content: `...` // Detailed content about Termite Algorithm
+    });
+    
+    // Langton's Ant content template
+    this.contentTemplates.set('langton', {
+        title: "Langton's Ant",
+        content: `...` // Detailed content about Langton's Ant
+    });
+}
+
+createModalContent(simType) {
+    const template = this.contentTemplates.get(simType);
+    if (!template) {
+        console.warn(`No content template found for simulation type: ${simType}`);
+        return null;
+    }
+    
+    // Create modal structure with content
+    const modalHTML = this.baseModalTemplate
+        .replace('[data-title]', template.title)
+        .replace('[data-close-btn]', '')
+        .replace('[data-content]', template.content);
+    
+    return {
+        title: template.title,
+        content: modalHTML
+    };
+}
+
+injectModalContent(simType, modalElement) {
+    const template = this.contentTemplates.get(simType);
+    if (!template || !modalElement) return false;
+    
+    // Update title using data attribute for more robust selection
+    const titleElement = modalElement.querySelector('[data-modal-title]');
+    if (titleElement) {
+        titleElement.textContent = template.title;
+    }
+    
+    // Update content using data attribute for more robust selection
+    const contentElement = modalElement.querySelector('[data-modal-content]');
+    if (contentElement) {
+        contentElement.innerHTML = template.content;
+    }
+    
+    return true;
+}
+```
 
 #### Performance Monitor
 Real-time performance monitoring:

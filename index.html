@@ -132,118 +132,15 @@
         <span>Press <kbd>Escape</kbd> to exit immersive mode</span>
     </div>
 
-    <!-- Conway's Game of Life Learn Modal -->
-    <div id="conway-modal" class="modal">
+    <!-- Dynamic Learn Modal -->
+    <div id="dynamic-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Conway's Game of Life</h2>
-                <button class="modal-close" id="conway-modal-close">&times;</button>
+                <h2 data-modal-title>Simulation Information</h2>
+                <button class="modal-close" id="dynamic-modal-close">&times;</button>
             </div>
-            <div class="modal-body">
-                <h3>Rules</h3>
-                <p>Conway's Game of Life is a cellular automaton with simple rules:</p>
-                <ul>
-                    <li><strong>Birth:</strong> A dead cell with exactly 3 live neighbours becomes alive</li>
-                    <li><strong>Survival:</strong> A live cell with 2 or 3 live neighbours stays alive</li>
-                    <li><strong>Death:</strong> A live cell with fewer than 2 or more than 3 neighbours dies</li>
-                </ul>
-                
-                <h3>Common Patterns</h3>
-                <ul>
-                    <li><strong>Still Life:</strong> Patterns that don't change (e.g., Block, Beehive)</li>
-                    <li><strong>Oscillators:</strong> Patterns that repeat after a few generations (e.g., Blinker, Toad)</li>
-                    <li><strong>Spaceships:</strong> Patterns that move across the grid (e.g., Glider)</li>
-                </ul>
-                
-                <h3>Historical Context</h3>
-                <p>Conway's Game of Life was created by mathematician John Conway in 1970. It was designed to demonstrate how complex patterns could emerge from simple rules, and it became one of the most famous examples of cellular automata. The game has inspired research in:</p>
-                <ul>
-                    <li>Artificial life and emergent behaviour</li>
-                    <li>Computational complexity and universality</li>
-                    <li>Pattern formation in nature and mathematics</li>
-                    <li>Self-replicating systems and evolution</li>
-                </ul>
-                
-                <h3>How to Use</h3>
-                <p>Click on the grid to toggle cells between alive and dead states. Use the controls to start, pause, and reset the simulation.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Termite Algorithm Learn Modal -->
-    <div id="termite-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Termite Algorithm</h2>
-                <button class="modal-close" id="termite-modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <h3>How It Works</h3>
-                <p>The Termite Algorithm demonstrates emergent behaviour through simple rules:</p>
-                <ul>
-                    <li><strong>Movement:</strong> Termites move randomly across the grid</li>
-                    <li><strong>Pick Up:</strong> If a termite encounters a wood chip and isn't carrying one, it picks it up</li>
-                    <li><strong>Drop:</strong> If a termite is carrying a chip and encounters an empty space, it drops the chip</li>
-                    <li><strong>Direction:</strong> Termites occasionally change direction randomly</li>
-                </ul>
-                
-                <h3>Emergent Behaviour</h3>
-                <p>Despite simple individual rules, termites collectively create organised patterns:</p>
-                <ul>
-                    <li><strong>Clustering:</strong> Wood chips gradually form clusters</li>
-                    <li><strong>Self-Organisation:</strong> Random distribution becomes structured over time</li>
-                    <li><strong>Stability:</strong> Once clusters form, they tend to remain stable</li>
-                </ul>
-                
-                <h3>Real-World Applications</h3>
-                <p>This algorithm has inspired research in:</p>
-                <ul>
-                    <li>Swarm robotics and collective behaviour</li>
-                    <li>Resource distribution and optimisation</li>
-                    <li>Self-organising systems and emergent intelligence</li>
-                </ul>
-                
-                <h3>Controls</h3>
-                <p>Use the speed slider to control termite movement speed, the termites slider to adjust the number of termites, and the random button to create a new random distribution of wood chips.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Langton's Ant Learn Modal -->
-    <div id="langton-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Langton's Ant</h2>
-                <button class="modal-close" id="langton-modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <h3>Rules</h3>
-                <p>Langton's Ant follows simple rules that create complex emergent behaviour:</p>
-                <ul>
-                    <li><strong>White Cell:</strong> Turn 90° right, flip the cell to black, move forward</li>
-                    <li><strong>Black Cell:</strong> Turn 90° left, flip the cell to white, move forward</li>
-                    <li><strong>Movement:</strong> The ant always moves one cell in the direction it's facing</li>
-                </ul>
-                
-                <h3>Highway Formation</h3>
-                <p>After an initial chaotic period, the ant typically forms a "highway" pattern:</p>
-                <ul>
-                    <li><strong>Chaotic Phase:</strong> The ant moves in seemingly random patterns</li>
-                    <li><strong>Highway Phase:</strong> The ant creates a repeating diagonal pattern</li>
-                    <li><strong>Predictability:</strong> Once the highway forms, the ant's path becomes predictable</li>
-                </ul>
-                
-                <h3>Mathematical Significance</h3>
-                <p>Langton's Ant demonstrates important concepts in:</p>
-                <ul>
-                    <li><strong>Emergence:</strong> Complex patterns from simple rules</li>
-                    <li><strong>Deterministic Chaos:</strong> Predictable rules creating unpredictable initial behaviour</li>
-                    <li><strong>Self-Organisation:</strong> Order emerging from disorder</li>
-                    <li><strong>Computational Universality:</strong> The ant can simulate a Turing machine</li>
-                </ul>
-                
-                <h3>Controls</h3>
-                <p>Use the speed slider to control ant movement speed, the Add Ant button (or press 'a') to add new ants, and the random button to create a random pattern of white and black cells.</p>
+            <div class="modal-body" data-modal-content>
+                <!-- Content will be dynamically injected here -->
             </div>
         </div>
     </div>
