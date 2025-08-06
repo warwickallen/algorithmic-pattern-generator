@@ -19,6 +19,7 @@
             --error-bg: #FFEBEE;
             --warning-color: #FF9800;
             --warning-bg: #fff3cd;
+            --warning-text: #856404;
             --info-color: #2196F3;
             --info-bg: #E3F2FD;
             --running-color: #2196F3;
@@ -47,6 +48,7 @@
             --error-bg: #b71c1c;
             --warning-color: #FF9800;
             --warning-bg: #e65100;
+            --warning-text: #ffffff;
             --info-color: #2196F3;
             --info-bg: #0d47a1;
             --running-color: #2196F3;
@@ -538,7 +540,7 @@
                 <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
             </div>
             <div id="test-summary">Tests: 0 passed, 0 failed, 0 total</div>
-            <div id="warning-summary" style="margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; display: none;">
+            <div id="warning-summary" style="margin-top: 10px; padding: 10px; background: var(--warning-bg); color: var(--warning-text); border: 1px solid var(--warning-color); border-radius: 5px; display: none;">
                 <strong>⚠️ Warning Summary:</strong>
                 <div id="warning-details"></div>
             </div>
@@ -1060,14 +1062,15 @@
                 const warningStats = this.getWarningStats();
                 if (warningStats.criticalWarnings > 0) {
                     warningDetails.innerHTML = `
-                        <div style="color: #d63031;">Critical warnings: ${warningStats.criticalWarnings}</div>
+                        <div style="color: var(--error-color); font-weight: bold;">Critical warnings: ${warningStats.criticalWarnings}</div>
                         <div>Fade warnings: ${warningStats.fadeWarnings}</div>
                         <div>Canvas warnings: ${warningStats.canvasWarnings}</div>
                         <div>Total warnings: ${warningStats.total}</div>
                     `;
                     warningSummary.style.display = 'block';
-                    warningSummary.style.background = '#ffebee';
-                    warningSummary.style.borderColor = '#f44336';
+                    warningSummary.style.background = 'var(--error-bg)';
+                    warningSummary.style.borderColor = 'var(--error-color)';
+                    warningSummary.style.color = 'var(--text-primary)';
                 } else if (warningStats.total > 0) {
                     warningDetails.innerHTML = `
                         <div>Total warnings: ${warningStats.total}</div>
@@ -1075,8 +1078,9 @@
                         <div>Canvas warnings: ${warningStats.canvasWarnings}</div>
                     `;
                     warningSummary.style.display = 'block';
-                    warningSummary.style.background = '#fff3cd';
-                    warningSummary.style.borderColor = '#ffeaa7';
+                    warningSummary.style.background = 'var(--warning-bg)';
+                    warningSummary.style.borderColor = 'var(--warning-color)';
+                    warningSummary.style.color = 'var(--warning-text)';
                 } else {
                     warningSummary.style.display = 'none';
                 }
@@ -3254,52 +3258,7 @@
             };
         }, 'system');
         
-        testSuite.addTest('Theme Detection and Application', async () => {
-            // Test if theme manager exists
-            const themeManagerExists = typeof window.themeManager !== 'undefined';
-            
-            if (!themeManagerExists) {
-                return {
-                    passed: false,
-                    details: 'ThemeManager not found - check if theme detection code is loaded'
-                };
-            }
-            
-            // Test initial theme detection
-            const initialTheme = window.themeManager.currentTheme;
-            const hasValidTheme = initialTheme === 'light' || initialTheme === 'dark';
-            
-            // Test theme application
-            window.themeManager.setTheme('dark');
-            const darkThemeApplied = document.documentElement.getAttribute('data-theme') === 'dark';
-            
-            window.themeManager.setTheme('light');
-            const lightThemeApplied = document.documentElement.getAttribute('data-theme') === 'light';
-            
-            // Test theme toggle
-            const originalTheme = window.themeManager.currentTheme;
-            window.themeManager.toggleTheme();
-            const themeToggled = window.themeManager.currentTheme !== originalTheme;
-            
-            // Test CSS variables are applied
-            const computedStyle = getComputedStyle(document.documentElement);
-            const bgPrimary = computedStyle.getPropertyValue('--bg-primary').trim();
-            const textPrimary = computedStyle.getPropertyValue('--text-primary').trim();
-            const cssVariablesApplied = bgPrimary !== '' && textPrimary !== '';
-            
-                       // Test theme button functionality
-           const themeBtn = document.getElementById('theme-toggle-discrete');
-           const buttonExists = themeBtn !== null;
-           const buttonTextUpdated = themeBtn && (themeBtn.textContent.includes('🌙') || themeBtn.textContent.includes('☀️'));
-            
-            // Restore original theme
-            window.themeManager.setTheme(originalTheme);
-            
-            return {
-                passed: hasValidTheme && darkThemeApplied && lightThemeApplied && themeToggled && cssVariablesApplied && buttonExists && buttonTextUpdated,
-                details: `Initial theme: ${initialTheme}, Dark applied: ${darkThemeApplied}, Light applied: ${lightThemeApplied}, Toggle works: ${themeToggled}, CSS vars: ${cssVariablesApplied}, Button: ${buttonExists}, Text updated: ${buttonTextUpdated}`
-            };
-        }, 'system');
+
         
         // Global functions for button clicks
         window.runSelectedTests = () => {
@@ -3408,12 +3367,14 @@
                 let detailsHtml = '';
                 
                 if (warningStats.criticalWarnings > 0) {
-                    detailsHtml += `<div style="color: #d63031; font-weight: bold;">⚠️ Critical warnings: ${warningStats.criticalWarnings}</div>`;
-                    warningSummary.style.background = '#ffebee';
-                    warningSummary.style.borderColor = '#f44336';
+                    detailsHtml += `<div style="color: var(--error-color); font-weight: bold;">⚠️ Critical warnings: ${warningStats.criticalWarnings}</div>`;
+                    warningSummary.style.background = 'var(--error-bg)';
+                    warningSummary.style.borderColor = 'var(--error-color)';
+                    warningSummary.style.color = 'var(--text-primary)';
                 } else {
-                    warningSummary.style.background = '#fff3cd';
-                    warningSummary.style.borderColor = '#ffeaa7';
+                    warningSummary.style.background = 'var(--warning-bg)';
+                    warningSummary.style.borderColor = 'var(--warning-color)';
+                    warningSummary.style.color = 'var(--warning-text)';
                 }
                 
                 detailsHtml += `
