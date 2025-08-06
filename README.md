@@ -25,6 +25,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **CSS-Based Control Visibility** - Declarative control visibility management using CSS classes and data attributes
 - **EventHandlerFactory** - Template-based event handler creation and registration system
 - **ModalTemplateManager** - Template-based modal content management with dynamic content injection and scroll position management
+- **UIComponentLibrary** - Comprehensive UI component library with 8 component types, lifecycle management, and factory methods
 
 ## Quick Start
 
@@ -137,8 +138,8 @@ The application uses a modular architecture with clear separation of concerns:
 ### Core Components
 1. **AlgorithmicPatternGenerator** - Main application controller
 2. **BaseSimulation** - Abstract base class for all simulations
-3. **UI Component Library** - Reusable UI components with lifecycle management
-4. **Event Framework** - Centralised event handling with performance optimisations
+3. **UIComponentLibrary** - Comprehensive UI component library with lifecycle management, state management, and event handling
+4. **EventFramework** - Centralised event handling with performance optimisations and memory leak prevention
 5. **ControlTemplateManager** - Template-based control configuration system
 6. **ConfigurationManager** - Centralised configuration for all simulations
 7. **Performance Monitor** - Real-time performance tracking
@@ -213,13 +214,14 @@ testRunner.runTestsByCategory('control-visibility');
 ### Test Categories
 The test suite covers:
 - Core simulation functionality
-- UI component testing  
+- UI component testing (18 comprehensive test cases for UIComponentLibrary)
 - Performance benchmarking
 - Integration testing
 - Visual effects testing
 - System-level functionality
 - Control visibility management
 - ModalTemplateManager testing
+- EventFramework testing
 
 ## Performance Benchmarks
 
