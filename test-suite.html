@@ -5,53 +5,165 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorithmic Pattern Generator - Test Suite</title>
     <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary: #f5f5f5;
+            --bg-secondary: white;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #ddd;
+            --shadow-color: rgba(0,0,0,0.1);
+            --success-color: #4CAF50;
+            --success-bg: #E8F5E8;
+            --error-color: #f44336;
+            --error-bg: #FFEBEE;
+            --warning-color: #FF9800;
+            --warning-bg: #fff3cd;
+            --info-color: #2196F3;
+            --info-bg: #E3F2FD;
+            --running-color: #2196F3;
+            --running-bg: #E3F2FD;
+            --log-bg: #f8f9fa;
+            --log-border: #dee2e6;
+            --test-item-bg: #f9f9f9;
+            --checkbox-bg: #fff;
+            --checkbox-border: #ddd;
+            --checkbox-hover: #f0f0f0;
+            --checkbox-checked: #2196F3;
+            --checkbox-indeterminate: #FF9800;
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme variables */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-color: #444;
+            --shadow-color: rgba(0,0,0,0.3);
+            --success-color: #4CAF50;
+            --success-bg: #1b5e20;
+            --error-color: #f44336;
+            --error-bg: #b71c1c;
+            --warning-color: #FF9800;
+            --warning-bg: #e65100;
+            --info-color: #2196F3;
+            --info-bg: #0d47a1;
+            --running-color: #2196F3;
+            --running-bg: #0d47a1;
+            --log-bg: #1e1e1e;
+            --log-border: #444;
+            --test-item-bg: #333;
+            --checkbox-bg: #2d2d2d;
+            --checkbox-border: #555;
+            --checkbox-hover: #3d3d3d;
+            --checkbox-checked: #2196F3;
+            --checkbox-indeterminate: #FF9800;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
         }
         
         .test-container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
+            background: var(--bg-secondary);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px var(--shadow-color);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .theme-toggle-discrete {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+        
+        .theme-toggle-discrete:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .theme-toggle-discrete::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+        
+        .theme-toggle-discrete:hover::before {
+            opacity: 1;
+            visibility: visible;
         }
         
         .test-section {
             margin-bottom: 30px;
             padding: 20px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 5px;
+            transition: border-color 0.3s ease;
         }
         
         .test-section h2 {
-            color: #333;
+            color: var(--text-primary);
             margin-top: 0;
+            transition: color 0.3s ease;
         }
         
         .test-item {
             margin: 10px 0;
             padding: 10px;
-            border-left: 4px solid #ddd;
-            background: #f9f9f9;
+            border-left: 4px solid var(--border-color);
+            background: var(--test-item-bg);
+            transition: border-left-color 0.3s ease, background-color 0.3s ease;
         }
         
         .test-item.pass {
-            border-left-color: #4CAF50;
-            background: #E8F5E8;
+            border-left-color: var(--success-color);
+            background: var(--success-bg);
         }
         
         .test-item.fail {
-            border-left-color: #f44336;
-            background: #FFEBEE;
+            border-left-color: var(--error-color);
+            background: var(--error-bg);
         }
         
         .test-item.running {
-            border-left-color: #2196F3;
-            background: #E3F2FD;
+            border-left-color: var(--running-color);
+            background: var(--running-bg);
         }
         
         .test-result {
@@ -60,37 +172,39 @@
         }
         
         .test-result.pass {
-            color: #4CAF50;
+            color: var(--success-color);
         }
         
         .test-result.fail {
-            color: #f44336;
+            color: var(--error-color);
         }
         
         .test-result.running {
-            color: #2196F3;
+            color: var(--running-color);
         }
         
         .test-details {
             margin-top: 5px;
             font-size: 0.9em;
-            color: #666;
+            color: var(--text-secondary);
             word-wrap: break-word;
             overflow-wrap: break-word;
             max-width: 100%;
             overflow: hidden;
+            transition: color 0.3s ease;
         }
         
         .summary {
-            background: #E3F2FD;
+            background: var(--info-bg);
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
+            transition: background-color 0.3s ease;
         }
         
         .test-log {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
+            background: var(--log-bg);
+            border: 1px solid var(--log-border);
             border-radius: 5px;
             padding: 15px;
             margin: 20px 0;
@@ -99,13 +213,15 @@
             font-family: 'Courier New', monospace;
             font-size: 12px;
             line-height: 1.4;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         
         .test-log h3 {
             margin-top: 0;
-            color: #333;
-            border-bottom: 1px solid #dee2e6;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--log-border);
             padding-bottom: 10px;
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
         }
         
         .log-entry {
@@ -114,52 +230,56 @@
         }
         
         .log-entry.pass {
-            color: #28a745;
+            color: var(--success-color);
         }
         
         .log-entry.fail {
-            color: #dc3545;
+            color: var(--error-color);
         }
         
         .log-entry.running {
-            color: #007bff;
+            color: var(--running-color);
         }
         
         .log-entry.error {
-            color: #dc3545;
+            color: var(--error-color);
             font-weight: bold;
         }
         
         .log-timestamp {
-            color: #6c757d;
+            color: var(--text-secondary);
             font-size: 11px;
+            transition: color 0.3s ease;
         }
         
         .log-summary {
-            background: #e9ecef;
+            background: var(--log-bg);
             padding: 10px;
             border-radius: 3px;
             margin-top: 10px;
             font-weight: bold;
+            transition: background-color 0.3s ease;
         }
         
         .summary h3 {
             margin-top: 0;
-            color: #1976D2;
+            color: var(--info-color);
+            transition: color 0.3s ease;
         }
         
         .progress-bar {
             width: 100%;
             height: 20px;
-            background: #ddd;
+            background: var(--border-color);
             border-radius: 10px;
             overflow: hidden;
             margin: 10px 0;
+            transition: background-color 0.3s ease;
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #4CAF50, #45a049);
+            background: linear-gradient(90deg, var(--success-color), #45a049);
             transition: width 0.3s ease;
         }
         
@@ -174,30 +294,31 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         .btn-primary {
-            background: #2196F3;
+            background: var(--info-color);
             color: white;
         }
         
         .btn-success {
-            background: #4CAF50;
+            background: var(--success-color);
             color: white;
         }
         
         .btn-warning {
-            background: #FF9800;
+            background: var(--warning-color);
             color: white;
         }
         
         .btn-danger {
-            background: #f44336;
+            background: var(--error-color);
             color: white;
         }
         
         .btn-secondary {
-            background: #6c757d;
+            background: var(--text-secondary);
             color: white;
         }
         
@@ -208,23 +329,26 @@
         
         /* Test selection styles */
         .test-selection {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
+            background: var(--log-bg);
+            border: 1px solid var(--log-border);
             border-radius: 5px;
             padding: 20px;
             margin-bottom: 20px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         
         .test-selection h3 {
             margin-top: 0;
             margin-bottom: 15px;
-            color: #333;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         
         .select-all-container {
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid var(--log-border);
             padding-bottom: 10px;
             margin-bottom: 15px;
+            transition: border-bottom-color 0.3s ease;
         }
         
         .test-group-checkboxes {
@@ -241,6 +365,8 @@
             position: relative;
             padding-left: 30px;
             user-select: none;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         
         .checkbox-label input {
@@ -257,23 +383,24 @@
             left: 0;
             height: 16px;
             width: 16px;
-            background-color: #fff;
-            border: 2px solid #ddd;
+            background-color: var(--checkbox-bg);
+            border: 2px solid var(--checkbox-border);
             border-radius: 3px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         
         .checkbox-label:hover input ~ .checkmark {
-            background-color: #f0f0f0;
+            background-color: var(--checkbox-hover);
         }
         
         .checkbox-label input:checked ~ .checkmark {
-            background-color: #2196F3;
-            border-color: #2196F3;
+            background-color: var(--checkbox-checked);
+            border-color: var(--checkbox-checked);
         }
         
         .checkbox-label input:indeterminate ~ .checkmark {
-            background-color: #FF9800;
-            border-color: #FF9800;
+            background-color: var(--checkbox-indeterminate);
+            border-color: var(--checkbox-indeterminate);
         }
         
         .checkmark:after {
@@ -320,8 +447,9 @@
         }
         
         #test-canvas {
-            border: 2px solid #ddd;
+            border: 2px solid var(--border-color);
             border-radius: 5px;
+            transition: border-color 0.3s ease;
         }
         
         .test-grid {
@@ -332,14 +460,16 @@
         }
         
         .test-category {
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 5px;
             padding: 15px;
+            transition: border-color 0.3s ease;
         }
         
         .test-category h3 {
             margin-top: 0;
-            color: #333;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         
         /* Styles for test DOM elements */
@@ -355,13 +485,15 @@
         }
         
         .modal-content {
-            background-color: white;
+            background-color: var(--bg-secondary);
             margin: 15% auto;
             padding: 20px;
             border-radius: 5px;
             width: 80%;
             max-width: 500px;
             position: relative;
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         .modal-close {
@@ -370,6 +502,8 @@
             top: 10px;
             font-size: 24px;
             cursor: pointer;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         
         .simulation-controls {
@@ -383,6 +517,8 @@
         .control-group label {
             display: inline-block;
             width: 100px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
         
         .control-group input[type="range"] {
@@ -391,6 +527,8 @@
     </style>
 </head>
 <body>
+    <button class="theme-toggle-discrete" onclick="toggleTheme()" id="theme-toggle-discrete" data-tooltip="Light Mode">🌙</button>
+    
     <div class="test-container">
         <h1>Algorithmic Pattern Generator - Comprehensive Test Suite</h1>
         
@@ -669,6 +807,92 @@
     <script src="app.js"></script>
     
     <script>
+        // Theme detection and management
+        class ThemeManager {
+            constructor() {
+                this.currentTheme = 'light';
+                this.init();
+            }
+            
+            init() {
+                // Detect system theme preference
+                this.detectSystemTheme();
+                
+                // Listen for theme changes
+                this.setupThemeListener();
+                
+                // Apply initial theme
+                this.applyTheme(this.currentTheme);
+            }
+            
+            detectSystemTheme() {
+                // Check if the browser supports prefers-color-scheme
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    this.currentTheme = 'dark';
+                } else {
+                    this.currentTheme = 'light';
+                }
+            }
+            
+            setupThemeListener() {
+                // Listen for system theme changes
+                if (window.matchMedia) {
+                    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                    
+                    // Modern browsers
+                    if (mediaQuery.addEventListener) {
+                        mediaQuery.addEventListener('change', (e) => {
+                            this.currentTheme = e.matches ? 'dark' : 'light';
+                            this.applyTheme(this.currentTheme);
+                        });
+                    }
+                    // Older browsers
+                    else if (mediaQuery.addListener) {
+                        mediaQuery.addListener((e) => {
+                            this.currentTheme = e.matches ? 'dark' : 'light';
+                            this.applyTheme(this.currentTheme);
+                        });
+                    }
+                }
+            }
+            
+            applyTheme(theme) {
+                // Set the data-theme attribute on the document element
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                // Store the theme preference
+                localStorage.setItem('test-suite-theme', theme);
+                
+                // Update theme indicator if it exists
+                this.updateThemeIndicator(theme);
+            }
+            
+            updateThemeIndicator(theme) {
+                // Update the theme button text
+                updateThemeButton();
+                console.log(`Theme applied: ${theme}`);
+            }
+            
+            // Method to manually toggle theme (for testing)
+            toggleTheme() {
+                this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+                this.applyTheme(this.currentTheme);
+            }
+            
+            // Method to set theme manually
+            setTheme(theme) {
+                if (theme === 'light' || theme === 'dark') {
+                    this.currentTheme = theme;
+                    this.applyTheme(theme);
+                }
+            }
+        }
+        
+        // Initialize theme manager
+        const themeManager = new ThemeManager();
+        
+        // Make theme manager available globally for testing
+        window.themeManager = themeManager;
         // Test Suite Implementation
         class TestSuite {
             constructor() {
@@ -2689,6 +2913,53 @@
             };
         }, 'system');
         
+        testSuite.addTest('Theme Detection and Application', async () => {
+            // Test if theme manager exists
+            const themeManagerExists = typeof window.themeManager !== 'undefined';
+            
+            if (!themeManagerExists) {
+                return {
+                    passed: false,
+                    details: 'ThemeManager not found - check if theme detection code is loaded'
+                };
+            }
+            
+            // Test initial theme detection
+            const initialTheme = window.themeManager.currentTheme;
+            const hasValidTheme = initialTheme === 'light' || initialTheme === 'dark';
+            
+            // Test theme application
+            window.themeManager.setTheme('dark');
+            const darkThemeApplied = document.documentElement.getAttribute('data-theme') === 'dark';
+            
+            window.themeManager.setTheme('light');
+            const lightThemeApplied = document.documentElement.getAttribute('data-theme') === 'light';
+            
+            // Test theme toggle
+            const originalTheme = window.themeManager.currentTheme;
+            window.themeManager.toggleTheme();
+            const themeToggled = window.themeManager.currentTheme !== originalTheme;
+            
+            // Test CSS variables are applied
+            const computedStyle = getComputedStyle(document.documentElement);
+            const bgPrimary = computedStyle.getPropertyValue('--bg-primary').trim();
+            const textPrimary = computedStyle.getPropertyValue('--text-primary').trim();
+            const cssVariablesApplied = bgPrimary !== '' && textPrimary !== '';
+            
+                       // Test theme button functionality
+           const themeBtn = document.getElementById('theme-toggle-discrete');
+           const buttonExists = themeBtn !== null;
+           const buttonTextUpdated = themeBtn && (themeBtn.textContent.includes('🌙') || themeBtn.textContent.includes('☀️'));
+            
+            // Restore original theme
+            window.themeManager.setTheme(originalTheme);
+            
+            return {
+                passed: hasValidTheme && darkThemeApplied && lightThemeApplied && themeToggled && cssVariablesApplied && buttonExists && buttonTextUpdated,
+                details: `Initial theme: ${initialTheme}, Dark applied: ${darkThemeApplied}, Light applied: ${lightThemeApplied}, Toggle works: ${themeToggled}, CSS vars: ${cssVariablesApplied}, Button: ${buttonExists}, Text updated: ${buttonTextUpdated}`
+            };
+        }, 'system');
+        
         // Global functions for button clicks
         window.runSelectedTests = () => {
             const selectedCategories = getSelectedTestCategories();
@@ -2824,6 +3095,24 @@
                 warningSummary.style.display = 'none';
             }
         };
+        
+        // Function to toggle theme
+        window.toggleTheme = () => {
+            if (window.themeManager) {
+                window.themeManager.toggleTheme();
+                updateThemeButton();
+            }
+        };
+        
+        // Function to update theme button text
+               function updateThemeButton() {
+           const themeBtn = document.getElementById('theme-toggle-discrete');
+           if (themeBtn && window.themeManager) {
+               const isDark = window.themeManager.currentTheme === 'dark';
+               themeBtn.textContent = isDark ? '☀️' : '🌙';
+               themeBtn.setAttribute('data-tooltip', isDark ? 'Light' : 'Dark');
+           }
+       }
         
         // ControlVisibilityManager Tests
         testSuite.addTest('ControlVisibilityManager Initialization', async () => {
@@ -3359,6 +3648,9 @@
         // Auto-run tests when page loads
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Test suite loaded with', testSuite.tests.length, 'tests');
+            
+            // Initialize theme button text
+            updateThemeButton();
             
             // Add event listeners to update "Select All" checkbox state
             const testGroupCheckboxes = document.querySelectorAll('.test-group-checkboxes input[type="checkbox"]');
