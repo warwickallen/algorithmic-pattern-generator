@@ -617,6 +617,11 @@
                         <span class="checkmark"></span>
                         Event Handler Factory Tests
                     </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="ui-component-library-checkbox" value="ui-component-library" checked>
+                        <span class="checkmark"></span>
+                        UI Component Library Tests
+                    </label>
                 </div>
             </div>
             <div class="action-buttons">
@@ -697,6 +702,11 @@
             <div class="test-category">
                 <h3>Event Handler Factory Tests</h3>
                 <div id="event-handler-factory-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>UI Component Library Tests</h3>
+                <div id="ui-component-library-tests"></div>
             </div>
         </div>
     </div>
@@ -3946,6 +3956,692 @@
                 details: `ControlManager integration: single registration: ${registrationSuccess}, all handlers: ${allHandlersSuccess}`
             };
         }, 'event-handler-factory');
+
+        // UI Component Library Tests
+        testSuite.addTest('UI Component Library Constructor', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            return {
+                passed: uiLibrary.components instanceof Map && 
+                        uiLibrary.lifecycleHooks instanceof Map &&
+                        uiLibrary.componentTypes instanceof Set &&
+                        uiLibrary.defaultConfigs instanceof Map,
+                details: `UI Component Library initialized with ${uiLibrary.defaultConfigs.size} default configs`
+            };
+            
+            eventFramework.cleanup();
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Default Configurations', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            const hasSliderConfig = uiLibrary.defaultConfigs.has('slider');
+            const hasButtonConfig = uiLibrary.defaultConfigs.has('button');
+            const hasSelectConfig = uiLibrary.defaultConfigs.has('select');
+            const hasControlGroupConfig = uiLibrary.defaultConfigs.has('controlGroup');
+            const hasStatusDisplayConfig = uiLibrary.defaultConfigs.has('statusDisplay');
+            const hasModalConfig = uiLibrary.defaultConfigs.has('modal');
+            const hasLabelConfig = uiLibrary.defaultConfigs.has('label');
+            const hasContainerConfig = uiLibrary.defaultConfigs.has('container');
+            
+            return {
+                passed: hasSliderConfig && hasButtonConfig && hasSelectConfig && 
+                        hasControlGroupConfig && hasStatusDisplayConfig && 
+                        hasModalConfig && hasLabelConfig && hasContainerConfig,
+                details: `Default configs: slider: ${hasSliderConfig}, button: ${hasButtonConfig}, select: ${hasSelectConfig}, controlGroup: ${hasControlGroupConfig}, statusDisplay: ${hasStatusDisplayConfig}, modal: ${hasModalConfig}, label: ${hasLabelConfig}, container: ${hasContainerConfig}`
+            };
+            
+            eventFramework.cleanup();
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Slider Creation', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test slider element
+            const testSlider = document.createElement('input');
+            testSlider.id = 'test-slider';
+            testSlider.type = 'range';
+            document.body.appendChild(testSlider);
+            
+            const testValueElement = document.createElement('span');
+            testValueElement.id = 'test-slider-value';
+            document.body.appendChild(testValueElement);
+            
+            const slider = uiLibrary.createSlider({
+                id: 'test-slider',
+                valueElementId: 'test-slider-value',
+                min: 0,
+                max: 100,
+                step: 1,
+                value: 50,
+                label: 'Test Slider',
+                format: (val) => `${val}%`
+            });
+            
+            const isValidComponent = slider && 
+                                   slider.type === 'slider' &&
+                                   slider.element === testSlider &&
+                                   slider.valueElement === testValueElement &&
+                                   slider.state.value === 50 &&
+                                   slider.state.isEnabled === true;
+            
+            // Cleanup
+            document.body.removeChild(testSlider);
+            document.body.removeChild(testValueElement);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidComponent,
+                details: `Slider component created: type: ${slider?.type}, value: ${slider?.state.value}, enabled: ${slider?.state.isEnabled}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Slider State Management', async () => {
+            const uiLibrary = new UIComponentLibrary();
+            
+            // Create test slider element
+            const testSlider = document.createElement('input');
+            testSlider.id = 'test-slider-state';
+            testSlider.type = 'range';
+            document.body.appendChild(testSlider);
+            
+            const testValueElement = document.createElement('span');
+            testValueElement.id = 'test-slider-state-value';
+            document.body.appendChild(testValueElement);
+            
+            const slider = uiLibrary.createSlider({
+                id: 'test-slider-state',
+                valueElementId: 'test-slider-state-value',
+                min: 0,
+                max: 100,
+                step: 1,
+                value: 50,
+                format: (val) => `${val}%`
+            });
+            
+            // Test state management
+            const initialValue = slider.methods.getValue();
+            slider.methods.setValue(75);
+            const newValue = slider.methods.getValue();
+            
+            slider.methods.disable();
+            const isDisabled = !slider.state.isEnabled;
+            
+            slider.methods.enable();
+            const isEnabled = slider.state.isEnabled;
+            
+            // Cleanup
+            document.body.removeChild(testSlider);
+            document.body.removeChild(testValueElement);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: initialValue === 50 && newValue === 75 && isDisabled && isEnabled,
+                details: `State management: initial: ${initialValue}, new: ${newValue}, disabled: ${isDisabled}, enabled: ${isEnabled}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Button Creation', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test button element
+            const testButton = document.createElement('button');
+            testButton.id = 'test-button';
+            document.body.appendChild(testButton);
+            
+            const button = uiLibrary.createButton({
+                id: 'test-button',
+                label: 'Test Button',
+                className: 'btn primary'
+            });
+            
+            const isValidComponent = button && 
+                                   button.type === 'button' &&
+                                   button.element === testButton &&
+                                   button.state.text === 'Test Button' &&
+                                   button.state.isEnabled === true;
+            
+            // Cleanup
+            document.body.removeChild(testButton);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidComponent,
+                details: `Button component created: type: ${button?.type}, text: ${button?.state.text}, enabled: ${button?.state.isEnabled}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Button State Management', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test button element
+            const testButton = document.createElement('button');
+            testButton.id = 'test-button-state';
+            document.body.appendChild(testButton);
+            
+            const button = uiLibrary.createButton({
+                id: 'test-button-state',
+                label: 'Test Button',
+                className: 'btn primary'
+            });
+            
+            // Test state management
+            const initialText = button.methods.getText();
+            button.methods.setText('Updated Button');
+            const newText = button.methods.getText();
+            
+            button.methods.press();
+            const isPressed = button.state.isPressed;
+            
+            button.methods.release();
+            const isReleased = !button.state.isPressed;
+            
+            // Cleanup
+            document.body.removeChild(testButton);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: initialText === 'Test Button' && newText === 'Updated Button' && isPressed && isReleased,
+                details: `State management: initial: ${initialText}, new: ${newText}, pressed: ${isPressed}, released: ${isReleased}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Select Creation', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test select element
+            const testSelect = document.createElement('select');
+            testSelect.id = 'test-select';
+            document.body.appendChild(testSelect);
+            
+            const select = uiLibrary.createSelect({
+                id: 'test-select',
+                value: 'option1',
+                options: [
+                    { value: 'option1', label: 'Option 1' },
+                    { value: 'option2', label: 'Option 2' }
+                ]
+            });
+            
+            const isValidComponent = select && 
+                                   select.type === 'select' &&
+                                   select.element === testSelect &&
+                                   select.state.value === 'option1' &&
+                                   select.state.options.length === 2;
+            
+            // Cleanup
+            document.body.removeChild(testSelect);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidComponent,
+                details: `Select component created: type: ${select?.type}, value: ${select?.state.value}, options: ${select?.state.options.length}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Select Options Management', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test select element
+            const testSelect = document.createElement('select');
+            testSelect.id = 'test-select-options';
+            document.body.appendChild(testSelect);
+            
+            const select = uiLibrary.createSelect({
+                id: 'test-select-options',
+                value: 'option1'
+            });
+            
+            // Test options management
+            const initialOptions = select.methods.getOptions();
+            const newOptions = [
+                { value: 'new1', label: 'New Option 1' },
+                { value: 'new2', label: 'New Option 2' },
+                { value: 'new3', label: 'New Option 3' }
+            ];
+            
+            select.methods.setOptions(newOptions);
+            const updatedOptions = select.methods.getOptions();
+            
+            select.methods.setValue('new2');
+            const newValue = select.methods.getValue();
+            
+            // Cleanup
+            document.body.removeChild(testSelect);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: initialOptions.length === 0 && updatedOptions.length === 3 && newValue === 'new2',
+                details: `Options management: initial: ${initialOptions.length}, updated: ${updatedOptions.length}, value: ${newValue}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Control Group Creation', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test control group element
+            const testGroup = document.createElement('div');
+            testGroup.id = 'test-control-group';
+            document.body.appendChild(testGroup);
+            
+            const controlGroup = uiLibrary.createControlGroup('test-control-group', {
+                layout: 'horizontal',
+                className: 'test-control-group',
+                gap: '1rem'
+            });
+            
+            const isValidComponent = controlGroup && 
+                                   controlGroup.type === 'controlGroup' &&
+                                   controlGroup.element === testGroup &&
+                                   controlGroup.state.layout === 'horizontal' &&
+                                   controlGroup.state.isVisible === true;
+            
+            // Cleanup
+            document.body.removeChild(testGroup);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidComponent,
+                details: `Control group created: type: ${controlGroup?.type}, layout: ${controlGroup?.state.layout}, visible: ${controlGroup?.state.isVisible}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Control Group Layout Management', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test control group element
+            const testGroup = document.createElement('div');
+            testGroup.id = 'test-control-group-layout';
+            document.body.appendChild(testGroup);
+            
+            const controlGroup = uiLibrary.createControlGroup('test-control-group-layout', {
+                layout: 'horizontal'
+            });
+            
+            // Test layout management
+            const initialLayout = controlGroup.state.layout;
+            controlGroup.methods.setLayout('vertical');
+            const verticalLayout = controlGroup.state.layout;
+            
+            controlGroup.methods.setLayout('grid');
+            const gridLayout = controlGroup.state.layout;
+            
+            // Cleanup
+            document.body.removeChild(testGroup);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: initialLayout === 'horizontal' && verticalLayout === 'vertical' && gridLayout === 'grid',
+                details: `Layout management: initial: ${initialLayout}, vertical: ${verticalLayout}, grid: ${gridLayout}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Status Display Creation', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test status display element
+            const testStatus = document.createElement('div');
+            testStatus.id = 'test-status';
+            document.body.appendChild(testStatus);
+            
+            const statusDisplay = uiLibrary.createStatusDisplay({
+                id: 'test-status',
+                values: { speed: 50, count: 100 },
+                layout: 'horizontal'
+            });
+            
+            const isValidComponent = statusDisplay && 
+                                   statusDisplay.type === 'statusDisplay' &&
+                                   statusDisplay.element === testStatus &&
+                                   statusDisplay.state.values.speed === 50 &&
+                                   statusDisplay.state.values.count === 100;
+            
+            // Cleanup
+            document.body.removeChild(testStatus);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidComponent,
+                details: `Status display created: type: ${statusDisplay?.type}, speed: ${statusDisplay?.state.values.speed}, count: ${statusDisplay?.state.values.count}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Status Display Value Management', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test status display element
+            const testStatus = document.createElement('div');
+            testStatus.id = 'test-status-values';
+            document.body.appendChild(testStatus);
+            
+            const statusDisplay = uiLibrary.createStatusDisplay({
+                id: 'test-status-values',
+                values: { initial: 0 }
+            });
+            
+            // Test value management
+            const initialValue = statusDisplay.methods.getValue('initial');
+            statusDisplay.methods.setValue('initial', 100);
+            const updatedValue = statusDisplay.methods.getValue('initial');
+            
+            statusDisplay.methods.setValues({ new: 200, another: 300 });
+            const allValues = statusDisplay.methods.getValues();
+            
+            // Cleanup
+            document.body.removeChild(testStatus);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: initialValue === 0 && updatedValue === 100 && allValues.new === 200 && allValues.another === 300,
+                details: `Value management: initial: ${initialValue}, updated: ${updatedValue}, new: ${allValues.new}, another: ${allValues.another}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Modal Creation', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test modal element
+            const testModal = document.createElement('div');
+            testModal.id = 'test-modal';
+            document.body.appendChild(testModal);
+            
+            const modal = uiLibrary.createModal({
+                id: 'test-modal',
+                title: 'Test Modal',
+                content: '<p>Test content</p>',
+                closeOnEscape: true
+            });
+            
+            const isValidComponent = modal && 
+                                   modal.type === 'modal' &&
+                                   modal.element === testModal &&
+                                   modal.state.title === 'Test Modal' &&
+                                   modal.state.isVisible === false;
+            
+            // Cleanup
+            document.body.removeChild(testModal);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidComponent,
+                details: `Modal created: type: ${modal?.type}, title: ${modal?.state.title}, visible: ${modal?.state.isVisible}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Modal State Management', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test modal element
+            const testModal = document.createElement('div');
+            testModal.id = 'test-modal-state';
+            document.body.appendChild(testModal);
+            
+            const modal = uiLibrary.createModal({
+                id: 'test-modal-state',
+                title: 'Test Modal'
+            });
+            
+            // Test modal state management
+            const initialVisible = modal.state.isVisible;
+            modal.methods.open();
+            const isOpen = modal.state.isVisible;
+            
+            modal.methods.close();
+            const isClosed = !modal.state.isVisible;
+            
+            modal.methods.setTitle('Updated Title');
+            const newTitle = modal.methods.getTitle();
+            
+            // Cleanup
+            document.body.removeChild(testModal);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: !initialVisible && isOpen && isClosed && newTitle === 'Updated Title',
+                details: `Modal state: initial: ${initialVisible}, open: ${isOpen}, closed: ${isClosed}, title: ${newTitle}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Label Creation', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test label element
+            const testLabel = document.createElement('label');
+            testLabel.id = 'test-label';
+            document.body.appendChild(testLabel);
+            
+            const label = uiLibrary.createLabel({
+                id: 'test-label',
+                text: 'Test Label',
+                required: true
+            });
+            
+            const isValidComponent = label && 
+                                   label.type === 'label' &&
+                                   label.element === testLabel &&
+                                   label.state.text === 'Test Label' &&
+                                   label.state.required === true;
+            
+            // Cleanup
+            document.body.removeChild(testLabel);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidComponent,
+                details: `Label created: type: ${label?.type}, text: ${label?.state.text}, required: ${label?.state.required}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Container Creation', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test container element
+            const testContainer = document.createElement('div');
+            testContainer.id = 'test-container';
+            document.body.appendChild(testContainer);
+            
+            const container = uiLibrary.createContainer({
+                id: 'test-container',
+                layout: 'vertical',
+                gap: '1rem'
+            });
+            
+            const isValidComponent = container && 
+                                   container.type === 'container' &&
+                                   container.element === testContainer &&
+                                   container.state.layout === 'vertical' &&
+                                   container.state.isVisible === true;
+            
+            // Cleanup
+            document.body.removeChild(testContainer);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidComponent,
+                details: `Container created: type: ${container?.type}, layout: ${container?.state.layout}, visible: ${container?.state.isVisible}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Lifecycle Hooks', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test button element
+            const testButton = document.createElement('button');
+            testButton.id = 'test-lifecycle';
+            document.body.appendChild(testButton);
+            
+            let mountCalled = false;
+            let updateCalled = false;
+            let unmountCalled = false;
+            
+            const button = uiLibrary.createButton({
+                id: 'test-lifecycle',
+                label: 'Test Button'
+            });
+            
+            // Register custom lifecycle hooks
+            uiLibrary.lifecycleHooks.set('test-lifecycle', {
+                onMount: () => { mountCalled = true; },
+                onUpdate: () => { updateCalled = true; },
+                onUnmount: () => { unmountCalled = true; }
+            });
+            
+            // Trigger lifecycle events
+            uiLibrary.triggerUpdateHook(button);
+            
+            // Cleanup
+            document.body.removeChild(testButton);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: mountCalled && updateCalled && unmountCalled,
+                details: `Lifecycle hooks: mount: ${mountCalled}, update: ${updateCalled}, unmount: ${unmountCalled}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Batch Operations', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test elements
+            const testButton1 = document.createElement('button');
+            testButton1.id = 'test-batch-1';
+            document.body.appendChild(testButton1);
+            
+            const testButton2 = document.createElement('button');
+            testButton2.id = 'test-batch-2';
+            document.body.appendChild(testButton2);
+            
+            const button1 = uiLibrary.createButton({ id: 'test-batch-1', label: 'Button 1' });
+            const button2 = uiLibrary.createButton({ id: 'test-batch-2', label: 'Button 2' });
+            
+            // Test batch operations
+            const initialCount = uiLibrary.getAllComponents().length;
+            uiLibrary.hideAllComponents();
+            const allHidden = uiLibrary.getAllComponents().every(c => !c.state.isVisible);
+            
+            uiLibrary.showAllComponents();
+            const allShown = uiLibrary.getAllComponents().every(c => c.state.isVisible);
+            
+            // Cleanup
+            document.body.removeChild(testButton1);
+            document.body.removeChild(testButton2);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: initialCount === 2 && allHidden && allShown,
+                details: `Batch operations: count: ${initialCount}, hidden: ${allHidden}, shown: ${allShown}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Factory Methods', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Test slider with label factory
+            const testSlider = document.createElement('input');
+            testSlider.id = 'test-factory-slider';
+            testSlider.type = 'range';
+            document.body.appendChild(testSlider);
+            
+            const testSliderValue = document.createElement('span');
+            testSliderValue.id = 'test-factory-slider-value';
+            document.body.appendChild(testSliderValue);
+            
+            const testLabel = document.createElement('label');
+            testLabel.id = 'test-factory-slider-label';
+            document.body.appendChild(testLabel);
+            
+            const sliderWithLabel = uiLibrary.createSliderWithLabel({
+                id: 'test-factory-slider',
+                valueElementId: 'test-factory-slider-value',
+                label: 'Test Slider',
+                min: 0,
+                max: 100,
+                value: 50
+            });
+            
+            const isValidFactory = sliderWithLabel && 
+                                 sliderWithLabel.slider && 
+                                 sliderWithLabel.label &&
+                                 sliderWithLabel.slider.state.value === 50;
+            
+            // Cleanup
+            document.body.removeChild(testSlider);
+            document.body.removeChild(testSliderValue);
+            document.body.removeChild(testLabel);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: isValidFactory,
+                details: `Factory method: slider: ${!!sliderWithLabel?.slider}, label: ${!!sliderWithLabel?.label}, value: ${sliderWithLabel?.slider?.state.value}`
+            };
+        }, 'ui-component-library');
+        
+        testSuite.addTest('UI Component Library Component Management', async () => {
+            const eventFramework = new EventFramework();
+            const uiLibrary = new UIComponentLibrary(eventFramework);
+            
+            // Create test button element
+            const testButton = document.createElement('button');
+            testButton.id = 'test-management';
+            document.body.appendChild(testButton);
+            
+            const button = uiLibrary.createButton({
+                id: 'test-management',
+                label: 'Test Button'
+            });
+            
+            // Test component management
+            const hasComponent = uiLibrary.hasComponent('test-management');
+            const retrievedComponent = uiLibrary.getComponent('test-management');
+            const allComponents = uiLibrary.getAllComponents();
+            const buttonComponents = uiLibrary.getComponentsByType('button');
+            const componentTypes = uiLibrary.getComponentTypes();
+            
+            // Cleanup
+            document.body.removeChild(testButton);
+            uiLibrary.cleanup();
+            eventFramework.cleanup();
+            
+            return {
+                passed: hasComponent && retrievedComponent === button && allComponents.length === 1 && buttonComponents.length === 1 && componentTypes.has('button'),
+                details: `Component management: has: ${hasComponent}, retrieved: ${!!retrievedComponent}, all: ${allComponents.length}, buttons: ${buttonComponents.length}, types: ${componentTypes.size}`
+            };
+        }, 'ui-component-library');
 
         // Auto-run tests when page loads
         document.addEventListener('DOMContentLoaded', () => {

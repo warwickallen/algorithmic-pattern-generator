@@ -24,6 +24,7 @@ The test suite is organised into logical categories:
 - **Control Visibility Tests** - CSS-based control visibility management system
 - **EventHandlerFactory Tests** - Template-based event handler creation and registration system
 - **ModalTemplateManager Tests** - Template-based modal content management system
+- **UI Component Library Tests** - Comprehensive UI component library with lifecycle management and state management
 
 ## Quick Start
 
@@ -82,6 +83,7 @@ The visual test suite (`test-suite.html`) provides an intuitive interface for te
    - System Tests
    - Control Visibility Tests
    - ModalTemplateManager Tests
+   - UI Component Library Tests
 
 2. **Select/Deselect All**: Use the top checkbox to quickly select or deselect all test groups at once. The checkbox shows:
    - **Checked**: All test groups are selected
@@ -457,6 +459,130 @@ Tests the template-based modal content management system:
 - Validates scroll position saving and restoration
 - Tests scroll position management across simulation switches
 - Verifies initial scroll position for new simulations
+
+### UI Component Library Tests
+
+Tests the comprehensive UI component library with lifecycle management and state management:
+
+#### ✅ UI Component Library Constructor
+- Tests UIComponentLibrary class creation and initialisation
+- Validates component storage, lifecycle hooks, and default configurations
+- Tests EventFramework integration for event handling
+- Verifies proper cleanup and memory management
+
+#### ✅ UI Component Library Default Configurations
+- Tests default configuration setup for all component types
+- Validates slider, button, select, controlGroup, statusDisplay, modal, label, and container configs
+- Tests configuration completeness and accessibility
+- Verifies sensible default values for all component types
+
+#### ✅ UI Component Library Slider Creation
+- Tests slider component creation with value elements
+- Validates slider state management and configuration
+- Tests slider element binding and value display
+- Verifies proper slider initialisation and default values
+
+#### ✅ UI Component Library Slider State Management
+- Tests slider value get/set operations
+- Validates slider enable/disable functionality
+- Tests slider state persistence and updates
+- Verifies proper slider state management lifecycle
+
+#### ✅ UI Component Library Button Creation
+- Tests button component creation with labels and classes
+- Validates button state management and configuration
+- Tests button element binding and text display
+- Verifies proper button initialisation and default values
+
+#### ✅ UI Component Library Button State Management
+- Tests button text get/set operations
+- Validates button press/release functionality
+- Tests button state persistence and updates
+- Verifies proper button state management lifecycle
+
+#### ✅ UI Component Library Select Creation
+- Tests select component creation with options
+- Validates select state management and configuration
+- Tests select element binding and option display
+- Verifies proper select initialisation and default values
+
+#### ✅ UI Component Library Select Options Management
+- Tests select options get/set operations
+- Validates select value management
+- Tests select options updates and value changes
+- Verifies proper select state management lifecycle
+
+#### ✅ UI Component Library Control Group Creation
+- Tests control group component creation with layouts
+- Validates control group state management and configuration
+- Tests control group element binding and layout display
+- Verifies proper control group initialisation and default values
+
+#### ✅ UI Component Library Control Group Layout Management
+- Tests control group layout changes (horizontal, vertical, grid)
+- Validates layout state persistence and updates
+- Tests layout switching functionality
+- Verifies proper layout management lifecycle
+
+#### ✅ UI Component Library Status Display Creation
+- Tests status display component creation with values
+- Validates status display state management and configuration
+- Tests status display element binding and value display
+- Verifies proper status display initialisation and default values
+
+#### ✅ UI Component Library Status Display Value Management
+- Tests status display value get/set operations
+- Validates status display values updates
+- Tests status display value persistence and changes
+- Verifies proper status display state management lifecycle
+
+#### ✅ UI Component Library Modal Creation
+- Tests modal component creation with titles and content
+- Validates modal state management and configuration
+- Tests modal element binding and content display
+- Verifies proper modal initialisation and default values
+
+#### ✅ UI Component Library Modal State Management
+- Tests modal open/close operations
+- Validates modal title management
+- Tests modal state persistence and updates
+- Verifies proper modal state management lifecycle
+
+#### ✅ UI Component Library Label Creation
+- Tests label component creation with text and attributes
+- Validates label state management and configuration
+- Tests label element binding and text display
+- Verifies proper label initialisation and default values
+
+#### ✅ UI Component Library Container Creation
+- Tests container component creation with layouts
+- Validates container state management and configuration
+- Tests container element binding and layout display
+- Verifies proper container initialisation and default values
+
+#### ✅ UI Component Library Lifecycle Hooks
+- Tests component lifecycle hook registration and execution
+- Validates onMount, onUpdate, and onUnmount hook functionality
+- Tests lifecycle hook state management and cleanup
+- Verifies proper lifecycle management throughout component lifecycle
+
+#### ✅ UI Component Library Batch Operations
+- Tests batch operations for showing/hiding all components
+- Validates batch operation state management
+- Tests batch operation performance and consistency
+- Verifies proper batch operation lifecycle management
+
+#### ✅ UI Component Library Factory Methods
+- Tests factory methods for common component combinations
+- Validates createSliderWithLabel, createButtonGroup, and createFormGroup
+- Tests factory method component creation and configuration
+- Verifies proper factory method component lifecycle management
+
+#### ✅ UI Component Library Component Management
+- Tests component discovery and management utilities
+- Validates getComponent, getAllComponents, getComponentsByType methods
+- Tests component type tracking and management
+- Verifies proper component management lifecycle and cleanup
 
 ## Before Refactoring
 

@@ -59,21 +59,36 @@ updateUI()               // Update UI elements
 setupEventListeners()    // Setup event listeners using EventHandlerFactory
 ```
 
-#### UI Component Library
-Modular UI component system with lifecycle management:
+#### UIComponentLibrary
+Comprehensive UI component library with lifecycle management, state management, and event handling:
 
-**Components:**
-- **Slider Components**: Standardised slider with performance optimisation
-- **Button Components**: Reusable button with state management
-- **Dynamic Components**: DynamicSpeedSlider and DynamicFillButton with simulation-specific state
-- **Control Groups**: Container components for related controls
-- **Modal Components**: Modal management with render queue
+**Component Types:**
+- **Slider Components**: Standardised slider with value display, state management, and performance optimisation
+- **Button Components**: Reusable button with text management, press/release states, and event handling
+- **Select Components**: Dropdown select with options management and value tracking
+- **Control Groups**: Container components for related controls with layout management (horizontal, vertical, grid)
+- **Status Display Components**: Multi-value status displays with dynamic value updates
+- **Modal Components**: Modal management with backdrop, escape handling, and content management
+- **Label Components**: Text labels with attributes and state management
+- **Container Components**: Layout containers with gap management and visibility control
+
+**Key Features:**
+- **Lifecycle Management**: onMount, onUnmount, onUpdate, onShow, onHide, onEnable, onDisable hooks
+- **State Management**: Comprehensive get/set methods for all component states
+- **Event Handling**: Integration with EventFramework for memory leak prevention
+- **Default Configurations**: Sensible defaults for all component types
+- **Batch Operations**: Show/hide/enable/disable all components
+- **Factory Methods**: createSliderWithLabel, createButtonGroup, createFormGroup for common patterns
+- **Component Discovery**: getComponent, getAllComponents, getComponentsByType utilities
+- **Layout Management**: Dynamic layout switching and gap control
+- **Modal Operations**: Backdrop creation, escape handling, content management
 
 **Performance Optimisations:**
 - Debounced input handling (16ms for 60fps)
 - Element caching to reduce DOM queries
 - RequestAnimationFrame for smooth rendering
-- Memory leak prevention with cleanup methods
+- Memory leak prevention with EventFramework integration
+- Efficient state management with minimal DOM updates
 
 #### ControlVisibilityManager
 CSS-based control visibility management system that replaces JavaScript-based show/hide logic:
@@ -266,15 +281,16 @@ static simulationControlTemplates = {
 #### ConfigurationManager
 Centralised configuration system that uses ControlTemplateManager:
 
-#### Event Framework
-Comprehensive event management system with enhanced element caching:
+#### EventFramework
+Comprehensive event management system with enhanced element caching and memory leak prevention:
 
 **Features:**
 - Centralised event registration and cleanup
 - Debounced and throttled event handlers
 - Batch event registration
-- Memory leak prevention
+- Memory leak prevention with proper handler storage and removal
 - Enhanced element caching with null value handling
+- Integration with UIComponentLibrary for component event management
 
 **Enhanced Element Caching:**
 ```javascript

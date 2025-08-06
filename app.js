@@ -35,108 +35,407 @@ class SharedComponents {
     }
 }
 
-// Enhanced UI Component Library with lifecycle management
+// Enhanced UI Component Library with comprehensive lifecycle management
 class UIComponentLibrary {
-    constructor() {
+    constructor(eventFramework) {
         this.components = new Map();
         this.lifecycleHooks = new Map();
+        this.componentTypes = new Set();
+        this.defaultConfigs = new Map();
+        this.eventFramework = eventFramework;
+        this.initDefaultConfigs();
     }
     
-    // Create a standardized slider component
+    // Initialize default configurations for all component types
+    initDefaultConfigs() {
+        this.defaultConfigs.set('slider', {
+            min: 0,
+            max: 100,
+            step: 1,
+            value: 50,
+            format: (val) => val.toString(),
+            className: 'slider'
+        });
+        
+        this.defaultConfigs.set('button', {
+            className: 'btn secondary',
+            disabled: false,
+            pressed: false
+        });
+        
+        this.defaultConfigs.set('select', {
+            className: 'simulation-select',
+            placeholder: 'Select option...'
+        });
+        
+        this.defaultConfigs.set('controlGroup', {
+            className: 'control-group',
+            layout: 'horizontal', // horizontal, vertical, grid
+            gap: '0.5rem',
+            visible: true
+        });
+        
+        this.defaultConfigs.set('statusDisplay', {
+            className: 'status-info',
+            layout: 'horizontal',
+            gap: '0.5rem',
+            format: (value) => value.toString()
+        });
+        
+        this.defaultConfigs.set('modal', {
+            className: 'modal',
+            backdrop: true,
+            closeOnEscape: true,
+            closeOnBackdrop: true,
+            animation: true
+        });
+        
+        this.defaultConfigs.set('label', {
+            className: 'control-label',
+            required: false
+        });
+        
+        this.defaultConfigs.set('container', {
+            className: 'ui-container',
+            layout: 'horizontal',
+            gap: '0.5rem',
+            visible: true
+        });
+    }
+    
+    // Create a standardized slider component with enhanced features
     createSlider(config) {
+        const defaultConfig = this.defaultConfigs.get('slider');
+        const mergedConfig = { ...defaultConfig, ...config };
+        
         const component = {
             type: 'slider',
-            id: config.id,
-            element: document.getElementById(config.id),
-            valueElement: document.getElementById(config.valueElementId),
-            config: config,
+            id: mergedConfig.id,
+            element: document.getElementById(mergedConfig.id),
+            valueElement: document.getElementById(mergedConfig.valueElementId),
+            config: mergedConfig,
             state: {
-                value: config.value || config.min,
-                isEnabled: true
+                value: mergedConfig.value || mergedConfig.min,
+                isEnabled: !mergedConfig.disabled,
+                isVisible: true,
+                isDragging: false
             },
             methods: {
                 setValue: (value) => this.setSliderValue(component, value),
+                getValue: () => this.getSliderValue(component),
                 enable: () => this.enableComponent(component),
                 disable: () => this.disableComponent(component),
-                update: (newConfig) => this.updateSlider(component, newConfig)
+                show: () => this.showComponent(component),
+                hide: () => this.hideComponent(component),
+                update: (newConfig) => this.updateSlider(component, newConfig),
+                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
+                removeEventListener: (event) => this.removeComponentEventListener(component, event)
             }
         };
         
-        this.components.set(config.id, component);
+        this.components.set(mergedConfig.id, component);
+        this.componentTypes.add('slider');
         this.initializeComponent(component);
         return component;
     }
     
-    // Create a standardized button component
+    // Create a standardized button component with enhanced features
     createButton(config) {
+        const defaultConfig = this.defaultConfigs.get('button');
+        const mergedConfig = { ...defaultConfig, ...config };
+        
         const component = {
             type: 'button',
-            id: config.id,
-            element: document.getElementById(config.id),
-            config: config,
+            id: mergedConfig.id,
+            element: document.getElementById(mergedConfig.id),
+            config: mergedConfig,
             state: {
-                isEnabled: true,
-                isPressed: false
+                isEnabled: !mergedConfig.disabled,
+                isPressed: mergedConfig.pressed || false,
+                isVisible: true,
+                text: mergedConfig.label || mergedConfig.text || ''
             },
             methods: {
                 setText: (text) => this.setButtonText(component, text),
+                getText: () => this.getButtonText(component),
                 enable: () => this.enableComponent(component),
                 disable: () => this.disableComponent(component),
+                show: () => this.showComponent(component),
+                hide: () => this.hideComponent(component),
                 press: () => this.pressButton(component),
-                release: () => this.releaseButton(component)
+                release: () => this.releaseButton(component),
+                toggle: () => this.toggleButton(component),
+                update: (newConfig) => this.updateButton(component, newConfig),
+                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
+                removeEventListener: (event) => this.removeComponentEventListener(component, event)
             }
         };
         
-        this.components.set(config.id, component);
+        this.components.set(mergedConfig.id, component);
+        this.componentTypes.add('button');
         this.initializeComponent(component);
         return component;
     }
     
-    // Create a control group component
-    createControlGroup(groupId, controls) {
+    // Create a select dropdown component
+    createSelect(config) {
+        const defaultConfig = this.defaultConfigs.get('select');
+        const mergedConfig = { ...defaultConfig, ...config };
+        
+        const component = {
+            type: 'select',
+            id: mergedConfig.id,
+            element: document.getElementById(mergedConfig.id),
+            config: mergedConfig,
+            state: {
+                value: mergedConfig.value || '',
+                isEnabled: !mergedConfig.disabled,
+                isVisible: true,
+                options: mergedConfig.options || []
+            },
+            methods: {
+                setValue: (value) => this.setSelectValue(component, value),
+                getValue: () => this.getSelectValue(component),
+                setOptions: (options) => this.setSelectOptions(component, options),
+                getOptions: () => this.getSelectOptions(component),
+                enable: () => this.enableComponent(component),
+                disable: () => this.disableComponent(component),
+                show: () => this.showComponent(component),
+                hide: () => this.hideComponent(component),
+                update: (newConfig) => this.updateSelect(component, newConfig),
+                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
+                removeEventListener: (event) => this.removeComponentEventListener(component, event)
+            }
+        };
+        
+        this.components.set(mergedConfig.id, component);
+        this.componentTypes.add('select');
+        this.initializeComponent(component);
+        return component;
+    }
+    
+    // Create a control group component with enhanced layout options
+    createControlGroup(groupId, controls = []) {
+        const defaultConfig = this.defaultConfigs.get('controlGroup');
+        const mergedConfig = { ...defaultConfig, ...controls };
+        
         const component = {
             type: 'controlGroup',
             id: groupId,
             element: document.getElementById(groupId),
             controls: controls,
+            config: mergedConfig,
             state: {
-                isVisible: true,
-                isEnabled: true
+                isVisible: mergedConfig.visible,
+                isEnabled: true,
+                layout: mergedConfig.layout,
+                gap: mergedConfig.gap
             },
             methods: {
                 show: () => this.showControlGroup(component),
                 hide: () => this.hideControlGroup(component),
                 enable: () => this.enableComponent(component),
                 disable: () => this.disableComponent(component),
-                updateControls: (newControls) => this.updateControlGroup(component, newControls)
+                setLayout: (layout) => this.setControlGroupLayout(component, layout),
+                addControl: (control) => this.addControlToGroup(component, control),
+                removeControl: (controlId) => this.removeControlFromGroup(component, controlId),
+                updateControls: (newControls) => this.updateControlGroup(component, newControls),
+                getControls: () => this.getControlGroupControls(component),
+                update: (newConfig) => this.updateControlGroup(component, newConfig)
             }
         };
         
         this.components.set(groupId, component);
+        this.componentTypes.add('controlGroup');
+        this.initializeComponent(component);
+        return component;
+    }
+    
+    // Create a status display component
+    createStatusDisplay(config) {
+        const defaultConfig = this.defaultConfigs.get('statusDisplay');
+        const mergedConfig = { ...defaultConfig, ...config };
+        
+        const component = {
+            type: 'statusDisplay',
+            id: mergedConfig.id,
+            element: document.getElementById(mergedConfig.id),
+            config: mergedConfig,
+            state: {
+                values: mergedConfig.values || {},
+                isVisible: true,
+                layout: mergedConfig.layout,
+                gap: mergedConfig.gap
+            },
+            methods: {
+                setValue: (key, value) => this.setStatusValue(component, key, value),
+                getValue: (key) => this.getStatusValue(component, key),
+                setValues: (values) => this.setStatusValues(component, values),
+                getValues: () => this.getStatusValues(component),
+                show: () => this.showComponent(component),
+                hide: () => this.hideComponent(component),
+                setLayout: (layout) => this.setStatusLayout(component, layout),
+                update: (newConfig) => this.updateStatusDisplay(component, newConfig),
+                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
+                removeEventListener: (event) => this.removeComponentEventListener(component, event)
+            }
+        };
+        
+        this.components.set(mergedConfig.id, component);
+        this.componentTypes.add('statusDisplay');
+        this.initializeComponent(component);
+        return component;
+    }
+    
+    // Create a modal component
+    createModal(config) {
+        const defaultConfig = this.defaultConfigs.get('modal');
+        const mergedConfig = { ...defaultConfig, ...config };
+        
+        const component = {
+            type: 'modal',
+            id: mergedConfig.id,
+            element: document.getElementById(mergedConfig.id),
+            config: mergedConfig,
+            state: {
+                isVisible: false,
+                isOpen: false,
+                backdrop: mergedConfig.backdrop,
+                closeOnEscape: mergedConfig.closeOnEscape,
+                closeOnBackdrop: mergedConfig.closeOnBackdrop,
+                animation: mergedConfig.animation
+            },
+            methods: {
+                open: () => this.openModal(component),
+                close: () => this.closeModal(component),
+                toggle: () => this.toggleModal(component),
+                setContent: (content) => this.setModalContent(component, content),
+                getContent: () => this.getModalContent(component),
+                setTitle: (title) => this.setModalTitle(component, title),
+                getTitle: () => this.getModalTitle(component),
+                update: (newConfig) => this.updateModal(component, newConfig),
+                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
+                removeEventListener: (event) => this.removeComponentEventListener(component, event)
+            }
+        };
+        
+        this.components.set(mergedConfig.id, component);
+        this.componentTypes.add('modal');
+        this.initializeComponent(component);
+        return component;
+    }
+    
+    // Create a label component
+    createLabel(config) {
+        const defaultConfig = this.defaultConfigs.get('label');
+        const mergedConfig = { ...defaultConfig, ...config };
+        
+        const component = {
+            type: 'label',
+            id: mergedConfig.id,
+            element: document.getElementById(mergedConfig.id),
+            config: mergedConfig,
+            state: {
+                text: mergedConfig.text || mergedConfig.label || '',
+                isVisible: true,
+                required: mergedConfig.required
+            },
+            methods: {
+                setText: (text) => this.setLabelText(component, text),
+                getText: () => this.getLabelText(component),
+                show: () => this.showComponent(component),
+                hide: () => this.hideComponent(component),
+                setRequired: (required) => this.setLabelRequired(component, required),
+                update: (newConfig) => this.updateLabel(component, newConfig)
+            }
+        };
+        
+        this.components.set(mergedConfig.id, component);
+        this.componentTypes.add('label');
+        this.initializeComponent(component);
+        return component;
+    }
+    
+    // Create a container component for layout management
+    createContainer(config) {
+        const defaultConfig = this.defaultConfigs.get('container');
+        const mergedConfig = { ...defaultConfig, ...config };
+        
+        const component = {
+            type: 'container',
+            id: mergedConfig.id,
+            element: document.getElementById(mergedConfig.id),
+            config: mergedConfig,
+            state: {
+                isVisible: mergedConfig.visible,
+                layout: mergedConfig.layout,
+                gap: mergedConfig.gap,
+                children: mergedConfig.children || []
+            },
+            methods: {
+                show: () => this.showComponent(component),
+                hide: () => this.hideComponent(component),
+                setLayout: (layout) => this.setContainerLayout(component, layout),
+                addChild: (childId) => this.addContainerChild(component, childId),
+                removeChild: (childId) => this.removeChildFromGroup(component, childId),
+                getChildren: () => this.getContainerChildren(component),
+                update: (newConfig) => this.updateContainer(component, newConfig)
+            }
+        };
+        
+        this.components.set(mergedConfig.id, component);
+        this.componentTypes.add('container');
         this.initializeComponent(component);
         return component;
     }
     
     // Component lifecycle management
     initializeComponent(component) {
-        if (component.type === 'slider') {
-            this.initializeSlider(component);
-        } else if (component.type === 'button') {
-            this.initializeButton(component);
-        } else if (component.type === 'controlGroup') {
-            this.initializeControlGroup(component);
+        switch (component.type) {
+            case 'slider':
+                this.initializeSlider(component);
+                break;
+            case 'button':
+                this.initializeButton(component);
+                break;
+            case 'select':
+                this.initializeSelect(component);
+                break;
+            case 'controlGroup':
+                this.initializeControlGroup(component);
+                break;
+            case 'statusDisplay':
+                this.initializeStatusDisplay(component);
+                break;
+            case 'modal':
+                this.initializeModal(component);
+                break;
+            case 'label':
+                this.initializeLabel(component);
+                break;
+            case 'container':
+                this.initializeContainer(component);
+                break;
         }
         
         // Register lifecycle hooks
         this.registerLifecycleHooks(component);
+        
+        // Trigger onMount hook
+        const hooks = this.lifecycleHooks.get(component.id);
+        if (hooks && hooks.onMount) {
+            hooks.onMount();
+        }
     }
     
+    // Initialize specific component types
     initializeSlider(component) {
         if (component.element) {
             component.element.min = component.config.min;
             component.element.max = component.config.max;
             component.element.step = component.config.step;
             component.element.value = component.state.value;
+            component.element.className = component.config.className;
             
             if (component.valueElement) {
                 component.valueElement.textContent = component.config.format(component.state.value);
@@ -146,18 +445,95 @@ class UIComponentLibrary {
     
     initializeButton(component) {
         if (component.element) {
-            component.element.textContent = component.config.label;
-            component.element.className = component.config.className || 'btn secondary';
+            component.element.textContent = component.state.text;
+            component.element.className = component.config.className;
+            component.element.disabled = !component.state.isEnabled;
+            
+            if (component.state.isPressed) {
+                component.element.classList.add('pressed');
+            }
+        }
+    }
+    
+    initializeSelect(component) {
+        if (component.element) {
+            component.element.className = component.config.className;
+            component.element.disabled = !component.state.isEnabled;
+            
+            if (component.state.options.length > 0) {
+                this.setSelectOptions(component, component.state.options);
+            }
+            
+            if (component.state.value) {
+                component.element.value = component.state.value;
+            }
         }
     }
     
     initializeControlGroup(component) {
         if (component.element) {
             component.element.style.display = component.state.isVisible ? 'flex' : 'none';
+            component.element.className = component.config.className;
+            
+            // Apply layout styles
+            if (component.state.layout === 'vertical') {
+                component.element.style.flexDirection = 'column';
+            } else if (component.state.layout === 'grid') {
+                component.element.style.display = 'grid';
+            }
+            
+            component.element.style.gap = component.state.gap;
         }
     }
     
-    // Component state management
+    initializeStatusDisplay(component) {
+        if (component.element) {
+            component.element.style.display = component.state.isVisible ? 'flex' : 'none';
+            component.element.className = component.config.className;
+            
+            if (component.state.layout === 'vertical') {
+                component.element.style.flexDirection = 'column';
+            }
+            
+            component.element.style.gap = component.state.gap;
+        }
+    }
+    
+    initializeModal(component) {
+        if (component.element) {
+            component.element.className = component.config.className;
+            component.element.style.display = 'none';
+        }
+    }
+    
+    initializeLabel(component) {
+        if (component.element) {
+            component.element.textContent = component.state.text;
+            component.element.className = component.config.className;
+            component.element.style.display = component.state.isVisible ? 'block' : 'none';
+            
+            if (component.state.required) {
+                component.element.classList.add('required');
+            }
+        }
+    }
+    
+    initializeContainer(component) {
+        if (component.element) {
+            component.element.style.display = component.state.isVisible ? 'flex' : 'none';
+            component.element.className = component.config.className;
+            
+            if (component.state.layout === 'vertical') {
+                component.element.style.flexDirection = 'column';
+            } else if (component.state.layout === 'grid') {
+                component.element.style.display = 'grid';
+            }
+            
+            component.element.style.gap = component.state.gap;
+        }
+    }
+    
+    // Component state management methods
     setSliderValue(component, value) {
         if (component.element) {
             component.state.value = value;
@@ -166,20 +542,114 @@ class UIComponentLibrary {
             if (component.valueElement) {
                 component.valueElement.textContent = component.config.format(value);
             }
+            
+            this.triggerUpdateHook(component);
         }
+    }
+    
+    getSliderValue(component) {
+        return component.state.value;
     }
     
     setButtonText(component, text) {
         if (component.element) {
+            component.state.text = text;
             component.element.textContent = text;
+            this.triggerUpdateHook(component);
         }
     }
     
+    getButtonText(component) {
+        return component.state.text;
+    }
+    
+    setSelectValue(component, value) {
+        if (component.element) {
+            component.state.value = value;
+            component.element.value = value;
+            this.triggerUpdateHook(component);
+        }
+    }
+    
+    getSelectValue(component) {
+        return component.state.value;
+    }
+    
+    setSelectOptions(component, options) {
+        if (component.element) {
+            component.state.options = options;
+            component.element.innerHTML = '';
+            
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.label || option.text;
+                component.element.appendChild(optionElement);
+            });
+            
+            this.triggerUpdateHook(component);
+        }
+    }
+    
+    getSelectOptions(component) {
+        return component.state.options;
+    }
+    
+    setStatusValue(component, key, value) {
+        component.state.values[key] = value;
+        
+        if (component.element) {
+            const valueElement = component.element.querySelector(`[data-key="${key}"]`);
+            if (valueElement) {
+                valueElement.textContent = component.config.format(value);
+            }
+        }
+        
+        this.triggerUpdateHook(component);
+    }
+    
+    getStatusValue(component, key) {
+        return component.state.values[key];
+    }
+    
+    setStatusValues(component, values) {
+        component.state.values = { ...values };
+        
+        if (component.element) {
+            Object.entries(values).forEach(([key, value]) => {
+                const valueElement = component.element.querySelector(`[data-key="${key}"]`);
+                if (valueElement) {
+                    valueElement.textContent = component.config.format(value);
+                }
+            });
+        }
+        
+        this.triggerUpdateHook(component);
+    }
+    
+    getStatusValues(component) {
+        return { ...component.state.values };
+    }
+    
+    setLabelText(component, text) {
+        if (component.element) {
+            component.state.text = text;
+            component.element.textContent = text;
+            this.triggerUpdateHook(component);
+        }
+    }
+    
+    getLabelText(component) {
+        return component.state.text;
+    }
+    
+    // Component visibility and state management
     enableComponent(component) {
         component.state.isEnabled = true;
         if (component.element) {
             component.element.disabled = false;
         }
+        this.triggerUpdateHook(component);
     }
     
     disableComponent(component) {
@@ -187,20 +657,31 @@ class UIComponentLibrary {
         if (component.element) {
             component.element.disabled = true;
         }
+        this.triggerUpdateHook(component);
     }
     
-    showControlGroup(component) {
+    showComponent(component) {
         component.state.isVisible = true;
         if (component.element) {
-            component.element.style.display = 'flex';
+            component.element.style.display = component.type === 'label' ? 'block' : 'flex';
         }
+        this.triggerUpdateHook(component);
     }
     
-    hideControlGroup(component) {
+    hideComponent(component) {
         component.state.isVisible = false;
         if (component.element) {
             component.element.style.display = 'none';
         }
+        this.triggerUpdateHook(component);
+    }
+    
+    showControlGroup(component) {
+        this.showComponent(component);
+    }
+    
+    hideControlGroup(component) {
+        this.hideComponent(component);
     }
     
     pressButton(component) {
@@ -208,12 +689,244 @@ class UIComponentLibrary {
         if (component.element) {
             component.element.classList.add('pressed');
         }
+        this.triggerUpdateHook(component);
     }
     
     releaseButton(component) {
         component.state.isPressed = false;
         if (component.element) {
             component.element.classList.remove('pressed');
+        }
+        this.triggerUpdateHook(component);
+    }
+    
+    toggleButton(component) {
+        if (component.state.isPressed) {
+            this.releaseButton(component);
+        } else {
+            this.pressButton(component);
+        }
+    }
+    
+    // Modal-specific methods
+    openModal(component) {
+        if (component.element) {
+            component.state.isVisible = true;
+            component.state.isOpen = true;
+            component.element.style.display = 'block';
+            
+            if (component.state.backdrop) {
+                this.createModalBackdrop(component);
+            }
+            
+            if (component.state.closeOnEscape) {
+                this.setupModalEscapeHandler(component);
+            }
+            
+            this.triggerUpdateHook(component);
+        }
+    }
+    
+    closeModal(component) {
+        if (component.element) {
+            component.state.isVisible = false;
+            component.state.isOpen = false;
+            component.element.style.display = 'none';
+            
+            this.removeModalBackdrop(component);
+            this.removeModalEscapeHandler(component);
+            
+            this.triggerUpdateHook(component);
+        }
+    }
+    
+    toggleModal(component) {
+        if (component.state.isOpen) {
+            this.closeModal(component);
+        } else {
+            this.openModal(component);
+        }
+    }
+    
+    setModalContent(component, content) {
+        if (component.element) {
+            const contentElement = component.element.querySelector('[data-modal-content]');
+            if (contentElement) {
+                contentElement.innerHTML = content;
+            }
+        }
+    }
+    
+    getModalContent(component) {
+        if (component.element) {
+            const contentElement = component.element.querySelector('[data-modal-content]');
+            return contentElement ? contentElement.innerHTML : '';
+        }
+        return '';
+    }
+    
+    setModalTitle(component, title) {
+        if (component.element) {
+            const titleElement = component.element.querySelector('[data-modal-title]');
+            if (titleElement) {
+                titleElement.textContent = title;
+            }
+        }
+    }
+    
+    getModalTitle(component) {
+        if (component.element) {
+            const titleElement = component.element.querySelector('[data-modal-title]');
+            return titleElement ? titleElement.textContent : '';
+        }
+        return '';
+    }
+    
+    // Control group specific methods
+    setControlGroupLayout(component, layout) {
+        component.state.layout = layout;
+        if (component.element) {
+            if (layout === 'vertical') {
+                component.element.style.flexDirection = 'column';
+            } else if (layout === 'grid') {
+                component.element.style.display = 'grid';
+            } else {
+                component.element.style.display = 'flex';
+                component.element.style.flexDirection = 'row';
+            }
+        }
+        this.triggerUpdateHook(component);
+    }
+    
+    addControlToGroup(component, control) {
+        component.state.children.push(control);
+        this.triggerUpdateHook(component);
+    }
+    
+    removeControlFromGroup(component, controlId) {
+        component.state.children = component.state.children.filter(child => child.id !== controlId);
+        this.triggerUpdateHook(component);
+    }
+    
+    getControlGroupControls(component) {
+        return [...component.state.children];
+    }
+    
+    // Status display specific methods
+    setStatusLayout(component, layout) {
+        component.state.layout = layout;
+        if (component.element) {
+            if (layout === 'vertical') {
+                component.element.style.flexDirection = 'column';
+            } else {
+                component.element.style.flexDirection = 'row';
+            }
+        }
+        this.triggerUpdateHook(component);
+    }
+    
+    // Container specific methods
+    setContainerLayout(component, layout) {
+        component.state.layout = layout;
+        if (component.element) {
+            if (layout === 'vertical') {
+                component.element.style.flexDirection = 'column';
+            } else if (layout === 'grid') {
+                component.element.style.display = 'grid';
+            } else {
+                component.element.style.display = 'flex';
+                component.element.style.flexDirection = 'row';
+            }
+        }
+        this.triggerUpdateHook(component);
+    }
+    
+    addContainerChild(component, childId) {
+        component.state.children.push(childId);
+        this.triggerUpdateHook(component);
+    }
+    
+    removeContainerChild(component, childId) {
+        component.state.children = component.state.children.filter(id => id !== childId);
+        this.triggerUpdateHook(component);
+    }
+    
+    getContainerChildren(component) {
+        return [...component.state.children];
+    }
+    
+    // Label specific methods
+    setLabelRequired(component, required) {
+        component.state.required = required;
+        if (component.element) {
+            if (required) {
+                component.element.classList.add('required');
+            } else {
+                component.element.classList.remove('required');
+            }
+        }
+        this.triggerUpdateHook(component);
+    }
+    
+    // Component update methods
+    updateSlider(component, newConfig) {
+        Object.assign(component.config, newConfig);
+        this.initializeSlider(component);
+        this.triggerUpdateHook(component);
+    }
+    
+    updateButton(component, newConfig) {
+        Object.assign(component.config, newConfig);
+        this.initializeButton(component);
+        this.triggerUpdateHook(component);
+    }
+    
+    updateSelect(component, newConfig) {
+        Object.assign(component.config, newConfig);
+        this.initializeSelect(component);
+        this.triggerUpdateHook(component);
+    }
+    
+    updateControlGroup(component, newConfig) {
+        Object.assign(component.config, newConfig);
+        this.initializeControlGroup(component);
+        this.triggerUpdateHook(component);
+    }
+    
+    updateStatusDisplay(component, newConfig) {
+        Object.assign(component.config, newConfig);
+        this.initializeStatusDisplay(component);
+        this.triggerUpdateHook(component);
+    }
+    
+    updateModal(component, newConfig) {
+        Object.assign(component.config, newConfig);
+        this.initializeModal(component);
+        this.triggerUpdateHook(component);
+    }
+    
+    updateLabel(component, newConfig) {
+        Object.assign(component.config, newConfig);
+        this.initializeLabel(component);
+        this.triggerUpdateHook(component);
+    }
+    
+    updateContainer(component, newConfig) {
+        Object.assign(component.config, newConfig);
+        this.initializeContainer(component);
+        this.triggerUpdateHook(component);
+    }
+    
+    // Event handling methods
+    addComponentEventListener(component, event, handler) {
+        if (component.element && this.eventFramework) {
+            this.eventFramework.register(component.element, event, handler);
+        }
+    }
+    
+    removeComponentEventListener(component, event) {
+        if (component.element && this.eventFramework) {
+            this.eventFramework.remove(component.element, event);
         }
     }
     
@@ -222,32 +935,188 @@ class UIComponentLibrary {
         const hooks = {
             onMount: () => console.log(`Component ${component.id} mounted`),
             onUnmount: () => console.log(`Component ${component.id} unmounted`),
-            onUpdate: () => console.log(`Component ${component.id} updated`)
+            onUpdate: () => console.log(`Component ${component.id} updated`),
+            onShow: () => console.log(`Component ${component.id} shown`),
+            onHide: () => console.log(`Component ${component.id} hidden`),
+            onEnable: () => console.log(`Component ${component.id} enabled`),
+            onDisable: () => console.log(`Component ${component.id} disabled`)
         };
         
         this.lifecycleHooks.set(component.id, hooks);
     }
     
-    // Component cleanup
-    cleanup() {
-        this.components.clear();
-        this.lifecycleHooks.clear();
+    triggerUpdateHook(component) {
+        const hooks = this.lifecycleHooks.get(component.id);
+        if (hooks && hooks.onUpdate) {
+            hooks.onUpdate();
+        }
     }
     
-    // Get component by ID
+    // Modal helper methods
+    createModalBackdrop(component) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop';
+        backdrop.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        `;
+        
+        if (component.state.closeOnBackdrop) {
+            backdrop.addEventListener('click', () => this.closeModal(component));
+        }
+        
+        document.body.appendChild(backdrop);
+        component.backdropElement = backdrop;
+    }
+    
+    removeModalBackdrop(component) {
+        if (component.backdropElement) {
+            component.backdropElement.remove();
+            component.backdropElement = null;
+        }
+    }
+    
+    setupModalEscapeHandler(component) {
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal(component);
+            }
+        };
+        
+        document.addEventListener('keydown', escapeHandler);
+        component.escapeHandler = escapeHandler;
+    }
+    
+    removeModalEscapeHandler(component) {
+        if (component.escapeHandler) {
+            document.removeEventListener('keydown', component.escapeHandler);
+            component.escapeHandler = null;
+        }
+    }
+    
+    // Utility methods
     getComponent(id) {
         return this.components.get(id);
     }
     
-    // Update component configuration
-    updateSlider(component, newConfig) {
-        Object.assign(component.config, newConfig);
-        this.initializeSlider(component);
+    getAllComponents() {
+        return Array.from(this.components.values());
     }
     
-    updateControlGroup(component, newControls) {
-        component.controls = newControls;
-        this.initializeControlGroup(component);
+    getComponentsByType(type) {
+        return Array.from(this.components.values()).filter(component => component.type === type);
+    }
+    
+    hasComponent(id) {
+        return this.components.has(id);
+    }
+    
+    getComponentTypes() {
+        return Array.from(this.componentTypes);
+    }
+    
+    // Batch operations
+    showAllComponents() {
+        this.components.forEach(component => {
+            this.showComponent(component);
+        });
+    }
+    
+    hideAllComponents() {
+        this.components.forEach(component => {
+            this.hideComponent(component);
+        });
+    }
+    
+    enableAllComponents() {
+        this.components.forEach(component => {
+            this.enableComponent(component);
+        });
+    }
+    
+    disableAllComponents() {
+        this.components.forEach(component => {
+            this.disableComponent(component);
+        });
+    }
+    
+    // Component cleanup
+    cleanup() {
+        // Trigger onUnmount hooks
+        this.components.forEach(component => {
+            const hooks = this.lifecycleHooks.get(component.id);
+            if (hooks && hooks.onUnmount) {
+                hooks.onUnmount();
+            }
+        });
+        
+        this.components.clear();
+        this.lifecycleHooks.clear();
+        this.componentTypes.clear();
+    }
+    
+    // Factory methods for common component combinations
+    createSliderWithLabel(config) {
+        const slider = this.createSlider(config);
+        const label = this.createLabel({
+            id: `${config.id}-label`,
+            text: config.label,
+            for: config.id
+        });
+        
+        return { slider, label };
+    }
+    
+    createButtonGroup(buttons) {
+        const groupId = `button-group-${Date.now()}`;
+        const group = this.createControlGroup(groupId, {
+            layout: 'horizontal',
+            className: 'button-group'
+        });
+        
+        buttons.forEach(buttonConfig => {
+            const button = this.createButton(buttonConfig);
+            group.methods.addControl(button);
+        });
+        
+        return group;
+    }
+    
+    createFormGroup(controls) {
+        const groupId = `form-group-${Date.now()}`;
+        const group = this.createControlGroup(groupId, {
+            layout: 'vertical',
+            className: 'form-group'
+        });
+        
+        controls.forEach(controlConfig => {
+            let control;
+            switch (controlConfig.type) {
+                case 'slider':
+                    control = this.createSlider(controlConfig);
+                    break;
+                case 'button':
+                    control = this.createButton(controlConfig);
+                    break;
+                case 'select':
+                    control = this.createSelect(controlConfig);
+                    break;
+                case 'label':
+                    control = this.createLabel(controlConfig);
+                    break;
+            }
+            
+            if (control) {
+                group.methods.addControl(control);
+            }
+        });
+        
+        return group;
     }
 }
 
