@@ -804,7 +804,7 @@ class EventHandlerFactory {
         const handlers = {
             speedChange: (value) => app.handleSpeedChange(simType, value),
             randomPattern: () => app.handleRandomPattern(simType),
-            showLearnModal: () => app.showLearnModal(simType),
+            showLearnModal: () => app.showLearnModal(), // No simType parameter needed
             addAnt: () => app.handleAddAnt(simType),
             termiteCountChange: (count) => app.handleTermiteCountChange(count),
             brightnessChange: (value) => app.setBrightness(value),
@@ -1059,6 +1059,209 @@ class EventHandlerFactory {
     }
 }
 
+class ModalTemplateManager {
+    constructor() {
+        this.modalTemplates = new Map();
+        this.contentTemplates = new Map();
+        this.init();
+    }
+    
+    init() {
+        this.setupBaseTemplates();
+        this.setupContentTemplates();
+    }
+    
+    setupBaseTemplates() {
+        // Base modal structure template
+        this.baseModalTemplate = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 data-title></h2>
+                    <button class="modal-close" data-close-btn>&times;</button>
+                </div>
+                <div class="modal-body" data-content>
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+        `;
+    }
+    
+    setupContentTemplates() {
+        // Conway's Game of Life content template
+        this.contentTemplates.set('conway', {
+            title: "Conway's Game of Life",
+            content: `
+                <h3>Rules</h3>
+                <p>Conway's Game of Life is a cellular automaton with simple rules:</p>
+                <ul>
+                    <li><strong>Birth:</strong> A dead cell with exactly 3 live neighbours becomes alive</li>
+                    <li><strong>Survival:</strong> A live cell with 2 or 3 live neighbours stays alive</li>
+                    <li><strong>Death:</strong> A live cell with fewer than 2 or more than 3 neighbours dies</li>
+                </ul>
+                
+                <h3>Common Patterns</h3>
+                <ul>
+                    <li><strong>Still Life:</strong> Patterns that don't change (e.g., Block, Beehive)</li>
+                    <li><strong>Oscillators:</strong> Patterns that repeat after a few generations (e.g., Blinker, Toad)</li>
+                    <li><strong>Spaceships:</strong> Patterns that move across the grid (e.g., Glider)</li>
+                </ul>
+                
+                <h3>Historical Context</h3>
+                <p>Conway's Game of Life was created by mathematician John Conway in 1970. It was designed to demonstrate how complex patterns could emerge from simple rules, and it became one of the most famous examples of cellular automata. The game has inspired research in:</p>
+                <ul>
+                    <li>Artificial life and emergent behaviour</li>
+                    <li>Computational complexity and universality</li>
+                    <li>Pattern formation in nature and mathematics</li>
+                    <li>Self-replicating systems and evolution</li>
+                </ul>
+                
+                <h3>How to Use</h3>
+                <p>Click on the grid to toggle cells between alive and dead states. Use the controls to start, pause, and reset the simulation.</p>
+            `
+        });
+        
+        // Termite Algorithm content template
+        this.contentTemplates.set('termite', {
+            title: "Termite Algorithm",
+            content: `
+                <h3>How It Works</h3>
+                <p>The Termite Algorithm demonstrates emergent behaviour through simple rules:</p>
+                <ul>
+                    <li><strong>Movement:</strong> Termites move randomly across the grid</li>
+                    <li><strong>Pick Up:</strong> If a termite encounters a wood chip and isn't carrying one, it picks it up</li>
+                    <li><strong>Drop:</strong> If a termite is carrying a chip and encounters an empty space, it drops the chip</li>
+                    <li><strong>Direction:</strong> Termites occasionally change direction randomly</li>
+                </ul>
+                
+                <h3>Emergent Behaviour</h3>
+                <p>Despite simple individual rules, termites collectively create organised patterns:</p>
+                <ul>
+                    <li><strong>Clustering:</strong> Wood chips gradually form clusters</li>
+                    <li><strong>Self-Organisation:</strong> Random distribution becomes structured over time</li>
+                    <li><strong>Stability:</strong> Once clusters form, they tend to remain stable</li>
+                </ul>
+                
+                <h3>Real-World Applications</h3>
+                <p>This algorithm has inspired research in:</p>
+                <ul>
+                    <li>Swarm robotics and collective behaviour</li>
+                    <li>Resource distribution and optimisation</li>
+                    <li>Self-organising systems and emergent intelligence</li>
+                </ul>
+                
+                <h3>Controls</h3>
+                <p>Use the speed slider to control termite movement speed, the termites slider to adjust the number of termites, and the random button to create a new random distribution of wood chips.</p>
+            `
+        });
+        
+        // Langton's Ant content template
+        this.contentTemplates.set('langton', {
+            title: "Langton's Ant",
+            content: `
+                <h3>Rules</h3>
+                <p>Langton's Ant follows simple rules that create complex emergent behaviour:</p>
+                <ul>
+                    <li><strong>White Cell:</strong> Turn 90° right, flip the cell to black, move forward</li>
+                    <li><strong>Black Cell:</strong> Turn 90° left, flip the cell to white, move forward</li>
+                    <li><strong>Movement:</strong> The ant always moves one cell in the direction it's facing</li>
+                </ul>
+                
+                <h3>Highway Formation</h3>
+                <p>After an initial chaotic period, the ant typically forms a "highway" pattern:</p>
+                <ul>
+                    <li><strong>Chaotic Phase:</strong> The ant moves in seemingly random patterns</li>
+                    <li><strong>Highway Phase:</strong> The ant creates a repeating diagonal pattern</li>
+                    <li><strong>Predictability:</strong> Once the highway forms, the ant's path becomes predictable</li>
+                </ul>
+                
+                <h3>Mathematical Significance</h3>
+                <p>Langton's Ant demonstrates important concepts in:</p>
+                <ul>
+                    <li><strong>Emergence:</strong> Complex patterns from simple rules</li>
+                    <li><strong>Deterministic Chaos:</strong> Predictable rules creating unpredictable initial behaviour</li>
+                    <li><strong>Self-Organisation:</strong> Order emerging from disorder</li>
+                    <li><strong>Computational Universality:</strong> The ant can simulate a Turing machine</li>
+                </ul>
+                
+                <h3>Controls</h3>
+                <p>Use the speed slider to control ant movement speed, the Add Ant button (or press 'a') to add new ants, and the random button to create a random pattern of white and black cells.</p>
+            `
+        });
+    }
+    
+    createModalContent(simType) {
+        const template = this.contentTemplates.get(simType);
+        if (!template) {
+            console.warn(`No content template found for simulation type: ${simType}`);
+            return null;
+        }
+        
+        // Create modal structure with content
+        const modalHTML = this.baseModalTemplate
+            .replace('[data-title]', template.title)
+            .replace('[data-close-btn]', '')
+            .replace('[data-content]', template.content);
+        
+        return {
+            title: template.title,
+            content: modalHTML
+        };
+    }
+    
+    generateModalHTML(simType) {
+        const content = this.createModalContent(simType);
+        if (!content) return null;
+        
+        return `
+            <div id="${simType}-modal" class="modal">
+                ${content.content}
+            </div>
+        `;
+    }
+    
+    injectModalContent(simType, modalElement) {
+        const template = this.contentTemplates.get(simType);
+        if (!template || !modalElement) return false;
+        
+        // Update title using data attribute for more robust selection
+        const titleElement = modalElement.querySelector('[data-modal-title]');
+        if (titleElement) {
+            titleElement.textContent = template.title;
+        }
+        
+        // Update content using data attribute for more robust selection
+        const contentElement = modalElement.querySelector('[data-modal-content]');
+        if (contentElement) {
+            contentElement.innerHTML = template.content;
+        }
+        
+        return true;
+    }
+    
+    addContentTemplate(simType, template) {
+        if (!template.title || !template.content) {
+            console.error('Template must have title and content properties');
+            return false;
+        }
+        
+        this.contentTemplates.set(simType, template);
+        return true;
+    }
+    
+    getAvailableSimulations() {
+        return Array.from(this.contentTemplates.keys());
+    }
+    
+    hasTemplate(simType) {
+        return this.contentTemplates.has(simType);
+    }
+    
+    cleanup() {
+        this.modalTemplates.clear();
+        this.contentTemplates.clear();
+    }
+}
+
 // Control Template Manager for Simulation Control Configuration Consolidation
 class ControlTemplateManager {
     // Base templates for common control types
@@ -1192,21 +1395,11 @@ class ControlTemplateManager {
 
     // Get modal configuration
     static getModalConfig(simType) {
-        const modalConfigs = {
-            conway: {
-                id: 'conway-modal',
-                closeId: 'conway-modal-close'
-            },
-            termite: {
-                id: 'termite-modal',
-                closeId: 'termite-modal-close'
-            },
-            langton: {
-                id: 'langton-modal',
-                closeId: 'langton-modal-close'
-            }
+        // All simulations now use the dynamic modal
+        return {
+            id: 'dynamic-modal',
+            closeId: 'dynamic-modal-close'
         };
-        return modalConfigs[simType];
     }
 
     // Get all simulation configurations
@@ -1639,6 +1832,10 @@ class ModalManager {
         this.elementCache = PerformanceOptimizer.createElementCache();
         this.renderQueue = new Set();
         this.isRendering = false;
+        this.modalTemplateManager = new ModalTemplateManager();
+        this.dynamicModalId = 'dynamic-modal';
+        this.currentSimType = null;
+        this.scrollPositions = new Map(); // Track scroll positions for each simulation type
         this.init();
     }
     
@@ -1652,6 +1849,10 @@ class ModalManager {
         
         const throttledClick = PerformanceOptimizer.throttle((e) => {
             if (this.activeModal && e.target.classList.contains('modal')) {
+                // Save scroll position before hiding for dynamic modal
+                if (this.activeModal === this.dynamicModalId && this.currentSimType) {
+                    this.saveScrollPosition(this.currentSimType);
+                }
                 this.hide(this.activeModal);
             }
         }, 100);
@@ -1678,6 +1879,10 @@ class ModalManager {
         // Set up close button event listener
         if (modalConfig.closeBtn) {
             modalConfig.closeBtn.addEventListener('click', () => {
+                // Save scroll position before hiding for dynamic modal
+                if (modalId === this.dynamicModalId && this.currentSimType) {
+                    this.saveScrollPosition(this.currentSimType);
+                }
                 this.hide(modalId);
             });
         }
@@ -1686,25 +1891,103 @@ class ModalManager {
         return modalConfig;
     }
     
-    show(modalId) {
+    // Register dynamic modal for a specific simulation type
+    registerDynamicModal(simType) {
+        if (!this.modalTemplateManager.hasTemplate(simType)) {
+            console.warn(`No template found for simulation type: ${simType}`);
+            return false;
+        }
+        
+        // Register the dynamic modal if not already registered
+        if (!this.modals.has(this.dynamicModalId)) {
+            this.register(this.dynamicModalId);
+        }
+        
+        return true;
+    }
+    
+    show(modalId, simType = null) {
         const modalConfig = this.modals.get(modalId);
         if (!modalConfig) {
             console.warn(`Modal '${modalId}' not registered`);
             return;
         }
-        
-        // Hide any currently active modal
-        if (this.activeModal) {
-            this.hide(this.activeModal);
+
+        // If showing the dynamic modal, handle content injection
+        if (modalId === this.dynamicModalId && simType) {
+            // Save scroll position of previous modal if it was the dynamic modal
+            if (this.activeModal === this.dynamicModalId && this.currentSimType) {
+                this.saveScrollPosition(this.currentSimType);
+            }
+
+            // Update current simulation type
+            this.currentSimType = simType;
+
+            // Inject dynamic content
+            this.injectDynamicContent(simType);
         }
-        
-        // Queue modal for rendering to prevent layout thrashing
+
+        // Queue modal for showing
         this.queueModalRender(modalConfig, true);
         this.activeModal = modalId;
-        
+
         // Trigger custom show callback
         if (modalConfig.onShow) {
             modalConfig.onShow();
+        }
+    }
+    
+    // Inject dynamic content for the current simulation type
+    injectDynamicContent(simType) {
+        const modalElement = this.modals.get(this.dynamicModalId)?.element;
+        if (!modalElement) {
+            console.warn('Dynamic modal not found');
+            return;
+        }
+        
+        const success = this.modalTemplateManager.injectModalContent(simType, modalElement);
+        if (!success) {
+            console.warn(`Failed to inject content for simulation type: ${simType}`);
+            return;
+        }
+    }
+    
+    // Save scroll position for a specific simulation type
+    saveScrollPosition(simType) {
+        const modalElement = this.modals.get(this.dynamicModalId)?.element;
+        if (!modalElement) {
+            console.warn('Modal element not found for scroll position save');
+            return;
+        }
+
+        const modalContent = modalElement.querySelector('.modal-content');
+        if (modalContent) {
+            const currentScrollTop = modalContent.scrollTop;
+            this.scrollPositions.set(simType, currentScrollTop);
+        } else {
+            console.warn('Modal content element not found for scroll position save');
+        }
+    }
+    
+    // Restore scroll position for a specific simulation type
+    restoreScrollPosition(simType) {
+        const modalElement = this.modals.get(this.dynamicModalId)?.element;
+        if (!modalElement) {
+            console.warn('Modal element not found for scroll position restore');
+            return;
+        }
+
+        const modalContent = modalElement.querySelector('.modal-content');
+        if (modalContent) {
+            const savedPosition = this.scrollPositions.get(simType);
+            if (savedPosition !== undefined) {
+                modalContent.scrollTop = savedPosition;
+            } else {
+                // If no saved position, scroll to top
+                modalContent.scrollTop = 0;
+            }
+        } else {
+            console.warn('Modal content element not found for scroll position restore');
         }
     }
     
@@ -1740,7 +2023,7 @@ class ModalManager {
     // Process render queue efficiently
     processRenderQueue() {
         this.isRendering = true;
-        
+
         // Use requestAnimationFrame for smooth rendering
         requestAnimationFrame(() => {
             this.renderQueue.forEach(({ modalConfig, show }) => {
@@ -1752,9 +2035,17 @@ class ModalManager {
                     modalConfig.isVisible = false;
                 }
             });
-            
+
             this.renderQueue.clear();
             this.isRendering = false;
+
+            // Handle scroll position after modal is rendered
+            if (this.activeModal === this.dynamicModalId && this.currentSimType) {
+                // Use another requestAnimationFrame to ensure the modal is fully visible
+                requestAnimationFrame(() => {
+                    this.restoreScrollPosition(this.currentSimType);
+                });
+            }
         });
     }
     
@@ -1774,6 +2065,7 @@ class ModalManager {
         this.modals.clear();
         this.renderQueue.clear();
         this.elementCache.clear();
+        this.scrollPositions.clear();
         this.activeModal = null;
     }
 }
@@ -1839,16 +2131,14 @@ class AlgorithmicPatternGenerator {
     }
     
     setupModals() {
-        // Register all modals with the modal manager
-        Object.entries(ConfigurationManager.getAllConfigs()).forEach(([simType, config]) => {
-            this.modalManager.register(config.modal.id, {
-                onShow: () => {
-                    console.log(`${simType} modal opened`);
-                },
-                onHide: () => {
-                    console.log(`${simType} modal closed`);
-                }
-            });
+        // Register the dynamic modal with the modal manager
+        this.modalManager.register(this.modalManager.dynamicModalId, {
+            onShow: () => {
+                console.log(`Dynamic modal opened for ${this.modalManager.currentSimType || 'unknown'} simulation`);
+            },
+            onHide: () => {
+                console.log(`Dynamic modal closed`);
+            }
         });
     }
     
@@ -2164,19 +2454,18 @@ class AlgorithmicPatternGenerator {
     
     // Generic modal handlers using modal manager
     showLearnModal(simType) {
-        // If no simType is provided, use the current simulation type
-        const currentSimType = simType || this.currentType;
-        const config = ConfigurationManager.getConfig(currentSimType);
-        if (!config) return;
+        // Always use the current simulation type for the Learn modal
+        const currentSimType = this.currentType;
         
-        this.modalManager.show(config.modal.id);
+        // Register dynamic modal for this simulation type
+        this.modalManager.registerDynamicModal(currentSimType);
+        
+        // Show the dynamic modal with the current simulation type
+        this.modalManager.show(this.modalManager.dynamicModalId, currentSimType);
     }
     
     hideLearnModal(simType) {
-        const config = ConfigurationManager.getConfig(simType);
-        if (!config) return;
-        
-        this.modalManager.hide(config.modal.id);
+        this.modalManager.hide(this.modalManager.dynamicModalId);
     }
     
     // Generic add ant handler

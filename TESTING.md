@@ -23,6 +23,7 @@ The test suite is organised into logical categories:
 - **System Tests** - System-level functionality and error handling
 - **Control Visibility Tests** - CSS-based control visibility management system
 - **EventHandlerFactory Tests** - Template-based event handler creation and registration system
+- **ModalTemplateManager Tests** - Template-based modal content management system
 
 ## Quick Start
 
@@ -80,6 +81,7 @@ The visual test suite (`test-suite.html`) provides an intuitive interface for te
    - Integration Tests
    - System Tests
    - Control Visibility Tests
+   - ModalTemplateManager Tests
 
 2. **Select/Deselect All**: Use the top checkbox to quickly select or deselect all test groups at once. The checkbox shows:
    - **Checked**: All test groups are selected
@@ -409,6 +411,52 @@ Tests the template-based event handler creation and registration system:
 - Validates seamless operation of registerSimulationHandlers()
 - Tests registerAllHandlers() functionality
 - Verifies proper cleanup integration
+
+### ModalTemplateManager Tests
+
+Tests the template-based modal content management system:
+
+#### ✅ ModalTemplateManager Content Templates
+- Tests content template setup for all simulations (Conway, Termite, Langton)
+- Validates template existence and availability
+- Tests template content creation and structure
+- Verifies proper handling of invalid simulation types
+
+#### ✅ ModalTemplateManager HTML Generation
+- Tests HTML generation for modal structures
+- Validates proper modal ID and class assignment
+- Tests HTML structure integrity
+- Verifies template-based HTML creation
+
+#### ✅ ModalTemplateManager Content Injection
+- Tests dynamic content injection into modal elements
+- Validates title and content updates using data attributes
+- Tests robust element selection and content replacement
+- Verifies proper handling of missing elements and invalid simulation types
+
+#### ✅ Dynamic Modal System Integration
+- Tests complete dynamic modal system integration
+- Validates modal registration and content injection
+- Tests simulation-specific modal showing and hiding
+- Verifies proper modal state management
+
+#### ✅ Learn Modal Content Verification
+- Tests Learn modal content for all simulation types
+- Validates correct content display based on current simulation
+- Tests modal visibility and content structure
+- Verifies absence of nested modal structures
+
+#### ✅ Learn Modal Shows Correct Content for Current Simulation
+- Tests that Learn modal shows correct content based on current simulation type
+- Validates simulation switching and content updates
+- Tests modal content accuracy for each simulation
+- Verifies proper simulation context awareness
+
+#### ✅ Modal Scroll Position Management
+- Tests simulation-specific scroll position preservation
+- Validates scroll position saving and restoration
+- Tests scroll position management across simulation switches
+- Verifies initial scroll position for new simulations
 
 ## Before Refactoring
 

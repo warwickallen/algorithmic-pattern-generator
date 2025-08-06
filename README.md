@@ -24,6 +24,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **Comprehensive Testing** - Visual and programmatic test suites for quality assurance
 - **CSS-Based Control Visibility** - Declarative control visibility management using CSS classes and data attributes
 - **EventHandlerFactory** - Template-based event handler creation and registration system
+- **ModalTemplateManager** - Template-based modal content management with dynamic content injection and scroll position management
 
 ## Quick Start
 
@@ -218,6 +219,7 @@ The test suite covers:
 - Visual effects testing
 - System-level functionality
 - Control visibility management
+- ModalTemplateManager testing
 
 ## Performance Benchmarks
 
