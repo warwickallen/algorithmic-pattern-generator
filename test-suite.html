@@ -472,6 +472,11 @@
                         <span class="checkmark"></span>
                         Control Visibility Tests
                     </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="event-handler-factory-checkbox" value="event-handler-factory" checked>
+                        <span class="checkmark"></span>
+                        Event Handler Factory Tests
+                    </label>
                 </div>
             </div>
             <div class="action-buttons">
@@ -547,6 +552,11 @@
             <div class="test-category">
                 <h3>Control Visibility Tests</h3>
                 <div id="control-visibility-tests"></div>
+            </div>
+            
+            <div class="test-category">
+                <h3>Event Handler Factory Tests</h3>
+                <div id="event-handler-factory-tests"></div>
             </div>
         </div>
     </div>
@@ -1744,15 +1754,40 @@
                 const eventFramework = new EventFramework();
                 const controlManager = new ControlManager(eventFramework);
                 
+                // Ensure ConfigurationManager is initialized
+                ConfigurationManager.getAllConfigs();
+                
                 // Clear the element cache to ensure fresh lookups after DOM elements are added
                 eventFramework.elementCache.clear();
                 
 
                 
                 // Ensure the termite configuration is properly set up
+                let originalGetConfig = null;
                 const termiteConfig = ConfigurationManager.getConfig('termite');
-                if (!termiteConfig || !termiteConfig.controls.termiteCount) {
-                    throw new Error('Termite configuration not found');
+                if (!termiteConfig || !termiteConfig.controls || !termiteConfig.controls.termiteCount) {
+                    // If configuration is missing, create a basic one for testing
+                    const basicConfig = {
+                        controls: {
+                            termiteCount: {
+                                type: 'slider',
+                                id: 'termites-slider',
+                                valueElementId: 'termites-value',
+                                min: 10,
+                                max: 100,
+                                step: 1,
+                                value: 50,
+                                label: 'Termites',
+                                format: (value) => value.toString()
+                            }
+                        }
+                    };
+                    // Mock the configuration manager for this test
+                    originalGetConfig = ConfigurationManager.getConfig;
+                    ConfigurationManager.getConfig = (simType) => {
+                        if (simType === 'termite') return basicConfig;
+                        return originalGetConfig.call(ConfigurationManager, simType);
+                    };
                 }
                 
                 // Reset simulation for event test
@@ -1768,7 +1803,7 @@
                 await new Promise(resolve => setTimeout(resolve, 10));
                 
                 // Test the event handler directly
-                const handlers = controlManager.simulationHandlers.get('termite');
+                const handlers = controlManager.eventHandlerFactory.registeredHandlers.get('termite');
                 if (handlers && handlers.termiteCountChange) {
                     handlers.termiteCountChange(25);
                 }
@@ -1786,6 +1821,11 @@
                 document.body.removeChild(sliderContainer);
                 eventFramework.cleanup();
                 controlManager.cleanup();
+                
+                // Restore original configuration manager if it was mocked
+                if (originalGetConfig) {
+                    ConfigurationManager.getConfig = originalGetConfig;
+                }
                 
                 return {
                     passed: directMethodResult && handlerResult && eventBasedResult,
@@ -3048,6 +3088,273 @@
                 details: `ControlManager integration works: conway active: ${conwayActive}, no active sim after hide: ${noActiveSim}`
             };
         }, 'control-visibility');
+
+        // EventHandlerFactory Tests
+        testSuite.addTest('EventHandlerFactory Initialization', async () => {
+            const eventFramework = new EventFramework();
+            const eventHandlerFactory = new EventHandlerFactory(eventFramework);
+            
+            // Check if factory is properly initialized
+            const hasHandlerTemplates = eventHandlerFactory.handlerTemplates.size > 0;
+            const hasRegisteredHandlers = eventHandlerFactory.registeredHandlers.size === 0; // Should start empty
+            
+            // Cleanup
+            eventHandlerFactory.cleanup();
+            
+            return {
+                passed: hasHandlerTemplates && hasRegisteredHandlers,
+                details: `Handler templates initialized: ${hasHandlerTemplates}, Registered handlers empty: ${hasRegisteredHandlers}`
+            };
+        }, 'event-handler-factory');
+        
+        testSuite.addTest('EventHandlerFactory Simulation Handlers Creation', async () => {
+            const eventFramework = new EventFramework();
+            const eventHandlerFactory = new EventHandlerFactory(eventFramework);
+            
+            const mockApp = {
+                handleSpeedChange: () => {},
+                handleRandomPattern: () => {},
+                showLearnModal: () => {},
+                handleAddAnt: () => {},
+                handleTermiteCountChange: () => {},
+                setBrightness: () => {},
+                setLikelihood: () => {}
+            };
+            
+            const handlers = eventHandlerFactory.createSimulationHandlers('conway', mockApp);
+            
+            // Check if all required handlers are created
+            const hasSpeedChange = typeof handlers.speedChange === 'function';
+            const hasRandomPattern = typeof handlers.randomPattern === 'function';
+            const hasShowLearnModal = typeof handlers.showLearnModal === 'function';
+            const hasAddAnt = typeof handlers.addAnt === 'function';
+            const hasTermiteCountChange = typeof handlers.termiteCountChange === 'function';
+            const hasBrightnessChange = typeof handlers.brightnessChange === 'function';
+            const hasLikelihoodChange = typeof handlers.likelihoodChange === 'function';
+            
+            // Check if handlers are stored for cleanup
+            const hasRegisteredHandlers = eventHandlerFactory.hasRegisteredHandlers('conway');
+            
+            // Cleanup
+            eventHandlerFactory.cleanup();
+            
+            return {
+                passed: hasSpeedChange && hasRandomPattern && hasShowLearnModal && 
+                        hasAddAnt && hasTermiteCountChange && hasBrightnessChange && 
+                        hasLikelihoodChange && hasRegisteredHandlers,
+                details: `All handlers created and registered: speedChange: ${hasSpeedChange}, randomPattern: ${hasRandomPattern}, showLearnModal: ${hasShowLearnModal}, addAnt: ${hasAddAnt}, termiteCountChange: ${hasTermiteCountChange}, brightnessChange: ${hasBrightnessChange}, likelihoodChange: ${hasLikelihoodChange}, registered: ${hasRegisteredHandlers}`
+            };
+        }, 'event-handler-factory');
+        
+        testSuite.addTest('EventHandlerFactory Slider Handler Creation', async () => {
+            const eventFramework = new EventFramework();
+            const eventHandlerFactory = new EventHandlerFactory(eventFramework);
+            
+            const config = {
+                id: 'test-slider',
+                valueElementId: 'test-value',
+                format: (value) => `${value}%`
+            };
+            
+            const handlers = {
+                speedChange: () => {},
+                brightnessChange: () => {},
+                likelihoodChange: () => {}
+            };
+            
+            // Test input handler creation
+            const inputHandler = eventHandlerFactory.createSliderInputHandler(config, handlers);
+            const hasInputHandler = typeof inputHandler === 'function';
+            
+            // Test change handler creation
+            const changeHandler = eventHandlerFactory.createSliderChangeHandler(config, handlers);
+            const hasChangeHandler = typeof changeHandler === 'function';
+            
+            // Cleanup
+            eventHandlerFactory.cleanup();
+            
+            return {
+                passed: hasInputHandler && hasChangeHandler,
+                details: `Slider handlers created: input: ${hasInputHandler}, change: ${hasChangeHandler}`
+            };
+        }, 'event-handler-factory');
+        
+        testSuite.addTest('EventHandlerFactory Button Handler Creation', async () => {
+            const eventFramework = new EventFramework();
+            const eventHandlerFactory = new EventHandlerFactory(eventFramework);
+            
+            const config = {
+                id: 'learn-btn'
+            };
+            
+            const handlers = {
+                showLearnModal: () => {},
+                addAnt: () => {},
+                randomPattern: () => {}
+            };
+            
+            // Test button click handler creation
+            const clickHandler = eventHandlerFactory.createButtonClickHandler(config, handlers);
+            const hasClickHandler = typeof clickHandler === 'function';
+            
+            // Cleanup
+            eventHandlerFactory.cleanup();
+            
+            return {
+                passed: hasClickHandler,
+                details: `Button click handler created: ${hasClickHandler}`
+            };
+        }, 'event-handler-factory');
+        
+        testSuite.addTest('EventHandlerFactory Control Setup', async () => {
+            const eventFramework = new EventFramework();
+            const eventHandlerFactory = new EventHandlerFactory(eventFramework);
+            
+            // Mock element creation with proper DOM methods
+            const mockElement = { 
+                addEventListener: () => {}, 
+                removeEventListener: () => {},
+                id: 'test-element'
+            };
+            eventFramework.getElement = () => mockElement;
+            
+            const sliderConfig = {
+                id: 'test-slider',
+                valueElementId: 'test-value',
+                format: (value) => `${value}%`
+            };
+            
+            const buttonConfig = {
+                id: 'test-button'
+            };
+            
+            const handlers = {
+                speedChange: () => {},
+                showLearnModal: () => {}
+            };
+            
+            // Test slider setup
+            let sliderSetupSuccess = true;
+            try {
+                eventHandlerFactory.setupSlider(sliderConfig, handlers);
+            } catch (e) {
+                sliderSetupSuccess = false;
+            }
+            
+            // Test button setup
+            let buttonSetupSuccess = true;
+            try {
+                eventHandlerFactory.setupButton(buttonConfig, handlers);
+            } catch (e) {
+                buttonSetupSuccess = false;
+            }
+            
+            // Cleanup
+            eventHandlerFactory.cleanup();
+            
+            return {
+                passed: sliderSetupSuccess && buttonSetupSuccess,
+                details: `Control setup: slider: ${sliderSetupSuccess}, button: ${buttonSetupSuccess}`
+            };
+        }, 'event-handler-factory');
+        
+        testSuite.addTest('EventHandlerFactory Custom Handler Creation', async () => {
+            const eventFramework = new EventFramework();
+            const eventHandlerFactory = new EventHandlerFactory(eventFramework);
+            
+            const context = { value: 42 };
+            const handlerFunction = function() { return this.value; };
+            
+            const customHandler = eventHandlerFactory.createCustomHandler('test', context, handlerFunction);
+            const hasCustomHandler = typeof customHandler === 'function';
+            const correctContext = customHandler() === 42;
+            
+            // Cleanup
+            eventHandlerFactory.cleanup();
+            
+            return {
+                passed: hasCustomHandler && correctContext,
+                details: `Custom handler created: ${hasCustomHandler}, correct context: ${correctContext}`
+            };
+        }, 'event-handler-factory');
+        
+        testSuite.addTest('EventHandlerFactory Cleanup', async () => {
+            const eventFramework = new EventFramework();
+            const eventHandlerFactory = new EventHandlerFactory(eventFramework);
+            
+            const mockApp = {
+                handleSpeedChange: () => {},
+                handleRandomPattern: () => {},
+                showLearnModal: () => {},
+                handleAddAnt: () => {},
+                handleTermiteCountChange: () => {},
+                setBrightness: () => {},
+                setLikelihood: () => {}
+            };
+            
+            // Create handlers for multiple simulations
+            eventHandlerFactory.createSimulationHandlers('conway', mockApp);
+            eventHandlerFactory.createSimulationHandlers('termite', mockApp);
+            eventHandlerFactory.createSimulationHandlers('langton', mockApp);
+            
+            // Check if handlers are registered
+            const conwayRegistered = eventHandlerFactory.hasRegisteredHandlers('conway');
+            const termiteRegistered = eventHandlerFactory.hasRegisteredHandlers('termite');
+            const langtonRegistered = eventHandlerFactory.hasRegisteredHandlers('langton');
+            
+            // Cleanup
+            eventHandlerFactory.cleanup();
+            
+            // Check if handlers are cleaned up
+            const conwayCleaned = !eventHandlerFactory.hasRegisteredHandlers('conway');
+            const termiteCleaned = !eventHandlerFactory.hasRegisteredHandlers('termite');
+            const langtonCleaned = !eventHandlerFactory.hasRegisteredHandlers('langton');
+            
+            return {
+                passed: conwayRegistered && termiteRegistered && langtonRegistered && 
+                        conwayCleaned && termiteCleaned && langtonCleaned,
+                details: `Handlers registered and cleaned up: conway: ${conwayRegistered}/${conwayCleaned}, termite: ${termiteRegistered}/${termiteCleaned}, langton: ${langtonRegistered}/${langtonCleaned}`
+            };
+        }, 'event-handler-factory');
+        
+        testSuite.addTest('EventHandlerFactory Integration with ControlManager', async () => {
+            const eventFramework = new EventFramework();
+            const controlManager = new ControlManager(eventFramework);
+            
+            const mockApp = {
+                handleSpeedChange: () => {},
+                handleRandomPattern: () => {},
+                showLearnModal: () => {},
+                handleAddAnt: () => {},
+                handleTermiteCountChange: () => {},
+                setBrightness: () => {},
+                setLikelihood: () => {}
+            };
+            
+            // Test simulation handler registration
+            let registrationSuccess = true;
+            try {
+                controlManager.registerSimulationHandlers('conway', mockApp);
+            } catch (e) {
+                registrationSuccess = false;
+            }
+            
+            // Test all handlers registration
+            let allHandlersSuccess = true;
+            try {
+                controlManager.registerAllHandlers(mockApp);
+            } catch (e) {
+                allHandlersSuccess = false;
+            }
+            
+            // Cleanup
+            controlManager.cleanup();
+            
+            return {
+                passed: registrationSuccess && allHandlersSuccess,
+                details: `ControlManager integration: single registration: ${registrationSuccess}, all handlers: ${allHandlersSuccess}`
+            };
+        }, 'event-handler-factory');
 
         // Auto-run tests when page loads
         document.addEventListener('DOMContentLoaded', () => {

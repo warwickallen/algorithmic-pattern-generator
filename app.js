@@ -755,6 +755,310 @@ class PerformanceOptimizer {
     }
 }
 
+/**
+ * EventHandlerFactory - Consolidates event handler registration patterns
+ * Eliminates duplication in event handler creation and registration
+ */
+class EventHandlerFactory {
+    constructor(eventFramework) {
+        this.eventFramework = eventFramework;
+        this.handlerTemplates = new Map();
+        this.registeredHandlers = new Map();
+        this.initHandlerTemplates();
+    }
+
+    /**
+     * Initialize standard handler templates
+     */
+    initHandlerTemplates() {
+        // Slider handler templates
+        this.handlerTemplates.set('slider', {
+            input: this.createSliderInputHandler.bind(this),
+            change: this.createSliderChangeHandler.bind(this)
+        });
+
+        // Button handler templates
+        this.handlerTemplates.set('button', {
+            click: this.createButtonClickHandler.bind(this)
+        });
+
+        // Simulation-specific handler templates
+        this.handlerTemplates.set('simulation', {
+            speedChange: this.createSpeedChangeHandler.bind(this),
+            randomPattern: this.createRandomPatternHandler.bind(this),
+            showLearnModal: this.createShowLearnModalHandler.bind(this),
+            addAnt: this.createAddAntHandler.bind(this),
+            termiteCountChange: this.createTermiteCountChangeHandler.bind(this),
+            brightnessChange: this.createBrightnessChangeHandler.bind(this),
+            likelihoodChange: this.createLikelihoodChangeHandler.bind(this)
+        });
+    }
+
+    /**
+     * Create simulation-specific handlers with context injection
+     * @param {string} simType - The simulation type
+     * @param {Object} app - The main application instance
+     * @returns {Object} Object containing all simulation handlers
+     */
+    createSimulationHandlers(simType, app) {
+        const handlers = {
+            speedChange: (value) => app.handleSpeedChange(simType, value),
+            randomPattern: () => app.handleRandomPattern(simType),
+            showLearnModal: () => app.showLearnModal(simType),
+            addAnt: () => app.handleAddAnt(simType),
+            termiteCountChange: (count) => app.handleTermiteCountChange(count),
+            brightnessChange: (value) => app.setBrightness(value),
+            likelihoodChange: (value) => app.setLikelihood(value)
+        };
+
+        // Store handlers for cleanup
+        this.registeredHandlers.set(simType, handlers);
+        return handlers;
+    }
+
+    /**
+     * Create slider input handler with immediate visual feedback
+     * @param {Object} config - Slider configuration
+     * @param {Object} handlers - Simulation handlers
+     * @returns {Function} Input event handler
+     */
+    createSliderInputHandler(config, handlers) {
+        return (e) => {
+            const value = config.format ? config.format(e.target.value) : e.target.value;
+            const valueElement = this.eventFramework.getElement(`#${config.valueElementId}`);
+            if (valueElement) {
+                valueElement.textContent = value;
+            }
+        };
+    }
+
+    /**
+     * Create slider change handler with debounced processing
+     * @param {Object} config - Slider configuration
+     * @param {Object} handlers - Simulation handlers
+     * @returns {Function} Change event handler
+     */
+    createSliderChangeHandler(config, handlers) {
+        return this.eventFramework.debounce((e) => {
+            const value = config.format ? config.format(e.target.value) : e.target.value;
+            const valueElement = this.eventFramework.getElement(`#${config.valueElementId}`);
+            if (valueElement) {
+                valueElement.textContent = value;
+            }
+            
+            // Route to appropriate handler based on control type
+            if (config.id.includes('speed')) {
+                handlers.speedChange(parseFloat(e.target.value));
+            } else if (config.id.includes('termites')) {
+                handlers.termiteCountChange(parseInt(e.target.value));
+            } else if (config.id.includes('brightness')) {
+                handlers.brightnessChange(parseFloat(e.target.value));
+            } else if (config.id.includes('likelihood')) {
+                handlers.likelihoodChange(parseInt(e.target.value));
+            }
+        }, 16, `${config.id}-debounce`);
+    }
+
+    /**
+     * Create button click handler with conditional routing
+     * @param {Object} config - Button configuration
+     * @param {Object} handlers - Simulation handlers
+     * @returns {Function} Click event handler
+     */
+    createButtonClickHandler(config, handlers) {
+        return () => {
+            if (config.id.includes('learn')) {
+                handlers.showLearnModal();
+            } else if (config.id.includes('add-ant')) {
+                handlers.addAnt();
+            } else if (config.id.includes('random') || config.id.includes('fill')) {
+                handlers.randomPattern();
+            }
+        };
+    }
+
+    /**
+     * Create speed change handler with simulation context
+     * @param {string} simType - Simulation type
+     * @param {Object} app - Application instance
+     * @returns {Function} Speed change handler
+     */
+    createSpeedChangeHandler(simType, app) {
+        return (value) => app.handleSpeedChange(simType, value);
+    }
+
+    /**
+     * Create random pattern handler with simulation context
+     * @param {string} simType - Simulation type
+     * @param {Object} app - Application instance
+     * @returns {Function} Random pattern handler
+     */
+    createRandomPatternHandler(simType, app) {
+        return () => app.handleRandomPattern(simType);
+    }
+
+    /**
+     * Create show learn modal handler with simulation context
+     * @param {string} simType - Simulation type
+     * @param {Object} app - Application instance
+     * @returns {Function} Show learn modal handler
+     */
+    createShowLearnModalHandler(simType, app) {
+        return () => app.showLearnModal(simType);
+    }
+
+    /**
+     * Create add ant handler with simulation context
+     * @param {string} simType - Simulation type
+     * @param {Object} app - Application instance
+     * @returns {Function} Add ant handler
+     */
+    createAddAntHandler(simType, app) {
+        return () => app.handleAddAnt(simType);
+    }
+
+    /**
+     * Create termite count change handler
+     * @param {Object} app - Application instance
+     * @returns {Function} Termite count change handler
+     */
+    createTermiteCountChangeHandler(app) {
+        return (count) => app.handleTermiteCountChange(count);
+    }
+
+    /**
+     * Create brightness change handler
+     * @param {Object} app - Application instance
+     * @returns {Function} Brightness change handler
+     */
+    createBrightnessChangeHandler(app) {
+        return (value) => app.setBrightness(value);
+    }
+
+    /**
+     * Create likelihood change handler
+     * @param {Object} app - Application instance
+     * @returns {Function} Likelihood change handler
+     */
+    createLikelihoodChangeHandler(app) {
+        return (value) => app.setLikelihood(value);
+    }
+
+    /**
+     * Setup slider control with factory-generated handlers
+     * @param {Object} config - Slider configuration
+     * @param {Object} handlers - Simulation handlers
+     */
+    setupSlider(config, handlers) {
+        const slider = this.eventFramework.getElement(`#${config.id}`);
+        if (!slider) return;
+
+        const inputHandler = this.createSliderInputHandler(config, handlers);
+        const changeHandler = this.createSliderChangeHandler(config, handlers);
+
+        this.eventFramework.register(slider, 'input', inputHandler);
+        this.eventFramework.register(slider, 'change', changeHandler);
+    }
+
+    /**
+     * Setup button control with factory-generated handlers
+     * @param {Object} config - Button configuration
+     * @param {Object} handlers - Simulation handlers
+     */
+    setupButton(config, handlers) {
+        const button = this.eventFramework.getElement(`#${config.id}`);
+        if (!button) return;
+
+        const clickHandler = this.createButtonClickHandler(config, handlers);
+        this.eventFramework.register(button, 'click', clickHandler);
+    }
+
+    /**
+     * Setup controls for a simulation type using factory-generated handlers
+     * @param {string} simType - Simulation type
+     * @param {Object} handlers - Simulation handlers
+     */
+    setupControls(simType, handlers) {
+        const config = ConfigurationManager.getConfig(simType);
+        if (!config || !config.controls) return;
+
+        Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
+            if (controlConfig.type === 'slider') {
+                this.setupSlider(controlConfig, handlers);
+            } else if (controlConfig.type === 'button') {
+                this.setupButton(controlConfig, handlers);
+            }
+            // Dynamic controls are handled by their own classes
+        });
+    }
+
+    /**
+     * Register all simulation handlers using factory
+     * @param {Object} app - Application instance
+     */
+    registerAllSimulationHandlers(app) {
+        Object.keys(ConfigurationManager.getAllConfigs()).forEach(simType => {
+            const handlers = this.createSimulationHandlers(simType, app);
+            this.setupControls(simType, handlers);
+        });
+    }
+
+    /**
+     * Create custom handler with context injection
+     * @param {string} handlerType - Type of handler to create
+     * @param {Object} context - Context object to inject
+     * @param {Function} handlerFunction - Base handler function
+     * @returns {Function} Context-injected handler
+     */
+    createCustomHandler(handlerType, context, handlerFunction) {
+        return (...args) => {
+            return handlerFunction.call(context, ...args);
+        };
+    }
+
+    /**
+     * Create batch event registration
+     * @param {Array} registrations - Array of registration objects
+     */
+    createBatchRegistration(registrations) {
+        const batch = registrations.map(reg => ({
+            element: this.eventFramework.getElement(reg.selector),
+            event: reg.event,
+            handler: reg.handler,
+            options: reg.options || {}
+        })).filter(reg => reg.element);
+
+        this.eventFramework.registerBatch(batch);
+    }
+
+    /**
+     * Cleanup all registered handlers
+     */
+    cleanup() {
+        // Clear registered handlers and templates
+        this.registeredHandlers.clear();
+        this.handlerTemplates.clear();
+    }
+
+    /**
+     * Get registered handlers for a simulation type
+     * @param {string} simType - Simulation type
+     * @returns {Object|null} Registered handlers or null
+     */
+    getRegisteredHandlers(simType) {
+        return this.registeredHandlers.get(simType) || null;
+    }
+
+    /**
+     * Check if handlers are registered for a simulation type
+     * @param {string} simType - Simulation type
+     * @returns {boolean} True if handlers are registered
+     */
+    hasRegisteredHandlers(simType) {
+        return this.registeredHandlers.has(simType);
+    }
+}
+
 // Control Template Manager for Simulation Control Configuration Consolidation
 class ControlTemplateManager {
     // Base templates for common control types
@@ -943,13 +1247,19 @@ class ControlTemplateManager {
 
 // Unified Configuration Manager
 class ConfigurationManager {
-    static simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
+    static simulationConfigs = null;
     
     static getConfig(simType) {
+        if (!this.simulationConfigs) {
+            this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
+        }
         return this.simulationConfigs[simType];
     }
     
     static getAllConfigs() {
+        if (!this.simulationConfigs) {
+            this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
+        }
         return this.simulationConfigs;
     }
     
@@ -1185,7 +1495,7 @@ class ControlManager {
     constructor(eventFramework) {
         this.activeControls = null;
         this.eventFramework = eventFramework;
-        this.simulationHandlers = new Map();
+        this.eventHandlerFactory = new EventHandlerFactory(eventFramework);
         this.visibilityManager = new ControlVisibilityManager();
         this.visibilityManager.init();
     }
@@ -1224,7 +1534,7 @@ class ControlManager {
         
         // Show buttons for current simulation
         const config = ConfigurationManager.getConfig(simType);
-        if (config) {
+        if (config && config.controls) {
             Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
                 if (controlConfig.type === 'button' && controlConfig.id) {
                     const button = document.getElementById(controlConfig.id);
@@ -1239,7 +1549,7 @@ class ControlManager {
     // Update control values
     updateControlValues(simType, values) {
         const config = ConfigurationManager.getConfig(simType);
-        if (!config) return;
+        if (!config || !config.controls) return;
         
         Object.entries(values).forEach(([controlName, value]) => {
             const controlConfig = config.controls[controlName];
@@ -1257,104 +1567,20 @@ class ControlManager {
         });
     }
     
-    // Register handlers for a specific simulation type
+    // Register handlers for a specific simulation type using EventHandlerFactory
     registerSimulationHandlers(simType, app) {
-        const config = ConfigurationManager.getConfig(simType);
-        if (!config) return;
-        
-        // Store handlers for cleanup
-        const handlers = {
-            speedChange: (value) => app.handleSpeedChange(simType, value),
-            randomPattern: () => app.handleRandomPattern(simType),
-            showLearnModal: () => app.showLearnModal(), // Use current simulation type
-            addAnt: () => app.handleAddAnt(simType),
-            termiteCountChange: (count) => app.handleTermiteCountChange(count)
-        };
-        
-        this.simulationHandlers.set(simType, handlers);
-        this.setupControls(simType, handlers);
+        const handlers = this.eventHandlerFactory.createSimulationHandlers(simType, app);
+        this.eventHandlerFactory.setupControls(simType, handlers);
     }
     
-    // Setup controls for a simulation type using EventFramework
-    setupControls(simType, handlers) {
-        const config = ConfigurationManager.getConfig(simType);
-        if (!config) return;
-        
-        Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
-            if (controlConfig.type === 'slider') {
-                this.setupSlider(controlConfig, handlers);
-            } else if (controlConfig.type === 'dynamicSlider') {
-                // Dynamic sliders are handled by their own classes
-                // No setup needed here as they manage their own events
-            } else if (controlConfig.type === 'dynamicButton') {
-                // Dynamic buttons are handled by their own classes
-                // No setup needed here as they manage their own events
-            } else if (controlConfig.type === 'button') {
-                this.setupButton(controlConfig, handlers);
-            }
-        });
-    }
-    
-    // Setup slider control with EventFramework
-    setupSlider(config, handlers) {
-        const slider = this.eventFramework.getElement(`#${config.id}`);
-        const valueElement = this.eventFramework.getElement(`#${config.valueElementId}`);
-        
-        if (slider) {
-            // Debounced input handler for smooth performance
-            const debouncedInputHandler = this.eventFramework.debounce((e) => {
-                const value = config.format ? config.format(e.target.value) : e.target.value;
-                if (valueElement) {
-                    valueElement.textContent = value;
-                }
-                
-                if (config.id.includes('speed')) {
-                    handlers.speedChange(parseFloat(e.target.value));
-                } else if (config.id.includes('termites')) {
-                    // Call the termite count change handler
-                    handlers.termiteCountChange(parseInt(e.target.value));
-                }
-            }, 16, `${config.id}-debounce`); // ~60fps debounce
-            
-            // Immediate visual feedback for value display
-            const immediateValueHandler = (e) => {
-                const value = config.format ? config.format(e.target.value) : e.target.value;
-                if (valueElement) {
-                    valueElement.textContent = value;
-                }
-            };
-            
-            this.eventFramework.register(slider, 'input', immediateValueHandler);
-            this.eventFramework.register(slider, 'change', debouncedInputHandler);
-        }
-    }
-    
-    // Setup button control with EventFramework
-    setupButton(config, handlers) {
-        const button = this.eventFramework.getElement(`#${config.id}`);
-        
-        if (button) {
-            this.eventFramework.register(button, 'click', () => {
-                if (config.id.includes('learn')) {
-                    // Pass the current simulation type to show the correct modal
-                    handlers.showLearnModal();
-                } else if (config.id.includes('add-ant')) {
-                    handlers.addAnt();
-                }
-            });
-        }
-    }
-    
-    // Register all simulation handlers
+    // Register all simulation handlers using EventHandlerFactory
     registerAllHandlers(app) {
-        Object.keys(ConfigurationManager.getAllConfigs()).forEach(simType => {
-            this.registerSimulationHandlers(simType, app);
-        });
+        this.eventHandlerFactory.registerAllSimulationHandlers(app);
     }
     
     // Cleanup simulation handlers
     cleanup() {
-        this.simulationHandlers.clear();
+        this.eventHandlerFactory.cleanup();
         if (this.visibilityManager) {
             this.visibilityManager.cleanup();
         }
@@ -1576,6 +1802,7 @@ class AlgorithmicPatternGenerator {
         // Initialize managers
         this.modalManager = new ModalManager();
         this.eventFramework = new EventFramework();
+        this.eventHandlerFactory = new EventHandlerFactory(this.eventFramework);
         this.controlManager = new ControlManager(this.eventFramework);
         this.keyboardHandler = new KeyboardHandler(this);
         this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
@@ -1669,46 +1896,36 @@ class AlgorithmicPatternGenerator {
     }
     
     setupBrightnessControls() {
-        const brightnessSlider = this.eventFramework.getElement('#brightness-slider');
-        const brightnessValue = this.eventFramework.getElement('#brightness-value');
+        // Use EventHandlerFactory for brightness controls
+        const brightnessConfig = {
+            id: 'brightness-slider',
+            valueElementId: 'brightness-value',
+            format: (value) => `${Math.round(parseFloat(value) * 100)}%`
+        };
         
-        // Brightness slider with debounced updates
-        if (brightnessSlider) {
-            const debouncedBrightnessHandler = this.eventFramework.debounce((e) => {
-                this.setBrightness(parseFloat(e.target.value));
-            }, 16, 'brightness-debounce'); // ~60fps debounce
-            
-            const immediateValueHandler = (e) => {
-                const value = parseFloat(e.target.value);
-                const percentage = Math.round(value * 100);
-                if (brightnessValue) {
-                    brightnessValue.textContent = `${percentage}%`;
-                }
-            };
-            
-            this.eventFramework.register(brightnessSlider, 'input', immediateValueHandler);
-            this.eventFramework.register(brightnessSlider, 'change', debouncedBrightnessHandler);
-        }
+        const handlers = {
+            brightnessChange: (value) => this.setBrightness(value)
+        };
+        
+        this.eventHandlerFactory.setupSlider(brightnessConfig, handlers);
         
         // Initialize brightness display
         this.updateBrightnessDisplay();
     }
     
     setupLikelihoodSlider() {
-        const likelihoodSlider = this.eventFramework.getElement('#likelihood-slider');
-        const likelihoodValue = this.eventFramework.getElement('#likelihood-value');
+        // Use EventHandlerFactory for likelihood controls
+        const likelihoodConfig = {
+            id: 'likelihood-slider',
+            valueElementId: 'likelihood-value',
+            format: (value) => `${parseInt(value)}%`
+        };
         
-        // Likelihood slider with immediate value updates
-        if (likelihoodSlider) {
-            const likelihoodHandler = (e) => {
-                const value = parseInt(e.target.value);
-                if (likelihoodValue) {
-                    likelihoodValue.textContent = `${value}%`;
-                }
-            };
-            
-            this.eventFramework.register(likelihoodSlider, 'input', likelihoodHandler);
-        }
+        const handlers = {
+            likelihoodChange: (value) => this.setLikelihood(value)
+        };
+        
+        this.eventHandlerFactory.setupSlider(likelihoodConfig, handlers);
     }
     
     createSimulation(type) {
@@ -2015,6 +2232,15 @@ class AlgorithmicPatternGenerator {
             this.currentSimulation.draw();
         }
     }
+
+    setLikelihood(value) {
+        this.likelihood = Math.max(0, Math.min(100, value));
+        
+        // Apply likelihood to current simulation if it supports it
+        if (this.currentSimulation && this.currentSimulation.setLikelihood) {
+            this.currentSimulation.setLikelihood(this.likelihood);
+        }
+    }
     
     resetBrightness() {
         this.setBrightness(1.0);
@@ -2056,6 +2282,7 @@ class AlgorithmicPatternGenerator {
     // Cleanup method for memory management
     cleanup() {
         this.eventFramework.cleanup();
+        this.eventHandlerFactory.cleanup();
         this.controlManager.cleanup();
         this.modalManager.cleanup();
         this.dynamicSpeedSlider.cleanup();
