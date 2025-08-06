@@ -22,6 +22,7 @@ The test suite is organised into logical categories:
 - **Visual Effects Tests** - Visual rendering and re-engineered fade-to-black effects
 - **System Tests** - System-level functionality and error handling
 - **Control Visibility Tests** - CSS-based control visibility management system
+- **EventHandlerFactory Tests** - Template-based event handler creation and registration system
 
 ## Quick Start
 
@@ -356,6 +357,58 @@ Tests the CSS-based control visibility management system:
 - Validates seamless operation of showControls() and hideAllControls()
 - Tests proper cleanup and resource management
 - Verifies event framework integration
+
+### EventHandlerFactory Tests
+
+Tests the template-based event handler creation and registration system:
+
+#### ✅ EventHandlerFactory Initialization
+- Tests EventHandlerFactory class creation and initialisation
+- Validates handler template setup and registration
+- Tests empty registered handlers state
+- Verifies proper cleanup and memory management
+
+#### ✅ EventHandlerFactory Simulation Handlers Creation
+- Tests simulation-specific handler creation with context injection
+- Validates handler registration tracking
+- Tests handler storage and retrieval
+- Verifies proper simulation context binding
+
+#### ✅ EventHandlerFactory Slider Handler Creation
+- Tests slider input and change handler creation
+- Validates debounced change events (16ms)
+- Tests immediate visual feedback for input events
+- Verifies conditional routing based on control ID patterns
+
+#### ✅ EventHandlerFactory Button Handler Creation
+- Tests button click handler creation
+- Validates conditional routing for different button types
+- Tests handler delegation to appropriate simulation methods
+- Verifies proper event registration with EventFramework
+
+#### ✅ EventHandlerFactory Control Setup
+- Tests setupSlider() and setupButton() methods
+- Validates automatic event registration with EventFramework
+- Tests control configuration validation
+- Verifies proper element selection and handler binding
+
+#### ✅ EventHandlerFactory Custom Handler Creation
+- Tests createCustomHandler() method with context injection
+- Validates custom handler creation for extensibility
+- Tests context binding and function execution
+- Verifies proper handler function wrapping
+
+#### ✅ EventHandlerFactory Cleanup
+- Tests comprehensive cleanup of all registered handlers
+- Validates memory leak prevention
+- Tests handler registration tracking cleanup
+- Verifies proper resource deallocation
+
+#### ✅ EventHandlerFactory Integration with ControlManager
+- Tests integration with existing ControlManager
+- Validates seamless operation of registerSimulationHandlers()
+- Tests registerAllHandlers() functionality
+- Verifies proper cleanup integration
 
 ## Before Refactoring
 
