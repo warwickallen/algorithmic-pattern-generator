@@ -300,6 +300,8 @@ class UIComponentLibrary {
             state: {
                 isVisible: false,
                 isOpen: false,
+                title: mergedConfig.title || '',
+                content: mergedConfig.content || '',
                 backdrop: mergedConfig.backdrop,
                 closeOnEscape: mergedConfig.closeOnEscape,
                 closeOnBackdrop: mergedConfig.closeOnBackdrop,
@@ -1017,7 +1019,7 @@ class UIComponentLibrary {
     }
     
     getComponentTypes() {
-        return Array.from(this.componentTypes);
+        return this.componentTypes;
     }
     
     // Batch operations
