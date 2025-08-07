@@ -25,6 +25,7 @@ The test suite is organised into logical categories:
 - **EventHandlerFactory Tests** - Template-based event handler creation and registration system
 - **ModalTemplateManager Tests** - Template-based modal content management system
 - **UI Component Library Tests** - Comprehensive UI component library with lifecycle management and state management
+- **CSS Utility Tests** - CSS utility framework and design token system validation
 
 ## Quick Start
 
@@ -84,6 +85,7 @@ The visual test suite (`test-suite.html`) provides an intuitive interface for te
    - Control Visibility Tests
    - ModalTemplateManager Tests
    - UI Component Library Tests
+   - CSS Utility Tests
 
 2. **Select/Deselect All**: Use the top checkbox to quickly select or deselect all test groups at once. The checkbox shows:
    - **Checked**: All test groups are selected
@@ -583,6 +585,59 @@ Tests the comprehensive UI component library with lifecycle management and state
 - Validates getComponent, getAllComponents, getComponentsByType methods
 - Tests component type tracking and management
 - Verifies proper component management lifecycle and cleanup
+
+### CSS Utility Tests
+
+Tests the CSS utility framework and design token system:
+
+#### ✅ CSS Utility Design Tokens
+- Tests CSS custom properties (design tokens) are properly defined
+- Validates colour tokens (primary, secondary, background, surface)
+- Tests spacing tokens (sm, md, lg, xl, 2xl)
+- Verifies border radius, shadow, transition, and z-index tokens
+- Tests design token accessibility and consistency
+
+#### ✅ CSS Utility Glass Effects
+- Tests glass effect utility classes (.glass, .glass-light)
+- Validates backdrop filter blur effects
+- Tests gradient background implementations
+- Verifies hover animations and transitions
+- Tests glass effect performance and rendering
+
+#### ✅ CSS Utility Layout Classes
+- Tests flexbox utility classes (.flex, .flex-center, .flex-column)
+- Validates spacing utility classes (.gap-sm, .gap-md, .gap-lg)
+- Tests positioning utility classes (.position-absolute, .position-relative)
+- Verifies layout class combinations and responsiveness
+- Tests layout utility performance and consistency
+
+#### ✅ CSS Utility Component Classes
+- Tests component-specific utility classes
+- Validates control group variants (.control-group--static, .control-group--transparent)
+- Tests button utility classes and hover effects
+- Verifies form element styling and consistency
+- Tests modal utility classes and glass effects
+
+#### ✅ CSS Utility Performance Classes
+- Tests GPU acceleration utility classes (.gpu-accelerate)
+- Validates performance optimization implementations
+- Tests transition and animation utility classes
+- Verifies performance class effectiveness and browser support
+- Tests performance utility integration with components
+
+#### ✅ CSS Utility Responsive Design
+- Tests responsive utility class behavior
+- Validates breakpoint-specific styling
+- Tests responsive layout adaptations
+- Verifies mobile and tablet compatibility
+- Tests responsive design performance and consistency
+
+#### ✅ CSS Utility Performance Optimizations
+- Tests CSS optimization implementations
+- Validates reduced CSS file size and complexity
+- Tests utility class efficiency and rendering
+- Verifies performance optimization effectiveness
+- Tests optimization impact on overall application performance
 
 ## Before Refactoring
 

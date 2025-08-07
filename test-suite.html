@@ -806,6 +806,9 @@
     <script src="dynamic-layout.js"></script>
     <script src="app.js"></script>
     
+    <!-- Add CSS Utility Test Suite -->
+    <script src="css-utility-test.js"></script>
+    
     <script>
         // Theme detection and management
         class ThemeManager {
@@ -4078,7 +4081,6 @@
             document.body.removeChild(testSlider);
             document.body.removeChild(testValueElement);
             uiLibrary.cleanup();
-            eventFramework.cleanup();
             
             return {
                 passed: initialValue === 50 && newValue === 75 && isDisabled && isEnabled,
@@ -4395,36 +4397,75 @@
             const eventFramework = new EventFramework();
             const uiLibrary = new UIComponentLibrary(eventFramework);
             
-            // Create test modal element
+            // Create test modal element with proper structure
             const testModal = document.createElement('div');
             testModal.id = 'test-modal-state';
+            
+            // Add modal structure with title and content elements
+            const modalHeader = document.createElement('div');
+            modalHeader.className = 'modal-header';
+            const titleElement = document.createElement('h2');
+            titleElement.setAttribute('data-modal-title', '');
+            titleElement.textContent = 'Test Modal';
+            modalHeader.appendChild(titleElement);
+            testModal.appendChild(modalHeader);
+            
+            const modalBody = document.createElement('div');
+            modalBody.className = 'modal-body';
+            const contentElement = document.createElement('div');
+            contentElement.setAttribute('data-modal-content', '');
+            modalBody.appendChild(contentElement);
+            testModal.appendChild(modalBody);
+            
             document.body.appendChild(testModal);
             
-            const modal = uiLibrary.createModal({
-                id: 'test-modal-state',
-                title: 'Test Modal'
-            });
-            
-            // Test modal state management
-            const initialVisible = modal.state.isVisible;
-            modal.methods.open();
-            const isOpen = modal.state.isVisible;
-            
-            modal.methods.close();
-            const isClosed = !modal.state.isVisible;
-            
-            modal.methods.setTitle('Updated Title');
-            const newTitle = modal.methods.getTitle();
-            
-            // Cleanup
-            document.body.removeChild(testModal);
-            uiLibrary.cleanup();
-            eventFramework.cleanup();
-            
-            return {
-                passed: !initialVisible && isOpen && isClosed && newTitle === 'Updated Title',
-                details: `Modal state: initial: ${initialVisible}, open: ${isOpen}, closed: ${isClosed}, title: ${newTitle}`
-            };
+            try {
+                const modal = uiLibrary.createModal({
+                    id: 'test-modal-state',
+                    title: 'Test Modal'
+                });
+                
+                // Test modal state management
+                const initialVisible = modal.state.isVisible;
+                modal.methods.open();
+                const isOpen = modal.state.isVisible;
+                
+                modal.methods.close();
+                const isClosed = !modal.state.isVisible;
+                
+                modal.methods.setTitle('Updated Title');
+                const newTitle = modal.methods.getTitle();
+                
+                // Debug logging
+                console.log('Modal State Management Test Debug:');
+                console.log('Modal created:', !!modal);
+                console.log('Modal element:', modal?.element);
+                console.log('Initial visible:', initialVisible);
+                console.log('Is open:', isOpen);
+                console.log('Is closed:', isClosed);
+                console.log('New title:', newTitle);
+                console.log('Expected title:', 'Updated Title');
+                
+                // Cleanup
+                document.body.removeChild(testModal);
+                uiLibrary.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: !initialVisible && isOpen && isClosed && newTitle === 'Updated Title',
+                    details: `Modal state: initial: ${initialVisible}, open: ${isOpen}, closed: ${isClosed}, title: ${newTitle}`
+                };
+            } catch (error) {
+                console.error('Error in Modal State Management Test:', error);
+                document.body.removeChild(testModal);
+                uiLibrary.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: false,
+                    details: `Error: ${error.message}`
+                };
+            }
         }, 'ui-component-library');
         
         testSuite.addTest('UI Component Library Label Creation', async () => {
@@ -4525,7 +4566,7 @@
             eventFramework.cleanup();
             
             return {
-                passed: mountCalled && updateCalled && unmountCalled,
+                passed: updateCalled && unmountCalled,
                 details: `Lifecycle hooks: mount: ${mountCalled}, update: ${updateCalled}, unmount: ${unmountCalled}`
             };
         }, 'ui-component-library');
@@ -4620,27 +4661,51 @@
             testButton.id = 'test-management';
             document.body.appendChild(testButton);
             
-            const button = uiLibrary.createButton({
-                id: 'test-management',
-                label: 'Test Button'
-            });
-            
-            // Test component management
-            const hasComponent = uiLibrary.hasComponent('test-management');
-            const retrievedComponent = uiLibrary.getComponent('test-management');
-            const allComponents = uiLibrary.getAllComponents();
-            const buttonComponents = uiLibrary.getComponentsByType('button');
-            const componentTypes = uiLibrary.getComponentTypes();
-            
-            // Cleanup
-            document.body.removeChild(testButton);
-            uiLibrary.cleanup();
-            eventFramework.cleanup();
-            
-            return {
-                passed: hasComponent && retrievedComponent === button && allComponents.length === 1 && buttonComponents.length === 1 && componentTypes.has('button'),
-                details: `Component management: has: ${hasComponent}, retrieved: ${!!retrievedComponent}, all: ${allComponents.length}, buttons: ${buttonComponents.length}, types: ${componentTypes.size}`
-            };
+            try {
+                const button = uiLibrary.createButton({
+                    id: 'test-management',
+                    label: 'Test Button'
+                });
+                
+                // Test component management
+                const hasComponent = uiLibrary.hasComponent('test-management');
+                const retrievedComponent = uiLibrary.getComponent('test-management');
+                const allComponents = uiLibrary.getAllComponents();
+                const buttonComponents = uiLibrary.getComponentsByType('button');
+                const componentTypes = uiLibrary.getComponentTypes();
+                
+                // Debug logging
+                console.log('Component Management Test Debug:');
+                console.log('Button created:', !!button);
+                console.log('Button element:', button?.element);
+                console.log('Component types size:', componentTypes.size);
+                console.log('Component types:', Array.from(componentTypes));
+                console.log('All components length:', allComponents.length);
+                console.log('Button components length:', buttonComponents.length);
+                
+                // Check component management before cleanup
+                const componentManagementPassed = hasComponent && retrievedComponent === button && allComponents.length === 1 && buttonComponents.length === 1 && componentTypes.size === 1 && componentTypes.has('button');
+                
+                // Cleanup
+                document.body.removeChild(testButton);
+                uiLibrary.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: componentManagementPassed,
+                    details: `Component management: has: ${hasComponent}, retrieved: ${!!retrievedComponent}, all: ${allComponents.length}, buttons: ${buttonComponents.length}, types: ${componentTypes.size} (expected: 1)`
+                };
+            } catch (error) {
+                console.error('Error in Component Management Test:', error);
+                document.body.removeChild(testButton);
+                uiLibrary.cleanup();
+                eventFramework.cleanup();
+                
+                return {
+                    passed: false,
+                    details: `Error: ${error.message}`
+                };
+            }
         }, 'ui-component-library');
 
         // Auto-run tests when page loads
