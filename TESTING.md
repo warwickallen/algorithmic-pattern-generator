@@ -155,8 +155,8 @@ Tests the user interface components and interactions:
 - Validates component lifecycle management
 - Tests component state management
 
-#### ✅ Performance Optimizer
-- Tests debounce and throttle functions
+#### ✅ Performance Utilities
+- Tests debounce and throttle functions via `PerformanceUtils` (with `PerformanceOptimizer` facade compatibility)
 - Validates performance optimisation effectiveness
 - Tests memory management and cleanup
 

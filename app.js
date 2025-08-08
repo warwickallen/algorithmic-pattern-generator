@@ -1556,36 +1556,52 @@ class ControlVisibilityManager {
     }
 }
 
-// Performance optimization utilities
-class PerformanceOptimizer {
-    // Debounce function for slider updates
-    static debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
+// Centralised performance utilities
+class PerformanceUtils {
+    static #globalDebounceTimers = new Map();
+    static #globalThrottleTimers = new Map();
+
+    // Debounce with optional shared store (Map) and key
+    static debounce(func, wait, key = null, store = null) {
+        const timerStore = store || PerformanceUtils.#globalDebounceTimers;
+        const timerKey = key || func;
+        return (...args) => {
+            const existing = timerStore.get(timerKey);
+            if (existing) clearTimeout(existing);
+            const timeout = setTimeout(() => {
+                timerStore.delete(timerKey);
+                func.apply(this, args);
+            }, wait);
+            timerStore.set(timerKey, timeout);
         };
     }
-    
-    // Throttle function for frequent updates
-    static throttle(func, limit) {
-        let inThrottle;
-        return function() {
-            const args = arguments;
-            const context = this;
-            if (!inThrottle) {
-                func.apply(context, args);
-                inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
+
+    // Throttle with optional shared store (Map) and key
+    static throttle(func, limit, key = null, store = null) {
+        const timerStore = store || PerformanceUtils.#globalThrottleTimers;
+        const timerKey = key || func;
+        return (...args) => {
+            if (!timerStore.has(timerKey)) {
+                func.apply(this, args);
+                timerStore.set(timerKey, true);
+                setTimeout(() => {
+                    timerStore.delete(timerKey);
+                }, limit);
             }
         };
     }
-    
-    // Efficient DOM query caching
+}
+
+// Backwards-compatible PerformanceOptimizer delegating to PerformanceUtils
+class PerformanceOptimizer {
+    static debounce(func, wait) {
+        return PerformanceUtils.debounce(func, wait);
+    }
+
+    static throttle(func, limit) {
+        return PerformanceUtils.throttle(func, limit);
+    }
+
     static createElementCache() {
         const cache = new Map();
         return {
@@ -1598,8 +1614,7 @@ class PerformanceOptimizer {
             clear: () => cache.clear()
         };
     }
-    
-    // Memory-efficient event listener management
+
     static createEventListenerManager() {
         const listeners = new Map();
         return {
@@ -2486,33 +2501,14 @@ class EventFramework {
         this.elementCache.clear();
     }
     
-    // Debounce utility
+    // Debounce utility (delegates to PerformanceUtils, using instance store for scoping)
     debounce(func, wait, key = null) {
-        const timerKey = key || func.toString();
-        
-        return (...args) => {
-            clearTimeout(this.debounceTimers.get(timerKey));
-            const timeout = setTimeout(() => {
-                func.apply(this, args);
-                this.debounceTimers.delete(timerKey);
-            }, wait);
-            this.debounceTimers.set(timerKey, timeout);
-        };
+        return PerformanceUtils.debounce(func, wait, key, this.debounceTimers);
     }
     
-    // Throttle utility
+    // Throttle utility (delegates to PerformanceUtils, using instance store for scoping)
     throttle(func, limit, key = null) {
-        const timerKey = key || func.toString();
-        
-        return (...args) => {
-            if (!this.throttleTimers.has(timerKey)) {
-                func.apply(this, args);
-                this.throttleTimers.set(timerKey, true);
-                setTimeout(() => {
-                    this.throttleTimers.delete(timerKey);
-                }, limit);
-            }
-        };
+        return PerformanceUtils.throttle(func, limit, key, this.throttleTimers);
     }
     
     // Element cache with automatic cleanup
