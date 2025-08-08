@@ -25,6 +25,7 @@ algorithmic-pattern-generator/
 ├── dynamic-layout.js       # Dynamic layout management
 ├── constants.js            # Centralised application constants (AppConstants)
 ├── test-runner.js          # Programmatic test runner
+├── types.js                # Central JSDoc typedefs
 ├── test-suite.html         # Comprehensive visual test suite
 ├── LICENSE                 # MIT License
 ├── README.md               # Usage instructions and overview
@@ -1078,6 +1079,19 @@ simulation.init();
 ```
 
 **New Control Visibility Tests:**
+## JSDoc & Types
+
+Shared typedefs are centralised in `types.js` to maximise reuse and consistency across the codebase. These are documentation-only types and safe to include in browser and Node/CommonJS contexts.
+
+Key typedefs:
+- `SimulationId`, `Point`, `Grid`, `RGB`, `ColourString`
+- `StateManager`, `EventHandler`, `Simulation`
+- `TestResult`, `TestFunction`
+
+Guidelines:
+- Prefer adding new shapes to `types.js` rather than duplicating inline typedefs
+- Reference shared types via `@typedef` names in function/class JSDoc
+
 ```javascript
 // ControlVisibilityManager Tests
 testSuite.addTest('ControlVisibilityManager Initialization', async () => {
