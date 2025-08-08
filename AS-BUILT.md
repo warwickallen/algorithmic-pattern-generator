@@ -690,7 +690,7 @@ Framework for managing simulation lifecycles:
 
 **Features:**
 - Lifecycle hook registration and execution
-- State management with subscription system
+- State management with subscription system and serialiser-based persistence
 - Event handling with emitter pattern
 - Cleanup and resource management
 
@@ -712,6 +712,7 @@ Abstract base class for all simulations:
 - Drawing utilities with re-engineered fade-to-black effects
 - Drag toggling for interactive cell manipulation
 - Actor trail system for visual effects
+- Unified state serialisation via lifecycle StateManager
 
 **Re-engineered Fade-to-Black System:**
 The new fading mechanism uses a brightness-based approach to eliminate race conditions:
@@ -775,6 +776,8 @@ draw()                    // Render simulation
 toggleCell(x, y)          // Toggle cell state with immediate brightness update
 setBrightness(value)      // Adjust visual brightness
 getStats()               // Get simulation statistics
+getState()               // Base state + serialised simulation-specific extras
+setState(state)          // Restore base state + delegate extras to serialiser
 ```
 
 #### Conway's Game of Life
@@ -787,6 +790,7 @@ Classic cellular automaton implementation with re-engineered fading:
 - Random pattern generation with immediate brightness updates
 - Speed control
 - Re-engineered fade-to-black system using the three-step process
+- Serialiser preserves grids across resize and restoration
 
 **Update Method:**
 ```javascript
@@ -820,6 +824,7 @@ Termite simulation with wood chip manipulation:
 - Trail system for visual effects
 - Performance optimised for large numbers of termites
 - Legacy fade system adapted to use new brightness approach
+- Serialiser preserves wood chips and termites (including trails)
 
 **Enhanced Wood Chip Drawing:**
 ```javascript
@@ -839,6 +844,7 @@ Ant simulation with multiple ant support:
 - Random ant addition
 - State preservation and restoration
 - Visual ant representation with direction
+- Serialiser preserves grid and ants (including trails)
 
 #### Simulation Factory
 Factory pattern for simulation creation:

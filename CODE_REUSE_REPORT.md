@@ -213,9 +213,9 @@ setupSlider(config, {
 - **Extensibility features** for adding new simulations and modal content templates
 - **Documentation updated**: All documentation files updated to reflect ModalTemplateManager implementation
 
-### 7. **Simulation State Management Duplication**
+### 7. **Simulation State Management Duplication** ✅ **IMPLEMENTED**
 
-**Current State**: Similar state preservation logic in each simulation:
+**Previous State**: Similar state preservation logic in each simulation:
 ```javascript
 // Conway state management
 getState() {
@@ -239,7 +239,19 @@ getState() {
 **Opportunity**: Unified state management system with simulation-specific serialisers.
 
 **Estimated Reduction**: 70-100 lines
-**Implementation**: `StateManager` class with pluggable serialisation strategies.
+**Implementation**: Pluggable serialiser-based state management integrated into the existing `SimulationLifecycleFramework`.
+
+**✅ Status**: **COMPLETED**
+- **Unified StateManager** extended with `registerSerializer`, `serialize(sim)`, and `deserialize(sim, state)`
+- **BaseSimulation delegation**: `getState()` merges serialised extras; `setState(state)` delegates restoration to the serialiser
+- **Serialisers added**:
+  - Conway: preserves `grids.current`/`grids.next` and recomputes `cellCount`
+  - Termite: preserves `woodChips` and `termites` (position, angle, carrying, trail)
+  - Langton: preserves `grid` and `ants` (position, direction, trail)
+- **Duplicate overrides removed**: Eliminated subclass `getState`/`setState` duplication where present
+- **Compatibility**: Existing `resizePreserveState()` flows continue to work without changes
+- **Code duplication reduced**: ~80 lines of duplicated state methods eliminated
+- **Testing**: Existing suite passes; resize/state preservation behaviour verified
 
 ### 8. **Test Pattern Duplication**
 
