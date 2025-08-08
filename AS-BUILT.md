@@ -857,8 +857,8 @@ The new fading mechanism uses a brightness-based approach to eliminate race cond
 
 **Immediate Visual Feedback Exceptions:**
 
-- **Cell Toggle**: When a cell is toggled by user interaction, its brightness is immediately set to 1 (if active) or 0 (if inactive)
-- **Random Pattern**: After randomization, all active cells get brightness 1 and all inactive cells get brightness 0
+- **Cell Toggle**: When a cell is toggled by user interaction, its brightness is immediately set to 1 (if active). If toggled to inactive, it starts fading from its current brightness (or 1 if no prior brightness existed), rather than jumping to 0.
+- **Random Pattern**: After randomization, all active cells get brightness 1. Inactive cells do not receive brightness entries; a dedicated `initialInactiveCells` set prevents these from being treated as newly-inactive later, so they remain black until activated.
 
 **Key Methods:**
 
@@ -871,9 +871,20 @@ getFadeDecrement(); // Get current fade decrement
 clearFadeStates(); // Clear all brightness data
 ```
 
+**Unified Brightness Helpers (new):**
+
+To ensure identical behaviour across simulations and improve modularity, brightness handling has been centralised in the base class:
+
+```javascript
+applyToggleBrightness(row, col, isActiveAfter); // Sets brightness to 1 if active; if inactive, starts fade from current brightness or 1
+resetBrightnessFromActiveGrid(isActivePredicate); // Clears brightness and sets 1 for cells considered active by the predicate
+```
+
+All simulations now call these helpers from their `toggleCell` and `randomize` implementations.
+
 **Legacy Compatibility:**
 
-- `updateFadeStates(grid)`: Legacy method adapted for non-Conway simulations
+- `updateFadeStates(grid)`: Legacy method adapted for non-Conway simulations. It now strictly distinguishes between `undefined` and `0` brightness. Zero is retained (cell stays black) and never treated as a signal to restart the fade; only `undefined` indicates no prior tracking and may initiate a new fade for newly-inactive cells not in `initialInactiveCells`.
 - `getCellFadeFactor(row, col, isActive)`: Legacy method that returns cell brightness
 
 **Enhanced Cell Drawing:**
@@ -964,14 +975,28 @@ Termite simulation with wood chip manipulation:
 - Legacy fade system adapted to use new brightness approach
 - Serialiser preserves wood chips and termites (including trails)
 
-**Enhanced Wood Chip Drawing:**
+**Rendering Strategy:**
+
+The Termite simulation constructs a virtual grid of active cells from `woodChips` and renders the entire grid so faded cells remain visible:
 
 ```javascript
-// Draw wood chips with fade effect
+// Build virtual grid of active cells
+const virtualGrid = this.createGrid(this.rows, this.cols, false);
 this.woodChips.forEach((chipKey) => {
   const [x, y] = chipKey.split(",").map(Number);
-  this.drawCell(x, y, null, true); // Pass isActive=true for wood chips
+  const { col, row } = this.screenToGrid(x, y);
+  if (this.isValidGridPosition(row, col)) virtualGrid[row][col] = true;
 });
+
+// Render full grid so inactive cells can fade visually
+for (let row = 0; row < this.rows; row++) {
+  for (let col = 0; col < this.cols; col++) {
+    const x = col * this.cellSize;
+    const y = row * this.cellSize;
+    const isActive = virtualGrid[row][col];
+    this.drawCell(x, y, null, isActive);
+  }
+}
 ```
 
 #### Langton's Ant
