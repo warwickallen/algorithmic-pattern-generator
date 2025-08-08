@@ -292,6 +292,10 @@ Comprehensive event management system with enhanced element caching and memory l
 - Enhanced element caching with null value handling
 - Integration with UIComponentLibrary for component event management
 
+**New Capabilities:**
+- Declarative registration via `registerDeclarative(configs)` for batch binding with optional debounce/throttle per handler
+- Delegated registration via `registerDelegated(container, event, selector, handler, options?)`
+
 **Enhanced Element Caching:**
 ```javascript
 getElement(selector) {
@@ -306,6 +310,20 @@ getElement(selector) {
     }
     return this.elementCache.get(selector);
 }
+```
+
+**Usage Examples:**
+```javascript
+// Declarative registration
+eventFramework.registerDeclarative([
+  { selector: '#start-pause-btn', on: { click: { handler: () => app.toggleSimulation() } } },
+  { selector: '#reset-btn', on: { click: { handler: () => app.resetSimulation() } } }
+]);
+
+// Delegated registration
+eventFramework.registerDelegated(document, 'click', '.btn.dynamic', (e) => {
+  // handle dynamic button clicks
+});
 ```
 
 #### EventHandlerFactory

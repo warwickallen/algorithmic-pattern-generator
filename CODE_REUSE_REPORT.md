@@ -366,7 +366,15 @@ registerAllHandlers() { /* more event setup */ }
 **Opportunity**: Centralised event management system.
 
 **Estimated Reduction**: 50-70 lines
-**Implementation**: Enhanced `EventFramework` with declarative event registration.
+**Implementation**: Enhanced `EventFramework` with declarative and delegated event registration.
+
+**✅ Status**: **COMPLETED**
+- **Declarative API**: `registerDeclarative(configs)` for batch binding with optional debounce/throttle
+- **Delegated API**: `registerDelegated(container, event, selector, handler, options?)` for dynamic elements
+- **Integration**: `ModalManager` now uses the central framework for global listeners and close buttons
+- **App wiring**: `AlgorithmicPatternGenerator` injects the framework into `ModalManager`
+- **Testing**: Added two tests in `test-suite.html` under category `event-framework` covering declarative and delegated registration
+- **Documentation**: Updated `AS-BUILT.md`, `README.md`, and `TESTING.md` to reflect the enhancements
 
 ### 13. **Internationalisation Enhancement**
 

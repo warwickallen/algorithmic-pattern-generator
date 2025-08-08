@@ -3700,6 +3700,62 @@
             };
         }, 'control-visibility');
 
+        // EventFramework Tests
+        testSuite.addTest('EventFramework Declarative Registration', async () => {
+            const eventFramework = new EventFramework();
+            // Create test element
+            const btn = document.createElement('button');
+            btn.id = 'ef-declarative-btn';
+            document.body.appendChild(btn);
+
+            let clicked = 0;
+            eventFramework.registerDeclarative([
+                {
+                    selector: '#ef-declarative-btn',
+                    on: {
+                        click: { handler: () => { clicked++; }, debounce: 0 }
+                    }
+                }
+            ]);
+
+            btn.click();
+
+            // Cleanup
+            document.body.removeChild(btn);
+            eventFramework.cleanup();
+
+            return {
+                passed: clicked === 1,
+                details: `Clicked count: ${clicked}`
+            };
+        }, 'event-framework');
+
+        testSuite.addTest('EventFramework Delegated Registration', async () => {
+            const eventFramework = new EventFramework();
+            // Create container and child elements
+            const container = document.createElement('div');
+            container.id = 'ef-delegated-container';
+            const child = document.createElement('button');
+            child.className = 'delegated-child';
+            container.appendChild(child);
+            document.body.appendChild(container);
+
+            let handled = 0;
+            eventFramework.registerDelegated('#ef-delegated-container', 'click', '.delegated-child', () => { handled++; });
+
+            // Dispatch event
+            child.click();
+
+            // Cleanup
+            document.body.removeChild(container);
+            eventFramework.cleanup();
+
+            return {
+                passed: handled === 1,
+                details: `Delegated handled count: ${handled}`
+            };
+        }, 'event-framework');
+
         // EventHandlerFactory Tests
         testSuite.addTest('EventHandlerFactory Initialization', async () => {
             const eventFramework = new EventFramework();

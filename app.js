@@ -2540,6 +2540,42 @@ class EventFramework {
         }
         return keys;
     }
+
+    // Declarative event registration from config objects
+    // configs: Array<{ selector: string, on: { [event: string]: { handler: Function, options?: AddEventListenerOptions, debounce?: number, throttle?: number } } }>
+    registerDeclarative(configs = []) {
+        const keys = [];
+        configs.forEach(cfg => {
+            const element = typeof cfg.selector === 'string' ? this.getElement(cfg.selector) : cfg.selector;
+            if (!element || !cfg.on) return;
+            Object.entries(cfg.on).forEach(([event, meta]) => {
+                if (!meta || typeof meta.handler !== 'function') return;
+                let wrapped = meta.handler;
+                if (typeof meta.debounce === 'number') {
+                    wrapped = this.debounce(wrapped, meta.debounce, `${(element.id || element.tagName)}-${event}-debounced`);
+                } else if (typeof meta.throttle === 'number') {
+                    wrapped = this.throttle(wrapped, meta.throttle, `${(element.id || element.tagName)}-${event}-throttled`);
+                }
+                const key = this.register(element, event, wrapped, meta.options || {});
+                keys.push(key);
+            });
+        });
+        return keys;
+    }
+
+    // Delegated event registration on a container with selector matching
+    // container: Element | selector string
+    registerDelegated(container, event, selector, handler, options = {}) {
+        const containerEl = typeof container === 'string' ? this.getElement(container) : container;
+        if (!containerEl || typeof handler !== 'function') return null;
+        const delegated = (e) => {
+            const target = e.target && (e.target.matches?.(selector) ? e.target : e.target.closest?.(selector));
+            if (target) {
+                handler.call(target, e);
+            }
+        };
+        return this.register(containerEl, event, delegated, options);
+    }
     
     // Register all simulation handlers (compatibility method)
     registerAllHandlers() {
@@ -2693,7 +2729,7 @@ class KeyboardHandler {
 
 // Modal Manager for handling all modals with performance optimization
 class ModalManager {
-    constructor() {
+    constructor(eventFramework = null) {
         this.activeModal = null;
         this.modals = new Map();
         this.elementCache = PerformanceOptimizer.createElementCache();
@@ -2703,6 +2739,7 @@ class ModalManager {
         this.dynamicModalId = 'dynamic-modal';
         this.currentSimType = null;
         this.scrollPositions = new Map(); // Track scroll positions for each simulation type
+        this.eventFramework = eventFramework || null;
         this.init();
     }
     
@@ -2724,8 +2761,13 @@ class ModalManager {
             }
         }, 100);
         
-        document.addEventListener('keydown', throttledKeydown);
-        document.addEventListener('click', throttledClick);
+        if (this.eventFramework) {
+            this.eventFramework.register(document, 'keydown', throttledKeydown);
+            this.eventFramework.register(document, 'click', throttledClick);
+        } else {
+            document.addEventListener('keydown', throttledKeydown);
+            document.addEventListener('click', throttledClick);
+        }
     }
     
     register(modalId, config = {}) {
@@ -2745,13 +2787,18 @@ class ModalManager {
         
         // Set up close button event listener
         if (modalConfig.closeBtn) {
-            modalConfig.closeBtn.addEventListener('click', () => {
+            const onClose = () => {
                 // Save scroll position before hiding for dynamic modal
                 if (modalId === this.dynamicModalId && this.currentSimType) {
                     this.saveScrollPosition(this.currentSimType);
                 }
                 this.hide(modalId);
-            });
+            };
+            if (this.eventFramework) {
+                this.eventFramework.register(modalConfig.closeBtn, 'click', onClose);
+            } else {
+                modalConfig.closeBtn.addEventListener('click', onClose);
+            }
         }
         
         this.modals.set(modalId, modalConfig);
@@ -2959,8 +3006,8 @@ class AlgorithmicPatternGenerator {
         this.uiUpdateThrottle = 100; // ms between UI updates
         
         // Initialize managers
-        this.modalManager = new ModalManager();
         this.eventFramework = new EventFramework();
+        this.modalManager = new ModalManager(this.eventFramework);
         this.eventHandlerFactory = new EventHandlerFactory(this.eventFramework);
         this.controlManager = new ControlManager(this.eventFramework);
         this.keyboardHandler = new KeyboardHandler(this);
