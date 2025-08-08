@@ -1,23 +1,11 @@
-// Browser-compatible test for fade behavior
-// This should be run in the browser context where the simulation classes are available
+// Browser-compatible test for fade behaviour
+// Uses TestUtilityFactory for shared mocks when available
 
 function testBlinkerFade() {
     console.log('Testing blinker fade behavior...');
-
-    // Create a mock canvas and context
-    const canvas = {
-        width: 300,
-        height: 300,
-        getBoundingClientRect: () => ({ left: 0, top: 0 })
-    };
-
-    const ctx = {
-        fillStyle: '',
-        fillRect: () => {},
-        clearRect: () => {},
-        setGlowEffect: () => {},
-        clearGlowEffect: () => {}
-    };
+    const { canvas, ctx } = (typeof TestUtilityFactory !== 'undefined')
+        ? TestUtilityFactory.createCanvasAndContext()
+        : { canvas: { width: 300, height: 300, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, ctx: { fillStyle: '', fillRect: () => {}, clearRect: () => {}, setGlowEffect: () => {}, clearGlowEffect: () => {} } };
 
     // Create simulation (assuming ConwayGameOfLife is available globally)
     const simulation = new ConwayGameOfLife(canvas, ctx);
@@ -103,20 +91,9 @@ function testBlinkerFade() {
 // Test function to check for race conditions
 function testRaceCondition() {
     console.log('Testing for race conditions...');
-
-    const canvas = {
-        width: 300,
-        height: 300,
-        getBoundingClientRect: () => ({ left: 0, top: 0 })
-    };
-
-    const ctx = {
-        fillStyle: '',
-        fillRect: () => {},
-        clearRect: () => {},
-        setGlowEffect: () => {},
-        clearGlowEffect: () => {}
-    };
+    const { canvas, ctx } = (typeof TestUtilityFactory !== 'undefined')
+        ? TestUtilityFactory.createCanvasAndContext()
+        : { canvas: { width: 300, height: 300, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, ctx: { fillStyle: '', fillRect: () => {}, clearRect: () => {}, setGlowEffect: () => {}, clearGlowEffect: () => {} } };
 
     const simulation = new ConwayGameOfLife(canvas, ctx);
     simulation.init();
@@ -155,20 +132,9 @@ function testRaceCondition() {
 // New function to test the specific timing issue
 function testTimingIssue() {
     console.log('Testing timing issue in updateFadeStates...');
-
-    const canvas = {
-        width: 300,
-        height: 300,
-        getBoundingClientRect: () => ({ left: 0, top: 0 })
-    };
-
-    const ctx = {
-        fillStyle: '',
-        fillRect: () => {},
-        clearRect: () => {},
-        setGlowEffect: () => {},
-        clearGlowEffect: () => {}
-    };
+    const { canvas, ctx } = (typeof TestUtilityFactory !== 'undefined')
+        ? TestUtilityFactory.createCanvasAndContext()
+        : { canvas: { width: 300, height: 300, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, ctx: { fillStyle: '', fillRect: () => {}, clearRect: () => {}, setGlowEffect: () => {}, clearGlowEffect: () => {} } };
 
     const simulation = new ConwayGameOfLife(canvas, ctx);
     simulation.init();
@@ -244,19 +210,9 @@ function testFixedBlinker() {
     // Enable debug mode
     window.DEBUG_FADE = true;
     
-    const canvas = {
-        width: 300,
-        height: 300,
-        getBoundingClientRect: () => ({ left: 0, top: 0 })
-    };
-
-    const ctx = {
-        fillStyle: '',
-        fillRect: () => {},
-        clearRect: () => {},
-        setGlowEffect: () => {},
-        clearGlowEffect: () => {}
-    };
+    const { canvas, ctx } = (typeof TestUtilityFactory !== 'undefined')
+        ? TestUtilityFactory.createCanvasAndContext()
+        : { canvas: { width: 300, height: 300, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, ctx: { fillStyle: '', fillRect: () => {}, clearRect: () => {}, setGlowEffect: () => {}, clearGlowEffect: () => {} } };
 
     const simulation = new ConwayGameOfLife(canvas, ctx);
     simulation.init();
@@ -344,8 +300,9 @@ function testFixedBlinker() {
 // Test the re-engineered fading mechanism
 function testReengineeredFading() {
     console.log('Testing re-engineered fading mechanism...');
-    const canvas = { width: 300, height: 300, getBoundingClientRect: () => ({ left: 0, top: 0 }) };
-    const ctx = { fillStyle: '', fillRect: () => {}, clearRect: () => {}, setGlowEffect: () => {}, clearGlowEffect: () => {} };
+    const { canvas, ctx } = (typeof TestUtilityFactory !== 'undefined')
+        ? TestUtilityFactory.createCanvasAndContext()
+        : { canvas: { width: 300, height: 300, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, ctx: { fillStyle: '', fillRect: () => {}, clearRect: () => {}, setGlowEffect: () => {}, clearGlowEffect: () => {} } };
     const simulation = new ConwayGameOfLife(canvas, ctx);
     simulation.init();
     simulation.setFadeOutCycles(5);

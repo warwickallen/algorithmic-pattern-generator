@@ -22,6 +22,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **Performance Optimised** - Hardware acceleration, debounced inputs, and efficient rendering
 - **Responsive Design** - Works on desktop, tablet, and mobile devices
 - **Comprehensive Testing** - Visual and programmatic test suites for quality assurance
+ - **TestUtilityFactory** - Centralised test helpers for mock canvas/ctx and simulation creation
 - **CSS-Based Control Visibility** - Declarative control visibility management using CSS classes and data attributes
 - **EventHandlerFactory** - Template-based event handler creation and registration system
 - **ModalTemplateManager** - Template-based modal content management with dynamic content injection and scroll position management
@@ -214,6 +215,17 @@ testRunner.runAllTests();
 testRunner.runTestsByCategory('core');
 testRunner.runTestsByCategory('performance');
 testRunner.runTestsByCategory('control-visibility');
+```
+
+You can also use `TestUtilityFactory` in browser or Node (CommonJS) contexts to simplify test setup:
+
+```javascript
+// Create mock canvas/ctx
+const { canvas, ctx } = TestUtilityFactory.createCanvasAndContext();
+
+// Create a simulation with mocks
+const { simulation } = TestUtilityFactory.createSimulationWithMocks('conway');
+simulation.init();
 ```
 
 ### Test Categories

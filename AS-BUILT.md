@@ -1058,6 +1058,7 @@ Comprehensive testing framework:
 
 - `test-suite.html`: Visual test suite with interactive UI
 - `test-runner.js`: Programmatic test runner for automation
+- `test-utils.js`: TestUtilityFactory with shared canvas/ctx mocks and helpers
 - `TESTING.md`: Complete testing documentation and guide
 
 **New System Tests:**
@@ -1065,6 +1066,14 @@ Comprehensive testing framework:
 // ErrorHandler smoke tests (added via test-runner.js minimal suite)
 runner.addTest('ErrorHandler: default strategy handles event errors', async () => { /* ... */ }, 'system');
 runner.addTest('ErrorHandler: state manager serialize/deserialize errors counted', async () => { /* ... */ }, 'system');
+```
+
+**New Test Utilities:**
+```javascript
+// TestUtilityFactory usage examples
+const { canvas, ctx } = TestUtilityFactory.createCanvasAndContext();
+const { simulation } = TestUtilityFactory.createSimulationWithMocks('conway');
+simulation.init();
 ```
 
 **New Control Visibility Tests:**

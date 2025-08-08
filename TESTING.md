@@ -10,6 +10,7 @@ The Algorithmic Pattern Generator includes a sophisticated testing framework wit
 
 1. **`test-suite.html`** - Comprehensive visual test suite with interactive UI
 2. **`test-runner.js`** - Programmatic test runner for automation and CI/CD
+3. **`test-utils.js`** - TestUtilityFactory providing shared mocks and helpers
 
 ### Test Categories
 
@@ -57,6 +58,7 @@ Include `test-runner.js` in your HTML or use it programmatically:
 <script src="test-runner.js"></script>
 <script src="simulations.js"></script>
 <script src="app.js"></script>
+<script src="test-utils.js"></script>
 ```
 
 Then run tests from the browser console:
@@ -806,14 +808,19 @@ if (hasRegressions) {
 ### For New Features
 
 ```javascript
+// Use shared utilities for setup
+const { canvas, ctx } = TestUtilityFactory.createCanvasAndContext();
+const { simulation } = TestUtilityFactory.createSimulationWithMocks('conway');
+
 testRunner.addTest('New Feature Test', async () => {
     // Test implementation
-    const result = someFunction();
+    simulation.init();
+    const result = simulation instanceof ConwayGameOfLife;
     const expectedValue = 'expected';
     
     return {
-        passed: result === expectedValue,
-        details: `Result: ${result}, Expected: ${expectedValue}`,
+        passed: result === true,
+        details: `Conway initialised`,
         category: 'feature-category'
     };
 }, 'feature-category');
