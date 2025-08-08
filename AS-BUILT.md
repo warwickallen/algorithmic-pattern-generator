@@ -718,6 +718,7 @@ Comprehensive rendering system:
 
 **Components:**
 - **Color Manager**: HSL/RGB conversion and brightness control
+- **ColorUtils (new)**: Centralised colour utilities (parse hex/rgb, HSL→RGB, interpolation) consumed by RenderingUtils and DynamicColourScheme
 - **Performance Utilities**: Centralised debouncing and throttling via `PerformanceUtils` (with `PerformanceOptimizer` kept as a thin compatibility layer)
 - **Grid Renderer**: Efficient grid drawing with custom cell renderers
 

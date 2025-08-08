@@ -11,6 +11,7 @@ The Algorithmic Pattern Generator includes a sophisticated testing framework wit
 1. **`test-suite.html`** - Comprehensive visual test suite with interactive UI
 2. **`test-runner.js`** - Programmatic test runner for automation and CI/CD
 3. **`test-utils.js`** - TestUtilityFactory providing shared mocks and helpers
+4. **`utils.js`** - `ColorUtils` centralised colour utilities used by rendering tests
 
 ### Test Categories
 

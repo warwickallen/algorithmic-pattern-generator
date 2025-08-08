@@ -573,6 +573,19 @@ interpolateColor(color1, color2, factor) { /* implementation */ }
 
 **Estimated Reduction**: 20-30 lines
 
+**✅ Status**: **COMPLETED**
+- **ColorUtils** module added in `utils.js` with:
+  - `hslToRgb(h, s, l)` and `hslToRgbArray(h, s, l)`
+  - `parseColor(color)` for hex and rgb(a)
+  - `interpolateColor(color1, color2, factor)` with clamping
+- **Refactors**:
+  - `simulations.js` delegates HSL→RGB, parsing, and interpolation to `ColorUtils` (with minimal fallbacks for safety)
+  - `index.html` now loads `utils.js` before `simulations.js`
+- **Code reduction achieved**: ~35 lines of duplicated colour parsing/conversion/interpolation consolidated
+- **Testing**:
+  - Added three tests in `test-runner.js` under category `colour` validating `ColorUtils`
+- **Extensibility**: Central place to add future colour utilities (e.g., rgb↔hex, lighten/darken)
+
 ### 22. **Constants Consolidation**
 
 **Current State**: Magic numbers and strings scattered:
@@ -715,13 +728,13 @@ function createMockContext() { /* implementation */ }
 
 ### Phase 4: Polish and Optimisation (Low Priority)
 1. **Test Pattern Duplication** ✅ **COMPLETED** - Create test utility factory and refactor tests
-2. **Utility Function Consolidation** - Centralise common utilities
+2. **Utility Function Consolidation** ✅ **COMPLETED** - Centralise common utilities (added `ColorUtils` and refactored usages)
 3. **Constants Consolidation** - Create configuration constants
 4. **Documentation Consolidation** - Standardise documentation patterns
 
 **Timeline**: 1-2 weeks
 **Expected Reduction**: 100-150 lines
-**Progress**: 1/4 completed (~60 lines reduced)
+**Progress**: 2/4 completed (~95 lines reduced)
 
 ### Phase 5: Visual/Functional Changes
 1. **Unified Control Panel Design** - Implement consistent design system
@@ -841,7 +854,7 @@ The implementation should be approached incrementally with comprehensive testing
 14. ✅ **Phase 3.4 COMPLETED**: Error Handling Consolidation implemented (central ErrorHandler; metrics and tests)
 
 15. ✅ **Phase 4.1 COMPLETED**: Test Pattern Duplication implemented (TestUtilityFactory added, tests refactored, suite integration)
-16. ▶ **Phase 4.2 NEXT**: Utility Function Consolidation (centralise shared helpers)
+16. ✅ **Phase 4.2 COMPLETED**: Utility Function Consolidation implemented (`ColorUtils` centralised; simulations shifted to shared utilities; tests added)
 17. ▶ **Phase 4.3 NEXT**: Constants Consolidation (extract magic numbers/strings)
 18. ▶ **Phase 4.4 NEXT**: Documentation Consolidation (standardise JSDoc patterns)
 
