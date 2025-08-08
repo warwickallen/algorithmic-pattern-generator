@@ -23,6 +23,7 @@ The test suite is organised into logical categories:
 - **System Tests** - System-level functionality and error handling
 - **Control Visibility Tests** - CSS-based control visibility management system
 - **EventHandlerFactory Tests** - Template-based event handler creation and registration system
+- **EventFramework Tests** - Declarative and delegated registration with centralised cleanup
 - **ModalTemplateManager Tests** - Template-based modal content management system
 - **UI Component Library Tests** - Comprehensive UI component library with lifecycle management and state management
 - **CSS Utility Tests** - CSS utility framework and design token system validation
@@ -252,6 +253,8 @@ Tests component interactions and system integration:
 - Tests event registration and cleanup
 - Validates event propagation
 - Tests event memory management
+- Tests declarative registration API
+- Tests delegated registration API
 
 ### Visual Effects Tests
 

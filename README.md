@@ -28,6 +28,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **UIComponentLibrary** - Comprehensive UI component library with 8 component types, lifecycle management, and factory methods
 - **CSS Utility Framework** - Design token system with utility classes for glass effects, layout, and performance optimization
  - **PerformanceUtils** - Centralised debounce/throttle utilities used across the app
+ - **EventFramework (enhanced)** - Declarative and delegated event registration with centralised cleanup
 
 ## Quick Start
 
