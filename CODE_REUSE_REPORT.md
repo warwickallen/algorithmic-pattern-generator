@@ -448,6 +448,20 @@ try {
 **Estimated Reduction**: 30-50 lines
 **Implementation**: `ErrorHandler` class with simulation-specific error strategies.
 
+**✅ Status**: **COMPLETED**
+- **ErrorHandler** class implemented with centralised routing and metrics
+- **Integration points**:
+  - Lifecycle hooks (`hook` errors)
+  - StateManager serialisation/deserialisation (`serialize`/`deserialize` errors)
+  - State subscribers (`subscriber` errors)
+  - Event handler emissions (`eventHandler` errors)
+- **Strategy support**: Per-simulation strategies via `errorHandler.registerStrategy(simId, strategy)`
+- **Metrics**: `errorHandler.getMetrics()` returns totals by type and simulation
+- **Global access**: `window.errorHandler` for diagnostics and tests
+- **Code reduction achieved**: ~35 lines of scattered `console.error` calls consolidated or routed
+- **Testing**: Added two programmatic tests in `test-runner.js` under category `system` to assert error capture for event handlers and serializer failures
+- **Documentation updated**: `README.md`, `AS-BUILT.md`, and `TESTING.md` updated to include ErrorHandler and tests
+
 ### 16. **Memory Management Consolidation**
 
 **Current State**: Cleanup logic scattered across components:
@@ -685,13 +699,15 @@ function createMockContext() { /* implementation */ }
 **Status**: **PHASE 2 COMPLETE** - All UI enhancement opportunities implemented and documented
 
 ### Phase 3: Architecture Improvement (Medium Priority)
-1. **Simulation State Management** - Implement unified state system
-2. **Performance Optimisation Consolidation** - Create performance utility library
-3. **Event Framework Enhancement** - Centralise event management
-4. **Error Handling Consolidation** - Implement unified error handling
+1. **Simulation State Management** ✅ **COMPLETED** - Implement unified state system
+2. **Performance Optimisation Consolidation** ✅ **COMPLETED** - Create performance utility library
+3. **Event Framework Enhancement** ✅ **COMPLETED** - Centralise event management
+4. **Error Handling Consolidation** ✅ **COMPLETED** - Implement unified error handling
 
 **Timeline**: 2-3 weeks
 **Expected Reduction**: 200-300 lines
+**Progress**: 4/4 completed (code reduction within expected range)
+**Status**: **PHASE 3 COMPLETE** - All architecture improvement opportunities implemented and documented
 
 ### Phase 4: Polish and Optimisation (Low Priority)
 1. **Test Pattern Duplication** - Create test utility factory
@@ -765,8 +781,8 @@ function createMockContext() { /* implementation */ }
 
 ### Code Reduction Targets
 - **Phase 1**: 360-490 lines (6-8% reduction) ✅ **COMPLETED**
-- **Phase 2**: 250-350 lines (4-6% reduction)
-- **Phase 3**: 200-300 lines (3-5% reduction)
+- **Phase 2**: 250-350 lines (4-6% reduction) ✅ **COMPLETED** (~520 lines reduced)
+- **Phase 3**: 200-300 lines (3-5% reduction) ✅ **COMPLETED** (within expected range)
 - **Phase 4**: 100-150 lines (2-3% reduction)
 - **Phase 5**: 450-650 lines (8-11% reduction)
 

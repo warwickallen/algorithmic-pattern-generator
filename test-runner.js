@@ -456,6 +456,46 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         const ctx = canvas.getContext('2d');
         
         const runner = PredefinedTestSuites.createMinimalSuite({ canvas, ctx });
+        // Add ErrorHandler smoke tests
+        runner.addTest('ErrorHandler: default strategy handles event errors', async () => {
+            try {
+                if (!window.errorHandler) return { passed: false, details: 'errorHandler not initialised' };
+                const initial = window.errorHandler.getMetrics();
+                // Simulate an event handler error via lifecycle event handler
+                const sim = SimulationFactory.createSimulation('conway', canvas, ctx);
+                sim.eventHandler.on('test', () => { throw new Error('boom'); });
+                sim.eventHandler.emit('test');
+                const after = window.errorHandler.getMetrics();
+                const increased = after.total > initial.total;
+                const typed = (after.byType.eventHandler || 0) > (initial.byType.eventHandler || 0);
+                return { passed: increased && typed, details: `total ${after.total}, eventHandler ${after.byType.eventHandler}` };
+            } catch (e) {
+                return { passed: false, details: e.message };
+            }
+        }, 'system');
+
+        runner.addTest('ErrorHandler: state manager serialize/deserialize errors counted', async () => {
+            try {
+                if (!window.errorHandler) return { passed: false, details: 'errorHandler not initialised' };
+                const sim = SimulationFactory.createSimulation('conway', canvas, ctx);
+                // Inject a serializer that throws
+                sim.stateManager.registerSerializer({
+                    capture: () => { throw new Error('capture fail'); },
+                    restore: () => { throw new Error('restore fail'); }
+                });
+                const before = window.errorHandler.getMetrics();
+                // Trigger serialize
+                sim.getState();
+                // Trigger deserialize
+                sim.setState({});
+                const after = window.errorHandler.getMetrics();
+                const serIncreased = (after.byType.serialize || 0) > (before.byType.serialize || 0);
+                const deserIncreased = (after.byType.deserialize || 0) > (before.byType.deserialize || 0);
+                return { passed: serIncreased && deserIncreased, details: `serialize: ${after.byType.serialize}, deserialize: ${after.byType.deserialize}` };
+            } catch (e) {
+                return { passed: false, details: e.message };
+            }
+        }, 'system');
         
         console.log('🧪 Test runner loaded. Run runner.runAllTests() to execute tests.');
         console.log('Available commands:');

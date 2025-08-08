@@ -27,6 +27,7 @@ The test suite is organised into logical categories:
 - **ModalTemplateManager Tests** - Template-based modal content management system
 - **UI Component Library Tests** - Comprehensive UI component library with lifecycle management and state management
 - **CSS Utility Tests** - CSS utility framework and design token system validation
+ - **Error Handling Tests** - Centralised ErrorHandler smoke tests
 
 ## Quick Start
 
@@ -69,6 +70,7 @@ testRunner.runTestsByCategory('core');
 testRunner.runTestsByCategory('performance');
 testRunner.runTestsByCategory('ui');
 testRunner.runTestsByCategory('control-visibility');
+testRunner.runTestsByCategory('system'); // includes ErrorHandler tests
 ```
 
 ### 3. Using the Visual Test Suite Interface
