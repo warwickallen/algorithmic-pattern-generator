@@ -29,6 +29,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **CSS Utility Framework** - Design token system with utility classes for glass effects, layout, and performance optimization
  - **PerformanceUtils** - Centralised debounce/throttle utilities used across the app
  - **EventFramework (enhanced)** - Declarative and delegated event registration with centralised cleanup
+ - **ErrorHandler (new)** - Centralised error handling with simulation-specific strategies and metrics
 
 ## Quick Start
 
@@ -227,6 +228,7 @@ The test suite covers:
 - ModalTemplateManager testing
 - EventFramework testing
 - CSS utility framework testing
+ - Error handling tests (system category)
 
 ## CSS Utility Framework
 

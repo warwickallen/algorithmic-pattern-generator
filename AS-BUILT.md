@@ -711,6 +711,7 @@ Framework for managing simulation lifecycles:
 - State management with subscription system and serialiser-based persistence
 - Event handling with emitter pattern
 - Cleanup and resource management
+ - Unified error routing via `errorHandler` with types: `hook`, `serialize`, `deserialize`, `subscriber`, `eventHandler`
 
 #### Rendering Utilities
 Comprehensive rendering system:
@@ -1058,6 +1059,13 @@ Comprehensive testing framework:
 - `test-suite.html`: Visual test suite with interactive UI
 - `test-runner.js`: Programmatic test runner for automation
 - `TESTING.md`: Complete testing documentation and guide
+
+**New System Tests:**
+```javascript
+// ErrorHandler smoke tests (added via test-runner.js minimal suite)
+runner.addTest('ErrorHandler: default strategy handles event errors', async () => { /* ... */ }, 'system');
+runner.addTest('ErrorHandler: state manager serialize/deserialize errors counted', async () => { /* ... */ }, 'system');
+```
 
 **New Control Visibility Tests:**
 ```javascript

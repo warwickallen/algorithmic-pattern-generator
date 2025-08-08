@@ -179,6 +179,76 @@ class DynamicColourScheme {
     }
 }
 
+// Centralised Error Handling (R6 Implementation)
+class ErrorHandler {
+    constructor() {
+        this.strategies = new Map();
+        this.defaultStrategy = {
+            handle: ({ type, simulationId, scope, message, error }) => {
+                const simPart = simulationId ? `[${simulationId}] ` : '';
+                const scopePart = scope ? `${scope}: ` : '';
+                console.error(`ErrorHandler ${simPart}${type} ${scopePart}${message}`, error);
+            }
+        };
+        this.metrics = {
+            total: 0,
+            byType: new Map(),
+            bySimulation: new Map()
+        };
+    }
+
+    setDefaultStrategy(strategy) {
+        if (strategy && typeof strategy.handle === 'function') {
+            this.defaultStrategy = strategy;
+        }
+    }
+
+    registerStrategy(simulationId, strategy) {
+        if (!simulationId || !strategy || typeof strategy.handle !== 'function') return;
+        this.strategies.set(simulationId, strategy);
+    }
+
+    handle({ type, simulationId = null, scope = null, message = '', error = null }) {
+        // Update metrics
+        this.metrics.total++;
+        this.metrics.byType.set(type, (this.metrics.byType.get(type) || 0) + 1);
+        if (simulationId) {
+            const simCounts = this.metrics.bySimulation.get(simulationId) || {};
+            simCounts[type] = (simCounts[type] || 0) + 1;
+            this.metrics.bySimulation.set(simulationId, simCounts);
+        }
+
+        // Route to strategy
+        const strategy = (simulationId && this.strategies.get(simulationId)) || this.defaultStrategy;
+        try {
+            strategy.handle({ type, simulationId, scope, message, error });
+        } catch (strategyError) {
+            // Fallback to console if strategy itself fails
+            console.error('ErrorHandler strategy failure:', strategyError);
+            console.error('Original error context:', { type, simulationId, scope, message });
+            if (error) console.error('Original error:', error);
+        }
+    }
+
+    getMetrics() {
+        // Return a shallow clone that is easy to inspect in tests/UIs
+        const byType = {};
+        for (const [k, v] of this.metrics.byType.entries()) byType[k] = v;
+        const bySimulation = {};
+        for (const [sim, counts] of this.metrics.bySimulation.entries()) {
+            bySimulation[sim] = { ...counts };
+        }
+        return { total: this.metrics.total, byType, bySimulation };
+    }
+}
+
+// Global error handler instance
+const errorHandler = new ErrorHandler();
+if (typeof window !== 'undefined') {
+    window.ErrorHandler = ErrorHandler;
+    window.errorHandler = errorHandler;
+}
+
 // Simulation Lifecycle Framework (R4 Implementation)
 class SimulationLifecycleFramework {
     constructor() {
@@ -221,7 +291,13 @@ class SimulationLifecycleFramework {
             try {
                 return hooks[hookName](...args);
             } catch (error) {
-                console.error(`Error executing ${hookName} hook for simulation ${simulationId}:`, error);
+                errorHandler.handle({
+                    type: 'hook',
+                    simulationId,
+                    scope: hookName,
+                    message: `Error executing lifecycle hook`,
+                    error
+                });
             }
         }
     }
@@ -270,7 +346,13 @@ class SimulationLifecycleFramework {
                     try {
                         return this.serializer.capture(simulationInstance) || {};
                     } catch (error) {
-                        console.error('Error capturing simulation state:', error);
+                        errorHandler.handle({
+                            type: 'serialize',
+                            simulationId: simulationInstance && simulationInstance.simulationId,
+                            scope: 'StateManager.serialize',
+                            message: 'Error capturing simulation state',
+                            error
+                        });
                         return {};
                     }
                 }
@@ -283,7 +365,13 @@ class SimulationLifecycleFramework {
                     try {
                         this.serializer.restore(simulationInstance, state);
                     } catch (error) {
-                        console.error('Error restoring simulation state:', error);
+                        errorHandler.handle({
+                            type: 'deserialize',
+                            simulationId: simulationInstance && simulationInstance.simulationId,
+                            scope: 'StateManager.deserialize',
+                            message: 'Error restoring simulation state',
+                            error
+                        });
                     }
                 }
             },
@@ -300,7 +388,13 @@ class SimulationLifecycleFramework {
                     try {
                         callback(this.state);
                     } catch (error) {
-                        console.error('Error in state subscriber:', error);
+                        errorHandler.handle({
+                            type: 'subscriber',
+                            simulationId: null,
+                            scope: 'StateManager.notifySubscribers',
+                            message: 'Error in state subscriber',
+                            error
+                        });
                     }
                 });
             }
@@ -308,7 +402,7 @@ class SimulationLifecycleFramework {
     }
     
     // Create standardized event handler
-    createEventHandler() {
+    createEventHandler(simulationId = null) {
         return {
             events: new Map(),
             
@@ -328,7 +422,13 @@ class SimulationLifecycleFramework {
                         try {
                             handler(...args);
                         } catch (error) {
-                            console.error(`Error in event handler for ${eventName}:`, error);
+                            errorHandler.handle({
+                                type: 'eventHandler',
+                                simulationId,
+                                scope: eventName,
+                                message: 'Error in event handler',
+                                error
+                            });
                         }
                     });
                 }
@@ -658,7 +758,7 @@ class BaseSimulation {
             trailEnabled: this.trailEnabled
         });
         
-        this.eventHandler = simulationLifecycleFramework.createEventHandler();
+        this.eventHandler = simulationLifecycleFramework.createEventHandler(this.simulationId);
         
         // Register with lifecycle framework
         simulationLifecycleFramework.registerStateManager(this.simulationId, this.stateManager);
