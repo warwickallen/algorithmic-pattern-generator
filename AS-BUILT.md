@@ -553,12 +553,12 @@ registerDynamicModal(simType) {
         console.warn(`No template found for simulation type: ${simType}`);
         return false;
     }
-    
+
     // Register the dynamic modal if not already registered
     if (!this.modals.has(this.dynamicModalId)) {
         this.register(this.dynamicModalId);
     }
-    
+
     return true;
 }
 
@@ -620,13 +620,13 @@ setupContentTemplates() {
         title: "Conway's Game of Life",
         content: `...` // Detailed content about Conway's Game of Life
     });
-    
+
     // Termite Algorithm content template
     this.contentTemplates.set('termite', {
-        title: "Termite Algorithm", 
+        title: "Termite Algorithm",
         content: `...` // Detailed content about Termite Algorithm
     });
-    
+
     // Langton's Ant content template
     this.contentTemplates.set('langton', {
         title: "Langton's Ant",
@@ -640,13 +640,13 @@ createModalContent(simType) {
         console.warn(`No content template found for simulation type: ${simType}`);
         return null;
     }
-    
+
     // Create modal structure with content
     const modalHTML = this.baseModalTemplate
         .replace('[data-title]', template.title)
         .replace('[data-close-btn]', '')
         .replace('[data-content]', template.content);
-    
+
     return {
         title: template.title,
         content: modalHTML
@@ -656,19 +656,19 @@ createModalContent(simType) {
 injectModalContent(simType, modalElement) {
     const template = this.contentTemplates.get(simType);
     if (!template || !modalElement) return false;
-    
+
     // Update title using data attribute for more robust selection
     const titleElement = modalElement.querySelector('[data-modal-title]');
     if (titleElement) {
         titleElement.textContent = template.title;
     }
-    
+
     // Update content using data attribute for more robust selection
     const contentElement = modalElement.querySelector('[data-modal-content]');
     if (contentElement) {
         contentElement.innerHTML = template.content;
     }
-    
+
     return true;
 }
 ```
@@ -770,7 +770,7 @@ drawCell(x, y, color = null, isActive = null) {
     // Get grid position for brightness calculations
     const { col, row } = this.screenToGrid(x, y);
     let cellBrightness = this.getCellBrightness(row, col);
-    
+
     // If no brightness data exists, assume full brightness for active cells
     // This ensures cells are visible when they should be (e.g., initial wood chips in Termite Algorithm)
     if (cellBrightness === 0 && isActive !== false) {
@@ -816,18 +816,18 @@ Classic cellular automaton implementation with re-engineered fading:
 update() {
     // Step 1: Decrease each cell's brightness value by configurable amount
     this.updateCellBrightness();
-    
+
     this.generation++;
-    
+
     // Step 2: Activate and deactivate cells according to simulation rules
     // ... Conway's rules implementation ...
-    
+
     // Swap grids
     this.swapGrids(this.grids);
-    
+
     // Step 3: For all active cells, set the brightness value to 1
     this.setActiveCellBrightness(this.grids.current);
-    
+
     // Update cell count
     this.cellCount = this.countLiveCells(this.grids.current);
 }
@@ -988,7 +988,7 @@ Dynamic positioning system for controls with enhanced visibility detection:
 positionElement(element) {
     // Skip elements that are hidden (check both inline style and computed style)
     const computedStyle = window.getComputedStyle(element);
-    if (computedStyle.display === 'none' || 
+    if (computedStyle.display === 'none' ||
         (element.hasAttribute('data-simulation') && !element.classList.contains('active'))) {
         return;
     }
@@ -1082,13 +1082,13 @@ simulation.init();
 testSuite.addTest('ControlVisibilityManager Initialization', async () => {
     const visibilityManager = new ControlVisibilityManager();
     visibilityManager.init();
-    
+
     const isInitialized = visibilityManager.isInitialized;
     const hasControlGroups = visibilityManager.controlGroups.size > 0;
     const hasVisibilityStates = visibilityManager.visibilityStates.size > 0;
-    
+
     visibilityManager.cleanup();
-    
+
     return {
         passed: isInitialized && hasControlGroups && hasVisibilityStates,
         details: `Initialized: ${isInitialized}, Control groups: ${hasControlGroups}, Visibility states: ${hasVisibilityStates}`
@@ -1098,29 +1098,29 @@ testSuite.addTest('ControlVisibilityManager Initialization', async () => {
 testSuite.addTest('ControlVisibilityManager Conway Simulation', async () => {
     const visibilityManager = new ControlVisibilityManager();
     visibilityManager.init();
-    
+
     // Set active simulation to conway
     visibilityManager.setActiveSimulation('conway');
-    
+
     // Check if conway controls are visible
     const conwayControls = document.getElementById('conway-controls');
     const isConwayVisible = conwayControls && conwayControls.classList.contains('active');
-    
+
     // Check if other controls are hidden
     const termiteControls = document.getElementById('termite-controls');
     const isTermiteHidden = !termiteControls || !termiteControls.classList.contains('active');
-    
+
     const langtonControls = document.getElementById('langton-controls');
     const isLangtonHidden = !langtonControls || !langtonControls.classList.contains('active');
-    
+
     const termitesContainer = document.getElementById('termites-container');
     const isTermitesHidden = !termitesContainer || !termitesContainer.classList.contains('active');
-    
+
     // Check active simulation
     const activeSim = visibilityManager.getActiveSimulation();
-    
+
     visibilityManager.cleanup();
-    
+
     return {
         passed: isConwayVisible && isTermiteHidden && isLangtonHidden && isTermitesHidden && activeSim === 'conway',
         details: `Conway visible: ${isConwayVisible}, Termite hidden: ${isTermiteHidden}, Langton hidden: ${isLangtonHidden}, Termites hidden: ${isTermitesHidden}, Active: ${activeSim}`
@@ -1260,16 +1260,16 @@ The application implements a comprehensive CSS utility framework with design tok
     --color-secondary: #4ecdc4;
     --color-background: #0a0a0a;
     --color-surface: #1a1a1a;
-    
+
     /* Spacing */
     --spacing-sm: 0.5rem;
     --spacing-md: 0.75rem;
     --spacing-lg: 1rem;
-    
+
     /* Transitions */
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
-    
+
     /* Z-index */
     --z-controls: 100;
     --z-modal: 1000;
@@ -1310,4 +1310,4 @@ The application implements a comprehensive CSS utility framework with design tok
 - **Maintainability**: Centralised styling reduces duplication
 - **Performance**: Optimised utility classes improve rendering
 - **Extensibility**: Easy to add new utility classes and variants
-- **Testing**: Comprehensive CSS utility test suite for validation 
+- **Testing**: Comprehensive CSS utility test suite for validation

@@ -11,7 +11,7 @@ class SharedComponents {
             range: { min, max, step, default: value }
         };
     }
-    
+
     // Common button component
     static createButton(id, label, className = 'btn secondary') {
         const element = document.getElementById(id);
@@ -21,7 +21,7 @@ class SharedComponents {
         }
         return element;
     }
-    
+
     // Common control group wrapper
     static createControlGroup(controls) {
         return controls.map(control => {
@@ -45,7 +45,7 @@ class UIComponentLibrary {
         this.eventFramework = eventFramework;
         this.initDefaultConfigs();
     }
-    
+
     // Initialize default configurations for all component types
     initDefaultConfigs() {
         this.defaultConfigs.set('slider', {
@@ -56,32 +56,32 @@ class UIComponentLibrary {
             format: (val) => val.toString(),
             className: 'slider'
         });
-        
+
         this.defaultConfigs.set('button', {
             className: 'btn secondary',
             disabled: false,
             pressed: false
         });
-        
+
         this.defaultConfigs.set('select', {
             className: 'simulation-select',
             placeholder: 'Select option...'
         });
-        
+
         this.defaultConfigs.set('controlGroup', {
             className: 'control-group',
             layout: 'horizontal', // horizontal, vertical, grid
             gap: '0.5rem',
             visible: true
         });
-        
+
         this.defaultConfigs.set('statusDisplay', {
             className: 'status-info',
             layout: 'horizontal',
             gap: '0.5rem',
             format: (value) => value.toString()
         });
-        
+
         this.defaultConfigs.set('modal', {
             className: 'modal',
             backdrop: true,
@@ -89,12 +89,12 @@ class UIComponentLibrary {
             closeOnBackdrop: true,
             animation: true
         });
-        
+
         this.defaultConfigs.set('label', {
             className: 'control-label',
             required: false
         });
-        
+
         this.defaultConfigs.set('container', {
             className: 'ui-container',
             layout: 'horizontal',
@@ -102,12 +102,12 @@ class UIComponentLibrary {
             visible: true
         });
     }
-    
+
     // Create a standardized slider component with enhanced features
     createSlider(config) {
         const defaultConfig = this.defaultConfigs.get('slider');
         const mergedConfig = { ...defaultConfig, ...config };
-        
+
         const component = {
             type: 'slider',
             id: mergedConfig.id,
@@ -132,18 +132,18 @@ class UIComponentLibrary {
                 removeEventListener: (event) => this.removeComponentEventListener(component, event)
             }
         };
-        
+
         this.components.set(mergedConfig.id, component);
         this.componentTypes.add('slider');
         this.initializeComponent(component);
         return component;
     }
-    
+
     // Create a standardized button component with enhanced features
     createButton(config) {
         const defaultConfig = this.defaultConfigs.get('button');
         const mergedConfig = { ...defaultConfig, ...config };
-        
+
         const component = {
             type: 'button',
             id: mergedConfig.id,
@@ -170,18 +170,18 @@ class UIComponentLibrary {
                 removeEventListener: (event) => this.removeComponentEventListener(component, event)
             }
         };
-        
+
         this.components.set(mergedConfig.id, component);
         this.componentTypes.add('button');
         this.initializeComponent(component);
         return component;
     }
-    
+
     // Create a select dropdown component
     createSelect(config) {
         const defaultConfig = this.defaultConfigs.get('select');
         const mergedConfig = { ...defaultConfig, ...config };
-        
+
         const component = {
             type: 'select',
             id: mergedConfig.id,
@@ -207,18 +207,18 @@ class UIComponentLibrary {
                 removeEventListener: (event) => this.removeComponentEventListener(component, event)
             }
         };
-        
+
         this.components.set(mergedConfig.id, component);
         this.componentTypes.add('select');
         this.initializeComponent(component);
         return component;
     }
-    
+
     // Create a control group component with enhanced layout options
     createControlGroup(groupId, controls = []) {
         const defaultConfig = this.defaultConfigs.get('controlGroup');
         const mergedConfig = { ...defaultConfig, ...controls };
-        
+
         const component = {
             type: 'controlGroup',
             id: groupId,
@@ -244,18 +244,18 @@ class UIComponentLibrary {
                 update: (newConfig) => this.updateControlGroup(component, newConfig)
             }
         };
-        
+
         this.components.set(groupId, component);
         this.componentTypes.add('controlGroup');
         this.initializeComponent(component);
         return component;
     }
-    
+
     // Create a status display component
     createStatusDisplay(config) {
         const defaultConfig = this.defaultConfigs.get('statusDisplay');
         const mergedConfig = { ...defaultConfig, ...config };
-        
+
         const component = {
             type: 'statusDisplay',
             id: mergedConfig.id,
@@ -280,18 +280,18 @@ class UIComponentLibrary {
                 removeEventListener: (event) => this.removeComponentEventListener(component, event)
             }
         };
-        
+
         this.components.set(mergedConfig.id, component);
         this.componentTypes.add('statusDisplay');
         this.initializeComponent(component);
         return component;
     }
-    
+
     // Create a modal component
     createModal(config) {
         const defaultConfig = this.defaultConfigs.get('modal');
         const mergedConfig = { ...defaultConfig, ...config };
-        
+
         const component = {
             type: 'modal',
             id: mergedConfig.id,
@@ -320,18 +320,18 @@ class UIComponentLibrary {
                 removeEventListener: (event) => this.removeComponentEventListener(component, event)
             }
         };
-        
+
         this.components.set(mergedConfig.id, component);
         this.componentTypes.add('modal');
         this.initializeComponent(component);
         return component;
     }
-    
+
     // Create a label component
     createLabel(config) {
         const defaultConfig = this.defaultConfigs.get('label');
         const mergedConfig = { ...defaultConfig, ...config };
-        
+
         const component = {
             type: 'label',
             id: mergedConfig.id,
@@ -351,18 +351,18 @@ class UIComponentLibrary {
                 update: (newConfig) => this.updateLabel(component, newConfig)
             }
         };
-        
+
         this.components.set(mergedConfig.id, component);
         this.componentTypes.add('label');
         this.initializeComponent(component);
         return component;
     }
-    
+
     // Create a container component for layout management
     createContainer(config) {
         const defaultConfig = this.defaultConfigs.get('container');
         const mergedConfig = { ...defaultConfig, ...config };
-        
+
         const component = {
             type: 'container',
             id: mergedConfig.id,
@@ -384,13 +384,13 @@ class UIComponentLibrary {
                 update: (newConfig) => this.updateContainer(component, newConfig)
             }
         };
-        
+
         this.components.set(mergedConfig.id, component);
         this.componentTypes.add('container');
         this.initializeComponent(component);
         return component;
     }
-    
+
     // Component lifecycle management
     initializeComponent(component) {
         switch (component.type) {
@@ -419,17 +419,17 @@ class UIComponentLibrary {
                 this.initializeContainer(component);
                 break;
         }
-        
+
         // Register lifecycle hooks
         this.registerLifecycleHooks(component);
-        
+
         // Trigger onMount hook
         const hooks = this.lifecycleHooks.get(component.id);
         if (hooks && hooks.onMount) {
             hooks.onMount();
         }
     }
-    
+
     // Initialize specific component types
     initializeSlider(component) {
         if (component.element) {
@@ -438,121 +438,121 @@ class UIComponentLibrary {
             component.element.step = component.config.step;
             component.element.value = component.state.value;
             component.element.className = component.config.className;
-            
+
             if (component.valueElement) {
                 component.valueElement.textContent = component.config.format(component.state.value);
             }
         }
     }
-    
+
     initializeButton(component) {
         if (component.element) {
             component.element.textContent = component.state.text;
             component.element.className = component.config.className;
             component.element.disabled = !component.state.isEnabled;
-            
+
             if (component.state.isPressed) {
                 component.element.classList.add('pressed');
             }
         }
     }
-    
+
     initializeSelect(component) {
         if (component.element) {
             component.element.className = component.config.className;
             component.element.disabled = !component.state.isEnabled;
-            
+
             if (component.state.options.length > 0) {
                 this.setSelectOptions(component, component.state.options);
             }
-            
+
             if (component.state.value) {
                 component.element.value = component.state.value;
             }
         }
     }
-    
+
     initializeControlGroup(component) {
         if (component.element) {
             component.element.style.display = component.state.isVisible ? 'flex' : 'none';
             component.element.className = component.config.className;
-            
+
             // Apply layout styles
             if (component.state.layout === 'vertical') {
                 component.element.style.flexDirection = 'column';
             } else if (component.state.layout === 'grid') {
                 component.element.style.display = 'grid';
             }
-            
+
             component.element.style.gap = component.state.gap;
         }
     }
-    
+
     initializeStatusDisplay(component) {
         if (component.element) {
             component.element.style.display = component.state.isVisible ? 'flex' : 'none';
             component.element.className = component.config.className;
-            
+
             if (component.state.layout === 'vertical') {
                 component.element.style.flexDirection = 'column';
             }
-            
+
             component.element.style.gap = component.state.gap;
         }
     }
-    
+
     initializeModal(component) {
         if (component.element) {
             component.element.className = component.config.className;
             component.element.style.display = 'none';
         }
     }
-    
+
     initializeLabel(component) {
         if (component.element) {
             component.element.textContent = component.state.text;
             component.element.className = component.config.className;
             component.element.style.display = component.state.isVisible ? 'block' : 'none';
-            
+
             if (component.state.required) {
                 component.element.classList.add('required');
             }
         }
     }
-    
+
     initializeContainer(component) {
         if (component.element) {
             component.element.style.display = component.state.isVisible ? 'flex' : 'none';
             component.element.className = component.config.className;
-            
+
             if (component.state.layout === 'vertical') {
                 component.element.style.flexDirection = 'column';
             } else if (component.state.layout === 'grid') {
                 component.element.style.display = 'grid';
             }
-            
+
             component.element.style.gap = component.state.gap;
         }
     }
-    
+
     // Component state management methods
     setSliderValue(component, value) {
         if (component.element) {
             component.state.value = value;
             component.element.value = value;
-            
+
             if (component.valueElement) {
                 component.valueElement.textContent = component.config.format(value);
             }
-            
+
             this.triggerUpdateHook(component);
         }
     }
-    
+
     getSliderValue(component) {
         return component.state.value;
     }
-    
+
     setButtonText(component, text) {
         if (component.element) {
             component.state.text = text;
@@ -560,11 +560,11 @@ class UIComponentLibrary {
             this.triggerUpdateHook(component);
         }
     }
-    
+
     getButtonText(component) {
         return component.state.text;
     }
-    
+
     setSelectValue(component, value) {
         if (component.element) {
             component.state.value = value;
@@ -572,51 +572,51 @@ class UIComponentLibrary {
             this.triggerUpdateHook(component);
         }
     }
-    
+
     getSelectValue(component) {
         return component.state.value;
     }
-    
+
     setSelectOptions(component, options) {
         if (component.element) {
             component.state.options = options;
             component.element.innerHTML = '';
-            
+
             options.forEach(option => {
                 const optionElement = document.createElement('option');
                 optionElement.value = option.value;
                 optionElement.textContent = option.label || option.text;
                 component.element.appendChild(optionElement);
             });
-            
+
             this.triggerUpdateHook(component);
         }
     }
-    
+
     getSelectOptions(component) {
         return component.state.options;
     }
-    
+
     setStatusValue(component, key, value) {
         component.state.values[key] = value;
-        
+
         if (component.element) {
             const valueElement = component.element.querySelector(`[data-key="${key}"]`);
             if (valueElement) {
                 valueElement.textContent = component.config.format(value);
             }
         }
-        
+
         this.triggerUpdateHook(component);
     }
-    
+
     getStatusValue(component, key) {
         return component.state.values[key];
     }
-    
+
     setStatusValues(component, values) {
         component.state.values = { ...values };
-        
+
         if (component.element) {
             Object.entries(values).forEach(([key, value]) => {
                 const valueElement = component.element.querySelector(`[data-key="${key}"]`);
@@ -625,14 +625,14 @@ class UIComponentLibrary {
                 }
             });
         }
-        
+
         this.triggerUpdateHook(component);
     }
-    
+
     getStatusValues(component) {
         return { ...component.state.values };
     }
-    
+
     setLabelText(component, text) {
         if (component.element) {
             component.state.text = text;
@@ -640,11 +640,11 @@ class UIComponentLibrary {
             this.triggerUpdateHook(component);
         }
     }
-    
+
     getLabelText(component) {
         return component.state.text;
     }
-    
+
     // Component visibility and state management
     enableComponent(component) {
         component.state.isEnabled = true;
@@ -653,7 +653,7 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     disableComponent(component) {
         component.state.isEnabled = false;
         if (component.element) {
@@ -661,7 +661,7 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     showComponent(component) {
         component.state.isVisible = true;
         if (component.element) {
@@ -669,7 +669,7 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     hideComponent(component) {
         component.state.isVisible = false;
         if (component.element) {
@@ -677,15 +677,15 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     showControlGroup(component) {
         this.showComponent(component);
     }
-    
+
     hideControlGroup(component) {
         this.hideComponent(component);
     }
-    
+
     pressButton(component) {
         component.state.isPressed = true;
         if (component.element) {
@@ -693,7 +693,7 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     releaseButton(component) {
         component.state.isPressed = false;
         if (component.element) {
@@ -701,7 +701,7 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     toggleButton(component) {
         if (component.state.isPressed) {
             this.releaseButton(component);
@@ -709,39 +709,39 @@ class UIComponentLibrary {
             this.pressButton(component);
         }
     }
-    
+
     // Modal-specific methods
     openModal(component) {
         if (component.element) {
             component.state.isVisible = true;
             component.state.isOpen = true;
             component.element.style.display = 'block';
-            
+
             if (component.state.backdrop) {
                 this.createModalBackdrop(component);
             }
-            
+
             if (component.state.closeOnEscape) {
                 this.setupModalEscapeHandler(component);
             }
-            
+
             this.triggerUpdateHook(component);
         }
     }
-    
+
     closeModal(component) {
         if (component.element) {
             component.state.isVisible = false;
             component.state.isOpen = false;
             component.element.style.display = 'none';
-            
+
             this.removeModalBackdrop(component);
             this.removeModalEscapeHandler(component);
-            
+
             this.triggerUpdateHook(component);
         }
     }
-    
+
     toggleModal(component) {
         if (component.state.isOpen) {
             this.closeModal(component);
@@ -749,7 +749,7 @@ class UIComponentLibrary {
             this.openModal(component);
         }
     }
-    
+
     setModalContent(component, content) {
         if (component.element) {
             const contentElement = component.element.querySelector('[data-modal-content]');
@@ -758,7 +758,7 @@ class UIComponentLibrary {
             }
         }
     }
-    
+
     getModalContent(component) {
         if (component.element) {
             const contentElement = component.element.querySelector('[data-modal-content]');
@@ -766,7 +766,7 @@ class UIComponentLibrary {
         }
         return '';
     }
-    
+
     setModalTitle(component, title) {
         if (component.element) {
             const titleElement = component.element.querySelector('[data-modal-title]');
@@ -775,7 +775,7 @@ class UIComponentLibrary {
             }
         }
     }
-    
+
     getModalTitle(component) {
         if (component.element) {
             const titleElement = component.element.querySelector('[data-modal-title]');
@@ -783,7 +783,7 @@ class UIComponentLibrary {
         }
         return '';
     }
-    
+
     // Control group specific methods
     setControlGroupLayout(component, layout) {
         component.state.layout = layout;
@@ -799,21 +799,21 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     addControlToGroup(component, control) {
         component.state.children.push(control);
         this.triggerUpdateHook(component);
     }
-    
+
     removeControlFromGroup(component, controlId) {
         component.state.children = component.state.children.filter(child => child.id !== controlId);
         this.triggerUpdateHook(component);
     }
-    
+
     getControlGroupControls(component) {
         return [...component.state.children];
     }
-    
+
     // Status display specific methods
     setStatusLayout(component, layout) {
         component.state.layout = layout;
@@ -826,7 +826,7 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     // Container specific methods
     setContainerLayout(component, layout) {
         component.state.layout = layout;
@@ -842,21 +842,21 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     addContainerChild(component, childId) {
         component.state.children.push(childId);
         this.triggerUpdateHook(component);
     }
-    
+
     removeContainerChild(component, childId) {
         component.state.children = component.state.children.filter(id => id !== childId);
         this.triggerUpdateHook(component);
     }
-    
+
     getContainerChildren(component) {
         return [...component.state.children];
     }
-    
+
     // Label specific methods
     setLabelRequired(component, required) {
         component.state.required = required;
@@ -869,69 +869,69 @@ class UIComponentLibrary {
         }
         this.triggerUpdateHook(component);
     }
-    
+
     // Component update methods
     updateSlider(component, newConfig) {
         Object.assign(component.config, newConfig);
         this.initializeSlider(component);
         this.triggerUpdateHook(component);
     }
-    
+
     updateButton(component, newConfig) {
         Object.assign(component.config, newConfig);
         this.initializeButton(component);
         this.triggerUpdateHook(component);
     }
-    
+
     updateSelect(component, newConfig) {
         Object.assign(component.config, newConfig);
         this.initializeSelect(component);
         this.triggerUpdateHook(component);
     }
-    
+
     updateControlGroup(component, newConfig) {
         Object.assign(component.config, newConfig);
         this.initializeControlGroup(component);
         this.triggerUpdateHook(component);
     }
-    
+
     updateStatusDisplay(component, newConfig) {
         Object.assign(component.config, newConfig);
         this.initializeStatusDisplay(component);
         this.triggerUpdateHook(component);
     }
-    
+
     updateModal(component, newConfig) {
         Object.assign(component.config, newConfig);
         this.initializeModal(component);
         this.triggerUpdateHook(component);
     }
-    
+
     updateLabel(component, newConfig) {
         Object.assign(component.config, newConfig);
         this.initializeLabel(component);
         this.triggerUpdateHook(component);
     }
-    
+
     updateContainer(component, newConfig) {
         Object.assign(component.config, newConfig);
         this.initializeContainer(component);
         this.triggerUpdateHook(component);
     }
-    
+
     // Event handling methods
     addComponentEventListener(component, event, handler) {
         if (component.element && this.eventFramework) {
             this.eventFramework.register(component.element, event, handler);
         }
     }
-    
+
     removeComponentEventListener(component, event) {
         if (component.element && this.eventFramework) {
             this.eventFramework.remove(component.element, event);
         }
     }
-    
+
     // Lifecycle hook management
     registerLifecycleHooks(component) {
         const hooks = {
@@ -943,17 +943,17 @@ class UIComponentLibrary {
             onEnable: () => console.log(`Component ${component.id} enabled`),
             onDisable: () => console.log(`Component ${component.id} disabled`)
         };
-        
+
         this.lifecycleHooks.set(component.id, hooks);
     }
-    
+
     triggerUpdateHook(component) {
         const hooks = this.lifecycleHooks.get(component.id);
         if (hooks && hooks.onUpdate) {
             hooks.onUpdate();
         }
     }
-    
+
     // Modal helper methods
     createModalBackdrop(component) {
         const backdrop = document.createElement('div');
@@ -967,86 +967,86 @@ class UIComponentLibrary {
             background: rgba(0, 0, 0, 0.5);
             z-index: 999;
         `;
-        
+
         if (component.state.closeOnBackdrop) {
             backdrop.addEventListener('click', () => this.closeModal(component));
         }
-        
+
         document.body.appendChild(backdrop);
         component.backdropElement = backdrop;
     }
-    
+
     removeModalBackdrop(component) {
         if (component.backdropElement) {
             component.backdropElement.remove();
             component.backdropElement = null;
         }
     }
-    
+
     setupModalEscapeHandler(component) {
         const escapeHandler = (e) => {
             if (e.key === 'Escape') {
                 this.closeModal(component);
             }
         };
-        
+
         document.addEventListener('keydown', escapeHandler);
         component.escapeHandler = escapeHandler;
     }
-    
+
     removeModalEscapeHandler(component) {
         if (component.escapeHandler) {
             document.removeEventListener('keydown', component.escapeHandler);
             component.escapeHandler = null;
         }
     }
-    
+
     // Utility methods
     getComponent(id) {
         return this.components.get(id);
     }
-    
+
     getAllComponents() {
         return Array.from(this.components.values());
     }
-    
+
     getComponentsByType(type) {
         return Array.from(this.components.values()).filter(component => component.type === type);
     }
-    
+
     hasComponent(id) {
         return this.components.has(id);
     }
-    
+
     getComponentTypes() {
         return this.componentTypes;
     }
-    
+
     // Batch operations
     showAllComponents() {
         this.components.forEach(component => {
             this.showComponent(component);
         });
     }
-    
+
     hideAllComponents() {
         this.components.forEach(component => {
             this.hideComponent(component);
         });
     }
-    
+
     enableAllComponents() {
         this.components.forEach(component => {
             this.enableComponent(component);
         });
     }
-    
+
     disableAllComponents() {
         this.components.forEach(component => {
             this.disableComponent(component);
         });
     }
-    
+
     // Component cleanup
     cleanup() {
         // Trigger onUnmount hooks
@@ -1056,12 +1056,12 @@ class UIComponentLibrary {
                 hooks.onUnmount();
             }
         });
-        
+
         this.components.clear();
         this.lifecycleHooks.clear();
         this.componentTypes.clear();
     }
-    
+
     // Factory methods for common component combinations
     createSliderWithLabel(config) {
         const slider = this.createSlider(config);
@@ -1070,32 +1070,32 @@ class UIComponentLibrary {
             text: config.label,
             for: config.id
         });
-        
+
         return { slider, label };
     }
-    
+
     createButtonGroup(buttons) {
         const groupId = `button-group-${Date.now()}`;
         const group = this.createControlGroup(groupId, {
             layout: 'horizontal',
             className: 'button-group'
         });
-        
+
         buttons.forEach(buttonConfig => {
             const button = this.createButton(buttonConfig);
             group.methods.addControl(button);
         });
-        
+
         return group;
     }
-    
+
     createFormGroup(controls) {
         const groupId = `form-group-${Date.now()}`;
         const group = this.createControlGroup(groupId, {
             layout: 'vertical',
             className: 'form-group'
         });
-        
+
         controls.forEach(controlConfig => {
             let control;
             switch (controlConfig.type) {
@@ -1112,12 +1112,12 @@ class UIComponentLibrary {
                     control = this.createLabel(controlConfig);
                     break;
             }
-            
+
             if (control) {
                 group.methods.addControl(control);
             }
         });
-        
+
         return group;
     }
 }
@@ -1132,27 +1132,27 @@ class DynamicSpeedSlider {
         this.container = null;
         this.speedValues = new Map(); // Store speed values for each simulation
         this.isInitialized = false;
-        
+
         this.init();
     }
-    
+
     init() {
         this.slider = document.getElementById('dynamic-speed-slider');
         this.valueElement = document.getElementById('dynamic-speed-value');
         this.container = document.querySelector('.speed-control .control-group');
-        
+
         if (!this.slider || !this.valueElement || !this.container) {
             console.error('DynamicSpeedSlider: Required elements not found');
             return;
         }
-        
+
         this.isInitialized = true;
         this.setupEventListeners();
     }
-    
+
     setupEventListeners() {
         if (!this.isInitialized) return;
-        
+
         // Debounced input handler for smooth performance - increased debounce time
         const debouncedInputHandler = this.eventFramework.debounce((e) => {
             if (this.currentSimType) {
@@ -1161,52 +1161,52 @@ class DynamicSpeedSlider {
                 this.onSpeedChange(value);
             }
         }, 100, 'dynamic-speed-debounce'); // Increased from 16ms to 100ms for better performance
-        
+
         // Immediate visual feedback for value display
         const immediateValueHandler = (e) => {
             const value = parseFloat(e.target.value);
             this.updateDisplay(value);
         };
-        
+
         this.eventFramework.register(this.slider, 'input', immediateValueHandler);
         this.eventFramework.register(this.slider, 'change', debouncedInputHandler);
     }
-    
+
     switchToSimulation(simType, app) {
         if (!this.isInitialized) return;
-        
+
         // Only update if the simulation type has actually changed
         if (this.currentSimType === simType) return;
-        
+
         this.currentSimType = simType;
         this.app = app;
-        
+
         // Get the stored speed value for this simulation, or use default
         const storedValue = this.speedValues.get(simType) || 30;
-        
+
         // Update slider value and display
         this.slider.value = storedValue;
         this.updateDisplay(storedValue);
-        
+
         // Show the speed control container
         this.container.style.display = 'block';
     }
-    
+
     hide() {
         if (!this.isInitialized) return;
         this.container.style.display = 'none';
     }
-    
+
     updateDisplay(value) {
         if (!this.isInitialized) return;
-        
+
         // Only update DOM if the value has actually changed
         const newText = `${value} steps/s`;
         if (this.valueElement.textContent !== newText) {
             this.valueElement.textContent = newText;
         }
     }
-    
+
     onSpeedChange(value) {
         if (this.currentSimType && this.app) {
             // Only trigger speed change if the value has actually changed
@@ -1216,12 +1216,12 @@ class DynamicSpeedSlider {
             }
         }
     }
-    
+
     getValue() {
         if (!this.isInitialized) return 30;
         return parseFloat(this.slider.value);
     }
-    
+
     setValue(value) {
         if (!this.isInitialized) return;
         this.slider.value = value;
@@ -1230,24 +1230,24 @@ class DynamicSpeedSlider {
             this.speedValues.set(this.currentSimType, value);
         }
     }
-    
+
     adjustSpeed(direction) {
         if (!this.isInitialized) return;
-        
+
         const currentValue = parseFloat(this.slider.value);
         const step = 1; // Default step value
         const newValue = Math.max(
             parseInt(this.slider.min),
             Math.min(parseInt(this.slider.max), currentValue + (direction * step))
         );
-        
+
         this.setValue(newValue);
         this.onSpeedChange(newValue);
     }
-    
+
     cleanup() {
         if (!this.isInitialized) return;
-        
+
         this.eventFramework.remove(this.slider, 'input');
         this.eventFramework.remove(this.slider, 'change');
         this.speedValues.clear();
@@ -1264,34 +1264,34 @@ class DynamicFillButton {
         this.app = null;
         this.isInitialized = false;
     }
-    
+
     init() {
         if (this.isInitialized) return;
-        
+
         this.button = this.eventFramework.getElement('#dynamic-fill-btn');
         if (!this.button) {
             console.warn('Dynamic fill button not found');
             return;
         }
-        
+
         this.setupEventListeners();
         this.isInitialized = true;
     }
-    
+
     setupEventListeners() {
         if (!this.button) return;
-        
+
         this.eventFramework.register(this.button, 'click', () => {
             if (this.currentSimType && this.app) {
                 this.app.handleRandomPattern(this.currentSimType);
             }
         });
     }
-    
+
     switchToSimulation(simType, app) {
         this.currentSimType = simType;
         this.app = app;
-        
+
         // Show button for simulations that support random patterns
         if (['conway', 'termite', 'langton'].includes(simType)) {
             this.show();
@@ -1299,19 +1299,19 @@ class DynamicFillButton {
             this.hide();
         }
     }
-    
+
     show() {
         if (this.button) {
             this.button.style.display = 'inline-block';
         }
     }
-    
+
     hide() {
         if (this.button) {
             this.button.style.display = 'none';
         }
     }
-    
+
     cleanup() {
         if (this.isInitialized && this.button) {
             this.eventFramework.removeAll(this.button);
@@ -1331,20 +1331,20 @@ class ControlVisibilityManager {
         this.visibilityStates = new Map();
         this.isInitialized = false;
     }
-    
+
     /**
      * Initialize the visibility manager
      */
     init() {
         if (this.isInitialized) return;
-        
+
         // Define control group mappings
         this.controlGroups = new Map([
             ['conway', ['conway-controls']],
             ['termite', ['termite-controls', 'termites-container']],
             ['langton', ['langton-controls']]
         ]);
-        
+
         // Define visibility states for each simulation
         this.visibilityStates = new Map([
             ['conway', {
@@ -1366,19 +1366,19 @@ class ControlVisibilityManager {
                 'termites-container': 'hidden'
             }]
         ]);
-        
+
         // Add CSS classes to document if not already present
         this.ensureCSSClasses();
-        
+
         this.isInitialized = true;
     }
-    
+
     /**
      * Ensure required CSS classes are available
      */
     ensureCSSClasses() {
         if (document.getElementById('control-visibility-styles')) return;
-        
+
         const style = document.createElement('style');
         style.id = 'control-visibility-styles';
         style.textContent = `
@@ -1392,12 +1392,12 @@ class ControlVisibilityManager {
             .control-group[data-simulation="langton"] {
                 display: none;
             }
-            
+
             /* Active simulation visibility */
             .control-group[data-simulation].active {
                 display: flex !important;
             }
-            
+
             /* Simulation-specific control groups */
             .simulation-controls[data-simulation="conway"] {
                 display: none;
@@ -1408,11 +1408,11 @@ class ControlVisibilityManager {
             .simulation-controls[data-simulation="langton"] {
                 display: none;
             }
-            
+
             .simulation-controls[data-simulation].active {
                 display: flex !important;
             }
-            
+
             /* Special containers */
             #termites-container[data-simulation="termite"].active {
                 display: block !important;
@@ -1421,10 +1421,10 @@ class ControlVisibilityManager {
                 display: none !important;
             }
         `;
-        
+
         document.head.appendChild(style);
     }
-    
+
     /**
      * Set the active simulation and update visibility
      * @param {string} simType - The simulation type to activate
@@ -1433,22 +1433,22 @@ class ControlVisibilityManager {
         if (!this.isInitialized) {
             this.init();
         }
-        
+
         // Remove active class from all control groups
         this.clearActiveStates();
-        
+
         // Set new active simulation
         this.activeSimulation = simType;
-        
+
         // Apply visibility states for the active simulation
         this.applyVisibilityStates(simType);
-        
+
         // Trigger layout repositioning if needed
         if (window.layoutManager) {
             setTimeout(() => window.layoutManager.repositionElements(), 50);
         }
     }
-    
+
     /**
      * Clear all active states from control groups
      */
@@ -1457,18 +1457,18 @@ class ControlVisibilityManager {
         document.querySelectorAll('.simulation-controls[data-simulation]').forEach(element => {
             element.classList.remove('active');
         });
-        
+
         // Clear from special containers
         document.querySelectorAll('#termites-container[data-simulation]').forEach(element => {
             element.classList.remove('active');
         });
-        
+
         // Clear from control groups
         document.querySelectorAll('.control-group[data-simulation]').forEach(element => {
             element.classList.remove('active');
         });
     }
-    
+
     /**
      * Apply visibility states for a specific simulation
      * @param {string} simType - The simulation type
@@ -1476,7 +1476,7 @@ class ControlVisibilityManager {
     applyVisibilityStates(simType) {
         const states = this.visibilityStates.get(simType);
         if (!states) return;
-        
+
         Object.entries(states).forEach(([elementId, visibility]) => {
             const element = document.getElementById(elementId);
             if (element) {
@@ -1489,7 +1489,7 @@ class ControlVisibilityManager {
             }
         });
     }
-    
+
     /**
      * Show controls for a specific simulation (backward compatibility)
      * @param {string} simType - The simulation type
@@ -1497,7 +1497,7 @@ class ControlVisibilityManager {
     showControls(simType) {
         this.setActiveSimulation(simType);
     }
-    
+
     /**
      * Hide all controls (backward compatibility)
      */
@@ -1505,7 +1505,7 @@ class ControlVisibilityManager {
         this.clearActiveStates();
         this.activeSimulation = null;
     }
-    
+
     /**
      * Get the currently active simulation
      * @returns {string|null} The active simulation type
@@ -1513,7 +1513,7 @@ class ControlVisibilityManager {
     getActiveSimulation() {
         return this.activeSimulation;
     }
-    
+
     /**
      * Check if a control group is visible for the current simulation
      * @param {string} elementId - The element ID to check
@@ -1522,10 +1522,10 @@ class ControlVisibilityManager {
     isControlVisible(elementId) {
         const element = document.getElementById(elementId);
         if (!element) return false;
-        
+
         return element.classList.contains('active');
     }
-    
+
     /**
      * Add a new control group mapping
      * @param {string} simType - The simulation type
@@ -1534,7 +1534,7 @@ class ControlVisibilityManager {
     addControlGroup(simType, controlIds) {
         this.controlGroups.set(simType, controlIds);
     }
-    
+
     /**
      * Add visibility states for a new simulation
      * @param {string} simType - The simulation type
@@ -1543,7 +1543,7 @@ class ControlVisibilityManager {
     addVisibilityStates(simType, states) {
         this.visibilityStates.set(simType, states);
     }
-    
+
     /**
      * Cleanup the visibility manager
      */
@@ -1731,7 +1731,7 @@ class EventHandlerFactory {
             if (valueElement) {
                 valueElement.textContent = value;
             }
-            
+
             // Route to appropriate handler based on control type
             if (config.id.includes('speed')) {
                 handlers.speedChange(parseFloat(e.target.value));
@@ -1951,12 +1951,12 @@ class ModalTemplateManager {
         this.contentTemplates = new Map();
         this.init();
     }
-    
+
     init() {
         this.setupBaseTemplates();
         this.setupContentTemplates();
     }
-    
+
     setupBaseTemplates() {
         // Base modal structure template
         this.baseModalTemplate = `
@@ -1971,7 +1971,7 @@ class ModalTemplateManager {
             </div>
         `;
     }
-    
+
     setupContentTemplates() {
         // Conway's Game of Life content template
         this.contentTemplates.set('conway', {
@@ -1984,14 +1984,14 @@ class ModalTemplateManager {
                     <li><strong>Survival:</strong> A live cell with 2 or 3 live neighbours stays alive</li>
                     <li><strong>Death:</strong> A live cell with fewer than 2 or more than 3 neighbours dies</li>
                 </ul>
-                
+
                 <h3>Common Patterns</h3>
                 <ul>
                     <li><strong>Still Life:</strong> Patterns that don't change (e.g., Block, Beehive)</li>
                     <li><strong>Oscillators:</strong> Patterns that repeat after a few generations (e.g., Blinker, Toad)</li>
                     <li><strong>Spaceships:</strong> Patterns that move across the grid (e.g., Glider)</li>
                 </ul>
-                
+
                 <h3>Historical Context</h3>
                 <p>Conway's Game of Life was created by mathematician John Conway in 1970. It was designed to demonstrate how complex patterns could emerge from simple rules, and it became one of the most famous examples of cellular automata. The game has inspired research in:</p>
                 <ul>
@@ -2000,12 +2000,12 @@ class ModalTemplateManager {
                     <li>Pattern formation in nature and mathematics</li>
                     <li>Self-replicating systems and evolution</li>
                 </ul>
-                
+
                 <h3>How to Use</h3>
                 <p>Click on the grid to toggle cells between alive and dead states. Use the controls to start, pause, and reset the simulation.</p>
             `
         });
-        
+
         // Termite Algorithm content template
         this.contentTemplates.set('termite', {
             title: "Termite Algorithm",
@@ -2018,7 +2018,7 @@ class ModalTemplateManager {
                     <li><strong>Drop:</strong> If a termite is carrying a chip and encounters an empty space, it drops the chip</li>
                     <li><strong>Direction:</strong> Termites occasionally change direction randomly</li>
                 </ul>
-                
+
                 <h3>Emergent Behaviour</h3>
                 <p>Despite simple individual rules, termites collectively create organised patterns:</p>
                 <ul>
@@ -2026,7 +2026,7 @@ class ModalTemplateManager {
                     <li><strong>Self-Organisation:</strong> Random distribution becomes structured over time</li>
                     <li><strong>Stability:</strong> Once clusters form, they tend to remain stable</li>
                 </ul>
-                
+
                 <h3>Real-World Applications</h3>
                 <p>This algorithm has inspired research in:</p>
                 <ul>
@@ -2034,12 +2034,12 @@ class ModalTemplateManager {
                     <li>Resource distribution and optimisation</li>
                     <li>Self-organising systems and emergent intelligence</li>
                 </ul>
-                
+
                 <h3>Controls</h3>
                 <p>Use the speed slider to control termite movement speed, the termites slider to adjust the number of termites, and the random button to create a new random distribution of wood chips.</p>
             `
         });
-        
+
         // Langton's Ant content template
         this.contentTemplates.set('langton', {
             title: "Langton's Ant",
@@ -2051,7 +2051,7 @@ class ModalTemplateManager {
                     <li><strong>Black Cell:</strong> Turn 90° left, flip the cell to white, move forward</li>
                     <li><strong>Movement:</strong> The ant always moves one cell in the direction it's facing</li>
                 </ul>
-                
+
                 <h3>Highway Formation</h3>
                 <p>After an initial chaotic period, the ant typically forms a "highway" pattern:</p>
                 <ul>
@@ -2059,7 +2059,7 @@ class ModalTemplateManager {
                     <li><strong>Highway Phase:</strong> The ant creates a repeating diagonal pattern</li>
                     <li><strong>Predictability:</strong> Once the highway forms, the ant's path becomes predictable</li>
                 </ul>
-                
+
                 <h3>Mathematical Significance</h3>
                 <p>Langton's Ant demonstrates important concepts in:</p>
                 <ul>
@@ -2068,80 +2068,80 @@ class ModalTemplateManager {
                     <li><strong>Self-Organisation:</strong> Order emerging from disorder</li>
                     <li><strong>Computational Universality:</strong> The ant can simulate a Turing machine</li>
                 </ul>
-                
+
                 <h3>Controls</h3>
                 <p>Use the speed slider to control ant movement speed, the Add Ant button (or press 'a') to add new ants, and the random button to create a random pattern of white and black cells.</p>
             `
         });
     }
-    
+
     createModalContent(simType) {
         const template = this.contentTemplates.get(simType);
         if (!template) {
             console.warn(`No content template found for simulation type: ${simType}`);
             return null;
         }
-        
+
         // Create modal structure with content
         const modalHTML = this.baseModalTemplate
             .replace('[data-title]', template.title)
             .replace('[data-close-btn]', '')
             .replace('[data-content]', template.content);
-        
+
         return {
             title: template.title,
             content: modalHTML
         };
     }
-    
+
     generateModalHTML(simType) {
         const content = this.createModalContent(simType);
         if (!content) return null;
-        
+
         return `
             <div id="${simType}-modal" class="modal">
                 ${content.content}
             </div>
         `;
     }
-    
+
     injectModalContent(simType, modalElement) {
         const template = this.contentTemplates.get(simType);
         if (!template || !modalElement) return false;
-        
+
         // Update title using data attribute for more robust selection
         const titleElement = modalElement.querySelector('[data-modal-title]');
         if (titleElement) {
             titleElement.textContent = template.title;
         }
-        
+
         // Update content using data attribute for more robust selection
         const contentElement = modalElement.querySelector('[data-modal-content]');
         if (contentElement) {
             contentElement.innerHTML = template.content;
         }
-        
+
         return true;
     }
-    
+
     addContentTemplate(simType, template) {
         if (!template.title || !template.content) {
             console.error('Template must have title and content properties');
             return false;
         }
-        
+
         this.contentTemplates.set(simType, template);
         return true;
     }
-    
+
     getAvailableSimulations() {
         return Array.from(this.contentTemplates.keys());
     }
-    
+
     hasTemplate(simType) {
         return this.contentTemplates.has(simType);
     }
-    
+
     cleanup() {
         this.modalTemplates.clear();
         this.contentTemplates.clear();
@@ -2238,7 +2238,7 @@ class ControlTemplateManager {
 
         const controlTemplate = simTemplate.controls[controlName];
         const baseTemplate = this.baseTemplates[controlTemplate.template];
-        
+
         if (!baseTemplate) {
             throw new Error(`Base template not found: ${controlTemplate.template}`);
         }
@@ -2327,21 +2327,21 @@ class ControlTemplateManager {
 // Unified Configuration Manager
 class ConfigurationManager {
     static simulationConfigs = null;
-    
+
     static getConfig(simType) {
         if (!this.simulationConfigs) {
             this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
         }
         return this.simulationConfigs[simType];
     }
-    
+
     static getAllConfigs() {
         if (!this.simulationConfigs) {
             this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
         }
         return this.simulationConfigs;
     }
-    
+
     // Factory methods for creating standardized configurations (R2 Implementation)
     static createSliderConfig(id, valueElementId, min, max, step, value, label, format = null) {
         return {
@@ -2356,7 +2356,7 @@ class ConfigurationManager {
             format: format || ((val) => val.toString())
         };
     }
-    
+
     static createButtonConfig(id, label, className = 'btn secondary') {
         return {
             type: 'button',
@@ -2365,7 +2365,7 @@ class ConfigurationManager {
             className
         };
     }
-    
+
     static createModalConfig(id, closeId, onShow = null, onHide = null) {
         return {
             id,
@@ -2374,7 +2374,7 @@ class ConfigurationManager {
             onHide
         };
     }
-    
+
     static createSimulationConfig(name, controls, modal) {
         return {
             name,
@@ -2382,32 +2382,32 @@ class ConfigurationManager {
             modal
         };
     }
-    
+
     // Validation methods
     static validateSliderConfig(config) {
         const required = ['id', 'valueElementId', 'min', 'max', 'step', 'value', 'label'];
         return required.every(prop => config.hasOwnProperty(prop));
     }
-    
+
     static validateButtonConfig(config) {
         const required = ['id', 'label'];
         return required.every(prop => config.hasOwnProperty(prop));
     }
-    
+
     static validateModalConfig(config) {
         const required = ['id', 'closeId'];
         return required.every(prop => config.hasOwnProperty(prop));
     }
-    
+
     static validateSimulationConfig(config) {
         const required = ['name', 'controls', 'modal'];
         return required.every(prop => config.hasOwnProperty(prop));
     }
-    
+
     // Factory method to create a complete simulation configuration
     static createCompleteSimulationConfig(simType, name, controlConfigs, modalConfig) {
         const controls = {};
-        
+
         // Process control configurations
         Object.entries(controlConfigs).forEach(([controlName, controlConfig]) => {
             if (controlConfig.type === 'slider') {
@@ -2421,18 +2421,18 @@ class ConfigurationManager {
             }
             controls[controlName] = controlConfig;
         });
-        
+
         // Validate modal configuration
         if (!this.validateModalConfig(modalConfig)) {
             throw new Error(`Invalid modal config for ${simType}`);
         }
-        
+
         const simulationConfig = this.createSimulationConfig(name, controls, modalConfig);
-        
+
         if (!this.validateSimulationConfig(simulationConfig)) {
             throw new Error(`Invalid simulation config for ${simType}`);
         }
-        
+
         return simulationConfig;
     }
 
@@ -2450,38 +2450,38 @@ class EventFramework {
         this.throttleTimers = new Map();
         this.elementCache = new Map();
     }
-    
+
     // Unified event registration with automatic cleanup
     register(element, event, handler, options = {}) {
         const key = this.createListenerKey(element, event);
-        
+
         // Remove existing listener if present
         this.remove(element, event);
-        
+
         // Store listener for cleanup
         this.listeners.set(key, { element, event, handler, options });
-        
+
         // Add event listener
         element.addEventListener(event, handler, options);
-        
+
         return key;
     }
-    
+
     // Remove specific event listener
     remove(element, event) {
         const key = this.createListenerKey(element, event);
         const listener = this.listeners.get(key);
-        
+
         if (listener) {
             listener.element.removeEventListener(listener.event, listener.handler, listener.options);
             this.listeners.delete(key);
         }
     }
-    
+
     // Remove all listeners for an element
     removeAll(element) {
         const elementKey = element.id || element.tagName;
-        
+
         for (const [key, listener] of this.listeners.entries()) {
             if (listener.element === element) {
                 listener.element.removeEventListener(listener.event, listener.handler, listener.options);
@@ -2489,7 +2489,7 @@ class EventFramework {
             }
         }
     }
-    
+
     // Cleanup all listeners
     cleanup() {
         for (const [key, listener] of this.listeners.entries()) {
@@ -2500,17 +2500,17 @@ class EventFramework {
         this.throttleTimers.clear();
         this.elementCache.clear();
     }
-    
+
     // Debounce utility (delegates to PerformanceUtils, using instance store for scoping)
     debounce(func, wait, key = null) {
         return PerformanceUtils.debounce(func, wait, key, this.debounceTimers);
     }
-    
+
     // Throttle utility (delegates to PerformanceUtils, using instance store for scoping)
     throttle(func, limit, key = null) {
         return PerformanceUtils.throttle(func, limit, key, this.throttleTimers);
     }
-    
+
     // Element cache with automatic cleanup
     getElement(selector) {
         if (!this.elementCache.has(selector)) {
@@ -2524,13 +2524,13 @@ class EventFramework {
         }
         return this.elementCache.get(selector);
     }
-    
+
     // Create unique key for listener tracking
     createListenerKey(element, event) {
         const elementId = element.id || element.tagName || 'anonymous';
         return `${elementId}-${event}`;
     }
-    
+
     // Batch event registration for multiple elements
     registerBatch(registrations) {
         const keys = [];
@@ -2576,7 +2576,7 @@ class EventFramework {
         };
         return this.register(containerEl, event, delegated, options);
     }
-    
+
     // Register all simulation handlers (compatibility method)
     registerAllHandlers() {
         // This method is called by AlgorithmicPatternGenerator but the actual
@@ -2595,24 +2595,24 @@ class ControlManager {
         this.visibilityManager = new ControlVisibilityManager();
         this.visibilityManager.init();
     }
-    
+
     // Show controls for a specific simulation type
     showControls(simType) {
         // Use the new CSS-based visibility manager
         this.visibilityManager.showControls(simType);
         this.activeControls = simType;
-        
+
         // Show/hide action buttons based on simulation type
         this.showActionButtons(simType);
     }
-    
+
     // Hide all simulation controls
     hideAllControls() {
         // Use the new CSS-based visibility manager
         this.visibilityManager.hideAllControls();
         this.activeControls = null;
     }
-    
+
     // Show/hide action buttons based on simulation type
     showActionButtons(simType) {
         // Hide all action buttons first (except dynamic-fill-btn which manages its own visibility)
@@ -2620,14 +2620,14 @@ class ControlManager {
             'add-ant-btn',
             'learn-btn'
         ];
-        
+
         actionButtons.forEach(buttonId => {
             const button = document.getElementById(buttonId);
             if (button) {
                 button.style.display = 'none';
             }
         });
-        
+
         // Show buttons for current simulation
         const config = ConfigurationManager.getConfig(simType);
         if (config && config.controls) {
@@ -2641,18 +2641,18 @@ class ControlManager {
             });
         }
     }
-    
+
     // Update control values
     updateControlValues(simType, values) {
         const config = ConfigurationManager.getConfig(simType);
         if (!config || !config.controls) return;
-        
+
         Object.entries(values).forEach(([controlName, value]) => {
             const controlConfig = config.controls[controlName];
             if (controlConfig && controlConfig.type === 'slider') {
                 const slider = document.getElementById(controlConfig.id);
                 const valueElement = document.getElementById(controlConfig.valueElementId);
-                
+
                 if (slider) {
                     slider.value = value;
                 }
@@ -2662,18 +2662,18 @@ class ControlManager {
             }
         });
     }
-    
+
     // Register handlers for a specific simulation type using EventHandlerFactory
     registerSimulationHandlers(simType, app) {
         const handlers = this.eventHandlerFactory.createSimulationHandlers(simType, app);
         this.eventHandlerFactory.setupControls(simType, handlers);
     }
-    
+
     // Register all simulation handlers using EventHandlerFactory
     registerAllHandlers(app) {
         this.eventHandlerFactory.registerAllSimulationHandlers(app);
     }
-    
+
     // Cleanup simulation handlers
     cleanup() {
         this.eventHandlerFactory.cleanup();
@@ -2690,7 +2690,7 @@ class KeyboardHandler {
         this.shortcuts = new Map();
         this.setupShortcuts();
     }
-    
+
     setupShortcuts() {
         this.shortcuts.set(' ', () => this.app.toggleSimulation());
         this.shortcuts.set('r', (e) => {
@@ -2717,7 +2717,7 @@ class KeyboardHandler {
         this.shortcuts.set('[', () => this.app.adjustBrightness(-0.1));
         this.shortcuts.set(']', () => this.app.adjustBrightness(0.1));
     }
-    
+
     handleKeydown(e) {
         const handler = this.shortcuts.get(e.key);
         if (handler) {
@@ -2742,7 +2742,7 @@ class ModalManager {
         this.eventFramework = eventFramework || null;
         this.init();
     }
-    
+
     init() {
         // Set up global modal event listeners with throttling
         const throttledKeydown = PerformanceOptimizer.throttle((e) => {
@@ -2750,7 +2750,7 @@ class ModalManager {
                 this.hide(this.activeModal);
             }
         }, 100);
-        
+
         const throttledClick = PerformanceOptimizer.throttle((e) => {
             if (this.activeModal && e.target.classList.contains('modal')) {
                 // Save scroll position before hiding for dynamic modal
@@ -2760,7 +2760,7 @@ class ModalManager {
                 this.hide(this.activeModal);
             }
         }, 100);
-        
+
         if (this.eventFramework) {
             this.eventFramework.register(document, 'keydown', throttledKeydown);
             this.eventFramework.register(document, 'click', throttledClick);
@@ -2769,14 +2769,14 @@ class ModalManager {
             document.addEventListener('click', throttledClick);
         }
     }
-    
+
     register(modalId, config = {}) {
         const modal = this.elementCache.get(`#${modalId}`);
         if (!modal) {
             console.warn(`Modal with ID '${modalId}' not found`);
             return;
         }
-        
+
         const modalConfig = {
             id: modalId,
             element: modal,
@@ -2784,7 +2784,7 @@ class ModalManager {
             isVisible: false,
             ...config
         };
-        
+
         // Set up close button event listener
         if (modalConfig.closeBtn) {
             const onClose = () => {
@@ -2800,26 +2800,26 @@ class ModalManager {
                 modalConfig.closeBtn.addEventListener('click', onClose);
             }
         }
-        
+
         this.modals.set(modalId, modalConfig);
         return modalConfig;
     }
-    
+
     // Register dynamic modal for a specific simulation type
     registerDynamicModal(simType) {
         if (!this.modalTemplateManager.hasTemplate(simType)) {
             console.warn(`No template found for simulation type: ${simType}`);
             return false;
         }
-        
+
         // Register the dynamic modal if not already registered
         if (!this.modals.has(this.dynamicModalId)) {
             this.register(this.dynamicModalId);
         }
-        
+
         return true;
     }
-    
+
     show(modalId, simType = null) {
         const modalConfig = this.modals.get(modalId);
         if (!modalConfig) {
@@ -2850,7 +2850,7 @@ class ModalManager {
             modalConfig.onShow();
         }
     }
-    
+
     // Inject dynamic content for the current simulation type
     injectDynamicContent(simType) {
         const modalElement = this.modals.get(this.dynamicModalId)?.element;
@@ -2858,14 +2858,14 @@ class ModalManager {
             console.warn('Dynamic modal not found');
             return;
         }
-        
+
         const success = this.modalTemplateManager.injectModalContent(simType, modalElement);
         if (!success) {
             console.warn(`Failed to inject content for simulation type: ${simType}`);
             return;
         }
     }
-    
+
     // Save scroll position for a specific simulation type
     saveScrollPosition(simType) {
         const modalElement = this.modals.get(this.dynamicModalId)?.element;
@@ -2882,7 +2882,7 @@ class ModalManager {
             console.warn('Modal content element not found for scroll position save');
         }
     }
-    
+
     // Restore scroll position for a specific simulation type
     restoreScrollPosition(simType) {
         const modalElement = this.modals.get(this.dynamicModalId)?.element;
@@ -2904,36 +2904,36 @@ class ModalManager {
             console.warn('Modal content element not found for scroll position restore');
         }
     }
-    
+
     hide(modalId) {
         const modalConfig = this.modals.get(modalId);
         if (!modalConfig) {
             console.warn(`Modal '${modalId}' not registered`);
             return;
         }
-        
+
         // Queue modal for hiding
         this.queueModalRender(modalConfig, false);
-        
+
         if (this.activeModal === modalId) {
             this.activeModal = null;
         }
-        
+
         // Trigger custom hide callback
         if (modalConfig.onHide) {
             modalConfig.onHide();
         }
     }
-    
+
     // Queue modal rendering to prevent layout thrashing
     queueModalRender(modalConfig, show) {
         this.renderQueue.add({ modalConfig, show });
-        
+
         if (!this.isRendering) {
             this.processRenderQueue();
         }
     }
-    
+
     // Process render queue efficiently
     processRenderQueue() {
         this.isRendering = true;
@@ -2962,18 +2962,18 @@ class ModalManager {
             }
         });
     }
-    
+
     hideAll() {
         this.modals.forEach((config, id) => {
             this.hide(id);
         });
     }
-    
+
     isVisible(modalId) {
         const modalConfig = this.modals.get(modalId);
         return modalConfig ? modalConfig.isVisible : false;
     }
-    
+
     // Cleanup method for memory management
     cleanup() {
         this.modals.clear();
@@ -2993,18 +2993,18 @@ class AlgorithmicPatternGenerator {
         this.currentType = 'conway';
         this.isImmersive = false;
         this.brightness = 1.0; // Default brightness
-        
+
         // Mouse position tracking for Add Ant feature
         this.mouseX = null;
         this.mouseY = null;
-        
+
         // Performance optimization properties
         this.elementCache = PerformanceOptimizer.createElementCache();
         this.updateQueue = new Set();
         this.isUpdating = false;
         this.lastUIUpdate = 0;
         this.uiUpdateThrottle = 100; // ms between UI updates
-        
+
         // Initialize managers
         this.eventFramework = new EventFramework();
         this.modalManager = new ModalManager(this.eventFramework);
@@ -3013,23 +3013,23 @@ class AlgorithmicPatternGenerator {
         this.keyboardHandler = new KeyboardHandler(this);
         this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
         this.dynamicFillButton = new DynamicFillButton(this.eventFramework);
-        
+
         this.init();
     }
-    
+
     init() {
         this.setupEventListeners();
         this.setupModals();
         this.controlManager.registerAllHandlers(this);
-        
+
         // Initialize dynamic components
         this.dynamicSpeedSlider.init();
         this.dynamicFillButton.init();
-        
+
         this.createSimulation(this.currentType);
         this.controlManager.showControls(this.currentType);
         this.updateUI();
-        
+
         // Handle window resize with throttling
         const throttledResize = PerformanceOptimizer.throttle(() => {
             if (this.currentSimulation) {
@@ -3037,13 +3037,13 @@ class AlgorithmicPatternGenerator {
                 this.currentSimulation.draw();
             }
         }, 250);
-        
+
         window.addEventListener('resize', throttledResize);
-        
+
         // Start title fade animation after 5 seconds
         this.startTitleFade();
     }
-    
+
     setupModals() {
         // Register the dynamic modal with the modal manager
         this.modalManager.register(this.modalManager.dynamicModalId, {
@@ -3055,7 +3055,7 @@ class AlgorithmicPatternGenerator {
             }
         });
     }
-    
+
     setupEventListeners() {
         // Simulation selector
         const simulationSelect = this.eventFramework.getElement('#simulation-select');
@@ -3064,12 +3064,12 @@ class AlgorithmicPatternGenerator {
                 this.switchSimulation(e.target.value);
             });
         }
-        
+
         // Control buttons with element caching
         const startPauseBtn = this.eventFramework.getElement('#start-pause-btn');
         const resetBtn = this.eventFramework.getElement('#reset-btn');
         const immersiveBtn = this.eventFramework.getElement('#immersive-btn');
-        
+
         if (startPauseBtn) {
             this.eventFramework.register(startPauseBtn, 'click', () => this.toggleSimulation());
         }
@@ -3079,26 +3079,26 @@ class AlgorithmicPatternGenerator {
         if (immersiveBtn) {
             this.eventFramework.register(immersiveBtn, 'click', () => this.toggleImmersiveMode());
         }
-        
+
         // Setup brightness controls
         this.setupBrightnessControls();
-        
+
         // Setup likelihood slider
         this.setupLikelihoodSlider();
-        
+
         // Mouse move tracking for Add Ant feature
         this.eventFramework.register(this.canvas, 'mousemove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
             this.mouseX = e.clientX - rect.left;
             this.mouseY = e.clientY - rect.top;
         });
-        
+
         // Keyboard shortcuts
         this.eventFramework.register(document, 'keydown', (e) => {
             this.keyboardHandler.handleKeydown(e);
         });
     }
-    
+
     setupBrightnessControls() {
         // Use EventHandlerFactory for brightness controls
         const brightnessConfig = {
@@ -3106,17 +3106,17 @@ class AlgorithmicPatternGenerator {
             valueElementId: 'brightness-value',
             format: (value) => `${Math.round(parseFloat(value) * 100)}%`
         };
-        
+
         const handlers = {
             brightnessChange: (value) => this.setBrightness(value)
         };
-        
+
         this.eventHandlerFactory.setupSlider(brightnessConfig, handlers);
-        
+
         // Initialize brightness display
         this.updateBrightnessDisplay();
     }
-    
+
     setupLikelihoodSlider() {
         // Use EventHandlerFactory for likelihood controls
         const likelihoodConfig = {
@@ -3124,57 +3124,57 @@ class AlgorithmicPatternGenerator {
             valueElementId: 'likelihood-value',
             format: (value) => `${parseInt(value)}%`
         };
-        
+
         const handlers = {
             likelihoodChange: (value) => this.setLikelihood(value)
         };
-        
+
         this.eventHandlerFactory.setupSlider(likelihoodConfig, handlers);
     }
-    
+
     createSimulation(type) {
         if (this.currentSimulation) {
             this.currentSimulation.pause();
         }
-        
+
         this.currentType = type;
         this.currentSimulation = SimulationFactory.createSimulation(type, this.canvas, this.ctx);
         this.currentSimulation.init();
-        
+
         // Set brightness on the new simulation
         if (this.currentSimulation.setBrightness) {
             this.currentSimulation.setBrightness(this.brightness);
         }
-        
+
         // Switch the dynamic speed slider to the new simulation
         this.dynamicSpeedSlider.switchToSimulation(type, this);
         this.dynamicFillButton.switchToSimulation(type, this);
-        
+
         // Draw the simulation immediately so active cells are visible
         this.currentSimulation.draw();
-        
+
         this.updateUI();
     }
-    
+
     switchSimulation(type) {
         this.createSimulation(type);
         this.controlManager.showControls(type);
     }
-    
+
     startSimulation() {
         if (this.currentSimulation) {
             this.currentSimulation.start();
             this.updateUI();
         }
     }
-    
+
     pauseSimulation() {
         if (this.currentSimulation) {
             this.currentSimulation.pause();
             this.updateUI();
         }
     }
-    
+
     toggleSimulation() {
         if (this.currentSimulation?.isRunning) {
             this.pauseSimulation();
@@ -3182,23 +3182,23 @@ class AlgorithmicPatternGenerator {
             this.startSimulation();
         }
     }
-    
+
     resetSimulation() {
         if (this.currentSimulation) {
             this.currentSimulation.reset();
             this.updateUI();
         }
     }
-    
 
-    
+
+
     toggleImmersiveMode() {
         this.isImmersive = !this.isImmersive;
         const appElement = this.elementCache.get('#app');
         if (appElement) {
             appElement.classList.toggle('immersive', this.isImmersive);
         }
-        
+
         const btn = this.elementCache.get('#immersive-btn');
         if (this.isImmersive) {
             if (btn) btn.textContent = 'Exit Immersive';
@@ -3207,7 +3207,7 @@ class AlgorithmicPatternGenerator {
             if (btn) btn.textContent = i18n.t('immersive-btn');
             this.hideImmersiveHint();
         }
-        
+
         // Resize canvas when toggling immersive mode with delay
         setTimeout(() => {
             if (this.currentSimulation) {
@@ -3216,26 +3216,26 @@ class AlgorithmicPatternGenerator {
             }
         }, 300);
     }
-    
+
     showImmersiveHint() {
         const hint = this.elementCache.get('#immersive-hint');
         if (hint) {
             hint.classList.add('show');
-            
+
             // Hide hint after 3 seconds
             setTimeout(() => {
                 this.hideImmersiveHint();
             }, 3000);
         }
     }
-    
+
     hideImmersiveHint() {
         const hint = this.elementCache.get('#immersive-hint');
         if (hint) {
             hint.classList.remove('show');
         }
     }
-    
+
     startTitleFade() {
         // Start fade animation after 5 seconds
         setTimeout(() => {
@@ -3245,21 +3245,21 @@ class AlgorithmicPatternGenerator {
             }
         }, 5000);
     }
-    
+
     handleCanvasClick(e) {
         if (!this.currentSimulation) return;
-        
+
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        
+
         // Allow cell toggling for all simulations
         if (this.currentSimulation.toggleCell) {
             this.currentSimulation.toggleCell(x, y);
             this.updateUI();
         }
     }
-    
+
     handleEscape() {
         if (this.isImmersive) {
             this.toggleImmersiveMode();
@@ -3268,7 +3268,7 @@ class AlgorithmicPatternGenerator {
             this.modalManager.hideAll();
         }
     }
-    
+
     // Throttled UI update for better performance
     updateUI() {
         const now = Date.now();
@@ -3279,113 +3279,113 @@ class AlgorithmicPatternGenerator {
             }
             return;
         }
-        
+
         this.performUIUpdate();
         this.lastUIUpdate = now;
     }
-    
+
     performUIUpdate() {
         if (!this.currentSimulation) return;
-        
+
         const stats = this.currentSimulation.getStats();
         const isRunning = this.currentSimulation.isRunning;
-        
+
         // Update button states
         const startPauseBtn = this.elementCache.get('#start-pause-btn');
-        
+
         if (startPauseBtn) {
             startPauseBtn.textContent = isRunning ? 'Pause' : 'Start';
             startPauseBtn.disabled = false;
         }
-        
+
         // Update stats
         const generationCount = this.elementCache.get('#generation-count');
         const cellCount = this.elementCache.get('#cell-count');
         const fps = this.elementCache.get('#fps');
-        
+
         if (generationCount) generationCount.textContent = stats.generation;
         if (cellCount) cellCount.textContent = stats.cellCount;
         if (fps) fps.textContent = stats.fps;
-        
+
         // Update simulation selector
         const simulationSelect = this.elementCache.get('#simulation-select');
         if (simulationSelect) simulationSelect.value = this.currentType;
-        
+
         // Show/hide simulation-specific controls
         this.controlManager.showControls(this.currentType);
     }
-    
+
     processUpdateQueue() {
         this.isUpdating = true;
-        
+
         requestAnimationFrame(() => {
             if (this.updateQueue.has('ui')) {
                 this.performUIUpdate();
                 this.updateQueue.delete('ui');
             }
-            
+
             this.isUpdating = false;
-            
+
             // Process any remaining updates
             if (this.updateQueue.size > 0) {
                 this.processUpdateQueue();
             }
         });
     }
-    
+
     // Generic speed change handler
     handleSpeedChange(simType, value) {
         if (this.currentType !== simType || !this.currentSimulation) return;
-        
+
         // Parse value as integer for all simulations (steps per second)
         const parsedValue = parseInt(value);
-        
+
         // Set speed on simulation
         this.currentSimulation.setSpeed(parsedValue);
-        
+
         // Display updates are handled by the DynamicSpeedSlider
     }
-    
+
     // Generic speed adjustment handler
     adjustSpeed(simType, direction) {
         // Use the dynamic speed slider for speed adjustments
         this.dynamicSpeedSlider.adjustSpeed(direction);
     }
-    
+
     // Generic random pattern handler
     handleRandomPattern(simType) {
         if (this.currentType !== simType || !this.currentSimulation) return;
-        
+
         // Get likelihood value from slider
         const likelihoodSlider = this.eventFramework.getElement('#likelihood-slider');
         const likelihood = likelihoodSlider ? parseInt(likelihoodSlider.value) / 100 : 0.3;
-        
+
         if (this.currentSimulation.randomize) {
             this.currentSimulation.randomize(likelihood);
             this.updateUI();
         }
     }
-    
+
     // Generic modal handlers using modal manager
     showLearnModal(simType) {
         // Always use the current simulation type for the Learn modal
         const currentSimType = this.currentType;
-        
+
         // Register dynamic modal for this simulation type
         this.modalManager.registerDynamicModal(currentSimType);
-        
+
         // Show the dynamic modal with the current simulation type
         this.modalManager.show(this.modalManager.dynamicModalId, currentSimType);
     }
-    
+
     hideLearnModal(simType) {
         this.modalManager.hide(this.modalManager.dynamicModalId);
     }
-    
+
     // Generic add ant handler
     handleAddAnt(simType, useMousePosition = false) {
         if (this.currentType !== simType || !this.currentSimulation) return;
-        
+
         if (this.currentSimulation.addAnt) {
             if (useMousePosition) {
                 // Pass mouse coordinates for keyboard-triggered ant addition
@@ -3396,15 +3396,15 @@ class AlgorithmicPatternGenerator {
             }
         }
     }
-    
+
     // Generic termite count change handler
     handleTermiteCountChange(count) {
         if (this.currentType !== 'termite' || !this.currentSimulation) return;
-        
+
         if (this.currentSimulation.setTermiteCount) {
             this.currentSimulation.setTermiteCount(count);
         }
-        
+
         // Update the display value
         const config = ConfigurationManager.getConfig('termite');
         if (config) {
@@ -3416,18 +3416,18 @@ class AlgorithmicPatternGenerator {
                 }
             }
         }
-        
+
         // Force a redraw to show termite count changes immediately, even when paused
         if (this.currentSimulation.draw) {
             this.currentSimulation.draw();
         }
     }
-    
+
     // Brightness control methods with performance optimization
     setBrightness(value) {
         this.brightness = Math.max(0.1, Math.min(2.0, value));
         this.updateBrightnessDisplay();
-        
+
         // Update current simulation if it exists
         if (this.currentSimulation && this.currentSimulation.setBrightness) {
             this.currentSimulation.setBrightness(this.brightness);
@@ -3438,23 +3438,23 @@ class AlgorithmicPatternGenerator {
 
     setLikelihood(value) {
         this.likelihood = Math.max(0, Math.min(100, value));
-        
+
         // Apply likelihood to current simulation if it supports it
         if (this.currentSimulation && this.currentSimulation.setLikelihood) {
             this.currentSimulation.setLikelihood(this.likelihood);
         }
     }
-    
+
     resetBrightness() {
         this.setBrightness(1.0);
-        
+
         // Update slider position
         const brightnessSlider = this.elementCache.get('#brightness-slider');
         if (brightnessSlider) {
             brightnessSlider.value = 1.0;
         }
     }
-    
+
     adjustBrightness(delta) {
         const brightnessSlider = this.elementCache.get('#brightness-slider');
         if (brightnessSlider) {
@@ -3464,7 +3464,7 @@ class AlgorithmicPatternGenerator {
             this.setBrightness(newValue);
         }
     }
-    
+
     updateBrightnessDisplay() {
         const brightnessValue = this.elementCache.get('#brightness-value');
         if (brightnessValue) {
@@ -3472,16 +3472,16 @@ class AlgorithmicPatternGenerator {
             brightnessValue.textContent = `${percentage}%`;
         }
     }
-    
+
     // Update stats continuously with throttling
     startStatsUpdate() {
         const throttledUpdate = PerformanceOptimizer.throttle(() => {
             this.updateUI();
         }, 100);
-        
+
         setInterval(throttledUpdate, 100);
     }
-    
+
     // Cleanup method for memory management
     cleanup() {
         this.eventFramework.cleanup();
@@ -3492,7 +3492,7 @@ class AlgorithmicPatternGenerator {
         this.dynamicFillButton.cleanup();
         this.elementCache.clear();
         this.updateQueue.clear();
-        
+
         if (this.currentSimulation) {
             this.currentSimulation.pause();
             this.currentSimulation.cleanupDragToggling();
@@ -3503,16 +3503,16 @@ class AlgorithmicPatternGenerator {
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Check if we're in a test environment to prevent auto-initialisation
-    const isTestEnvironment = window.location.pathname.includes('test-suite.html') || 
+    const isTestEnvironment = window.location.pathname.includes('test-suite.html') ||
                              document.getElementById('test-canvas') !== null;
-    
+
     if (!isTestEnvironment) {
         const app = new AlgorithmicPatternGenerator();
         app.startStatsUpdate();
-        
+
         // Make app globally accessible for debugging
         window.app = app;
-        
+
         // Performance monitoring
         PerformanceOptimizer.startMonitoring();
     }
@@ -3530,86 +3530,86 @@ class PerformanceMonitor {
         this.isMonitoring = false;
         this.maxSamples = 100;
     }
-    
+
     start() {
         if (this.isMonitoring) return;
-        
+
         this.isMonitoring = true;
         this.monitorFPS();
         this.monitorMemory();
-        
+
         console.log('Performance monitoring started');
     }
-    
+
     stop() {
         this.isMonitoring = false;
         console.log('Performance monitoring stopped');
     }
-    
+
     monitorFPS() {
         if (!this.isMonitoring) return;
-        
+
         let frameCount = 0;
         let lastTime = performance.now();
-        
+
         const measureFPS = () => {
             frameCount++;
             const currentTime = performance.now();
-            
+
             if (currentTime - lastTime >= 1000) {
                 const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
                 this.addMetric('fps', fps);
-                
+
                 frameCount = 0;
                 lastTime = currentTime;
             }
-            
+
             if (this.isMonitoring) {
                 requestAnimationFrame(measureFPS);
             }
         };
-        
+
         requestAnimationFrame(measureFPS);
     }
-    
+
     monitorMemory() {
         if (!this.isMonitoring) return;
-        
+
         const measureMemory = () => {
             if (performance.memory) {
                 const usedMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
                 this.addMetric('memory', usedMB);
             }
-            
+
             if (this.isMonitoring) {
                 setTimeout(measureMemory, 2000); // Check every 2 seconds
             }
         };
-        
+
         measureMemory();
     }
-    
+
     addMetric(type, value) {
         if (!this.metrics[type]) return;
-        
+
         this.metrics[type].push({
             value,
             timestamp: Date.now()
         });
-        
+
         // Keep only recent samples
         if (this.metrics[type].length > this.maxSamples) {
             this.metrics[type].shift();
         }
     }
-    
+
     getAverageMetric(type) {
         if (!this.metrics[type] || this.metrics[type].length === 0) return 0;
-        
+
         const values = this.metrics[type].map(m => m.value);
         return values.reduce((sum, val) => sum + val, 0) / values.length;
     }
-    
+
     getMetrics() {
         return {
             averageFPS: this.getAverageMetric('fps'),
@@ -3617,7 +3617,7 @@ class PerformanceMonitor {
             samples: this.metrics
         };
     }
-    
+
     logMetrics() {
         const metrics = this.getMetrics();
         console.log('Performance Metrics:', {
@@ -3635,7 +3635,7 @@ PerformanceOptimizer.monitor = new PerformanceMonitor();
 
 PerformanceOptimizer.startMonitoring = () => {
     PerformanceOptimizer.monitor.start();
-    
+
     // Log metrics every 10 seconds
     setInterval(() => {
         PerformanceOptimizer.monitor.logMetrics();
@@ -3644,4 +3644,4 @@ PerformanceOptimizer.startMonitoring = () => {
 
 PerformanceOptimizer.stopMonitoring = () => {
     PerformanceOptimizer.monitor.stop();
-}; 
+};

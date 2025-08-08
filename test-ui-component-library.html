@@ -120,7 +120,7 @@
                 this.eventFramework = eventFramework;
                 this.initDefaultConfigs();
             }
-            
+
             // Initialize default configurations for all component types
             initDefaultConfigs() {
                 this.defaultConfigs.set('slider', {
@@ -131,32 +131,32 @@
                     format: (val) => val.toString(),
                     className: 'slider'
                 });
-                
+
                 this.defaultConfigs.set('button', {
                     className: 'btn secondary',
                     disabled: false,
                     pressed: false
                 });
-                
+
                 this.defaultConfigs.set('select', {
                     className: 'simulation-select',
                     placeholder: 'Select option...'
                 });
-                
+
                 this.defaultConfigs.set('controlGroup', {
                     className: 'control-group',
                     layout: 'horizontal', // horizontal, vertical, grid
                     gap: '0.5rem',
                     visible: true
                 });
-                
+
                 this.defaultConfigs.set('statusDisplay', {
                     className: 'status-info',
                     layout: 'horizontal',
                     gap: '0.5rem',
                     format: (value) => value.toString()
                 });
-                
+
                 this.defaultConfigs.set('modal', {
                     className: 'modal',
                     backdrop: true,
@@ -164,12 +164,12 @@
                     closeOnBackdrop: true,
                     animation: true
                 });
-                
+
                 this.defaultConfigs.set('label', {
                     className: 'control-label',
                     required: false
                 });
-                
+
                 this.defaultConfigs.set('container', {
                     className: 'ui-container',
                     layout: 'horizontal',
@@ -177,12 +177,12 @@
                     visible: true
                 });
             }
-            
+
             // Create a standardized button component with enhanced features
             createButton(config) {
                 const defaultConfig = this.defaultConfigs.get('button');
                 const mergedConfig = { ...defaultConfig, ...config };
-                
+
                 const component = {
                     type: 'button',
                     id: mergedConfig.id,
@@ -209,18 +209,18 @@
                         removeEventListener: (event) => this.removeComponentEventListener(component, event)
                     }
                 };
-                
+
                 this.components.set(mergedConfig.id, component);
                 this.componentTypes.add('button');
                 this.initializeComponent(component);
                 return component;
             }
-            
+
             // Create a modal component
             createModal(config) {
                 const defaultConfig = this.defaultConfigs.get('modal');
                 const mergedConfig = { ...defaultConfig, ...config };
-                
+
                 const component = {
                     type: 'modal',
                     id: mergedConfig.id,
@@ -249,13 +249,13 @@
                         removeEventListener: (event) => this.removeComponentEventListener(component, event)
                     }
                 };
-                
+
                 this.components.set(mergedConfig.id, component);
                 this.componentTypes.add('modal');
                 this.initializeComponent(component);
                 return component;
             }
-            
+
             initializeComponent(component) {
                 switch (component.type) {
                     case 'slider':
@@ -283,60 +283,60 @@
                         this.initializeContainer(component);
                         break;
                 }
-                
+
                 // Register lifecycle hooks
                 this.registerLifecycleHooks(component);
-                
+
                 // Trigger onMount hook
                 const hooks = this.lifecycleHooks.get(component.id);
                 if (hooks && hooks.onMount) {
                     hooks.onMount();
                 }
             }
-            
+
             initializeButton(component) {
                 if (component.element) {
                     component.element.textContent = component.state.text;
                     component.element.className = component.config.className;
                     component.element.disabled = !component.state.isEnabled;
-                    
+
                     if (component.state.isPressed) {
                         component.element.classList.add('pressed');
                     }
                 }
             }
-            
+
             initializeModal(component) {
                 if (component.element) {
                     component.element.className = component.config.className;
                     component.element.style.display = 'none';
                 }
             }
-            
+
             initializeSlider(component) {
                 // Placeholder
             }
-            
+
             initializeSelect(component) {
                 // Placeholder
             }
-            
+
             initializeControlGroup(component) {
                 // Placeholder
             }
-            
+
             initializeStatusDisplay(component) {
                 // Placeholder
             }
-            
+
             initializeLabel(component) {
                 // Placeholder
             }
-            
+
             initializeContainer(component) {
                 // Placeholder
             }
-            
+
             setButtonText(component, text) {
                 if (component.element) {
                     component.state.text = text;
@@ -344,11 +344,11 @@
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             getButtonText(component) {
                 return component.state.text;
             }
-            
+
             enableComponent(component) {
                 if (component.element) {
                     component.state.isEnabled = true;
@@ -356,7 +356,7 @@
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             disableComponent(component) {
                 if (component.element) {
                     component.state.isEnabled = false;
@@ -364,7 +364,7 @@
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             showComponent(component) {
                 if (component.element) {
                     component.state.isVisible = true;
@@ -372,7 +372,7 @@
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             hideComponent(component) {
                 if (component.element) {
                     component.state.isVisible = false;
@@ -380,7 +380,7 @@
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             pressButton(component) {
                 if (component.element) {
                     component.state.isPressed = true;
@@ -388,7 +388,7 @@
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             releaseButton(component) {
                 if (component.element) {
                     component.state.isPressed = false;
@@ -396,7 +396,7 @@
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             toggleButton(component) {
                 if (component.state.isPressed) {
                     this.releaseButton(component);
@@ -404,38 +404,38 @@
                     this.pressButton(component);
                 }
             }
-            
+
             openModal(component) {
                 if (component.element) {
                     component.state.isVisible = true;
                     component.state.isOpen = true;
                     component.element.style.display = 'block';
-                    
+
                     if (component.state.backdrop) {
                         this.createModalBackdrop(component);
                     }
-                    
+
                     if (component.state.closeOnEscape) {
                         this.setupModalEscapeHandler(component);
                     }
-                    
+
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             closeModal(component) {
                 if (component.element) {
                     component.state.isVisible = false;
                     component.state.isOpen = false;
                     component.element.style.display = 'none';
-                    
+
                     this.removeModalBackdrop(component);
                     this.removeModalEscapeHandler(component);
-                    
+
                     this.triggerUpdateHook(component);
                 }
             }
-            
+
             toggleModal(component) {
                 if (component.state.isOpen) {
                     this.closeModal(component);
@@ -443,7 +443,7 @@
                     this.openModal(component);
                 }
             }
-            
+
             setModalContent(component, content) {
                 if (component.element) {
                     const contentElement = component.element.querySelector('[data-modal-content]');
@@ -452,7 +452,7 @@
                     }
                 }
             }
-            
+
             getModalContent(component) {
                 if (component.element) {
                     const contentElement = component.element.querySelector('[data-modal-content]');
@@ -460,7 +460,7 @@
                 }
                 return '';
             }
-            
+
             setModalTitle(component, title) {
                 if (component.element) {
                     const titleElement = component.element.querySelector('[data-modal-title]');
@@ -469,7 +469,7 @@
                     }
                 }
             }
-            
+
             getModalTitle(component) {
                 if (component.element) {
                     const titleElement = component.element.querySelector('[data-modal-title]');
@@ -477,27 +477,27 @@
                 }
                 return '';
             }
-            
+
             updateButton(component, newConfig) {
                 // Placeholder
             }
-            
+
             updateModal(component, newConfig) {
                 // Placeholder
             }
-            
+
             addComponentEventListener(component, event, handler) {
                 if (component.element) {
                     this.eventFramework.register(component.element, event, handler);
                 }
             }
-            
+
             removeComponentEventListener(component, event) {
                 if (component.element) {
                     this.eventFramework.remove(component.element, event);
                 }
             }
-            
+
             registerLifecycleHooks(component) {
                 const hooks = {
                     onMount: () => console.log(`Component ${component.id} mounted`),
@@ -508,17 +508,17 @@
                     onEnable: () => console.log(`Component ${component.id} enabled`),
                     onDisable: () => console.log(`Component ${component.id} disabled`)
                 };
-                
+
                 this.lifecycleHooks.set(component.id, hooks);
             }
-            
+
             triggerUpdateHook(component) {
                 const hooks = this.lifecycleHooks.get(component.id);
                 if (hooks && hooks.onUpdate) {
                     hooks.onUpdate();
                 }
             }
-            
+
             createModalBackdrop(component) {
                 const backdrop = document.createElement('div');
                 backdrop.className = 'modal-backdrop';
@@ -531,60 +531,60 @@
                     background: rgba(0, 0, 0, 0.5);
                     z-index: 999;
                 `;
-                
+
                 if (component.state.closeOnBackdrop) {
                     backdrop.addEventListener('click', () => this.closeModal(component));
                 }
-                
+
                 document.body.appendChild(backdrop);
                 component.backdropElement = backdrop;
             }
-            
+
             removeModalBackdrop(component) {
                 if (component.backdropElement) {
                     component.backdropElement.remove();
                     component.backdropElement = null;
                 }
             }
-            
+
             setupModalEscapeHandler(component) {
                 const escapeHandler = (e) => {
                     if (e.key === 'Escape') {
                         this.closeModal(component);
                     }
                 };
-                
+
                 document.addEventListener('keydown', escapeHandler);
                 component.escapeHandler = escapeHandler;
             }
-            
+
             removeModalEscapeHandler(component) {
                 if (component.escapeHandler) {
                     document.removeEventListener('keydown', component.escapeHandler);
                     component.escapeHandler = null;
                 }
             }
-            
+
             getComponent(id) {
                 return this.components.get(id);
             }
-            
+
             getAllComponents() {
                 return Array.from(this.components.values());
             }
-            
+
             getComponentsByType(type) {
                 return Array.from(this.components.values()).filter(component => component.type === type);
             }
-            
+
             hasComponent(id) {
                 return this.components.has(id);
             }
-            
+
             getComponentTypes() {
                 return this.componentTypes;
             }
-            
+
             cleanup() {
                 // Trigger onUnmount hooks
                 this.components.forEach(component => {
@@ -593,7 +593,7 @@
                         hooks.onUnmount();
                     }
                 });
-                
+
                 this.components.clear();
                 this.lifecycleHooks.clear();
                 this.componentTypes.clear();
@@ -603,29 +603,29 @@
         // Test the UIComponentLibrary
         function runTests() {
             const results = [];
-            
+
             // Test 1: Button Component Management
             try {
                 const eventFramework = new EventFramework();
                 const uiLibrary = new UIComponentLibrary(eventFramework);
-                
+
                 // Create test button element
                 const testButton = document.createElement('button');
                 testButton.id = 'test-management';
                 document.body.appendChild(testButton);
-                
+
                 const button = uiLibrary.createButton({
                     id: 'test-management',
                     label: 'Test Button'
                 });
-                
+
                 // Test component management
                 const hasComponent = uiLibrary.hasComponent('test-management');
                 const retrievedComponent = uiLibrary.getComponent('test-management');
                 const allComponents = uiLibrary.getAllComponents();
                 const buttonComponents = uiLibrary.getComponentsByType('button');
                 const componentTypes = uiLibrary.getComponentTypes();
-                
+
                 // Debug logging
                 console.log('Component Management Test Debug:');
                 console.log('Button created:', !!button);
@@ -634,14 +634,14 @@
                 console.log('Component types:', Array.from(componentTypes));
                 console.log('All components length:', allComponents.length);
                 console.log('Button components length:', buttonComponents.length);
-                
+
                 const buttonTestPassed = hasComponent && retrievedComponent === button && allComponents.length === 1 && buttonComponents.length === 1 && componentTypes.size === 1 && componentTypes.has('button');
-                
+
                 // Cleanup
                 document.body.removeChild(testButton);
                 uiLibrary.cleanup();
                 eventFramework.cleanup();
-                
+
                 results.push({
                     test: 'Button Component Management',
                     passed: buttonTestPassed,
@@ -655,16 +655,16 @@
                     details: `Error: ${error.message}`
                 });
             }
-            
+
             // Test 2: Modal State Management
             try {
                 const eventFramework = new EventFramework();
                 const uiLibrary = new UIComponentLibrary(eventFramework);
-                
+
                 // Create test modal element with proper structure
                 const testModal = document.createElement('div');
                 testModal.id = 'test-modal-state';
-                
+
                 // Add modal structure with title and content elements
                 const modalHeader = document.createElement('div');
                 modalHeader.className = 'modal-header';
@@ -673,32 +673,32 @@
                 titleElement.textContent = 'Test Modal';
                 modalHeader.appendChild(titleElement);
                 testModal.appendChild(modalHeader);
-                
+
                 const modalBody = document.createElement('div');
                 modalBody.className = 'modal-body';
                 const contentElement = document.createElement('div');
                 contentElement.setAttribute('data-modal-content', '');
                 modalBody.appendChild(contentElement);
                 testModal.appendChild(modalBody);
-                
+
                 document.body.appendChild(testModal);
-                
+
                 const modal = uiLibrary.createModal({
                     id: 'test-modal-state',
                     title: 'Test Modal'
                 });
-                
+
                 // Test modal state management
                 const initialVisible = modal.state.isVisible;
                 modal.methods.open();
                 const isOpen = modal.state.isVisible;
-                
+
                 modal.methods.close();
                 const isClosed = !modal.state.isVisible;
-                
+
                 modal.methods.setTitle('Updated Title');
                 const newTitle = modal.methods.getTitle();
-                
+
                 // Debug logging
                 console.log('Modal State Management Test Debug:');
                 console.log('Modal created:', !!modal);
@@ -708,14 +708,14 @@
                 console.log('Is closed:', isClosed);
                 console.log('New title:', newTitle);
                 console.log('Expected title:', 'Updated Title');
-                
+
                 const modalTestPassed = !initialVisible && isOpen && isClosed && newTitle === 'Updated Title';
-                
+
                 // Cleanup
                 document.body.removeChild(testModal);
                 uiLibrary.cleanup();
                 eventFramework.cleanup();
-                
+
                 results.push({
                     test: 'Modal State Management',
                     passed: modalTestPassed,
@@ -729,7 +729,7 @@
                     details: `Error: ${error.message}`
                 });
             }
-            
+
             // Display results
             const resultsDiv = document.getElementById('test-results');
             results.forEach(result => {

@@ -15,7 +15,7 @@ This report identifies opportunities for maximising code reuse and modularisatio
 
 The project currently has a well-structured modular architecture with:
 - **Core Application Layer** (`app.js`) - 1,726 lines
-- **Simulation Engine** (`simulations.js`) - 2,188 lines  
+- **Simulation Engine** (`simulations.js`) - 2,188 lines
 - **UI Components** (`index.html` + `styles.css`) - 1,009 lines
 - **Supporting Modules** (`i18n.js`, `dynamic-layout.js`, `test-runner.js`) - 893 lines
 
@@ -39,7 +39,7 @@ conway: {
 },
 // Termite controls (duplicate structure)
 termite: {
-    name: "Termite Algorithm", 
+    name: "Termite Algorithm",
     controls: [
         { type: 'slider', id: 'termite-speed-slider', ... },
         { type: 'button', id: 'termite-random-btn', ... }
@@ -68,7 +68,7 @@ termite: {
 ```html
 <!-- Conway speed slider -->
 <input type="range" id="speed-slider" min="1" max="60" value="30">
-<!-- Termite speed slider -->  
+<!-- Termite speed slider -->
 <input type="range" id="termite-speed-slider" min="1" max="60" value="30">
 <!-- Langton speed slider -->
 <input type="range" id="langton-speed-slider" min="1" max="60" value="30">
@@ -324,7 +324,7 @@ static createButton(id, label, className) { /* basic implementation */ }
 // Debounce in PerformanceOptimizer
 static debounce(func, wait) { /* implementation */ }
 
-// Similar debounce in EventFramework  
+// Similar debounce in EventFramework
 debounce(func, wait, key = null) { /* similar implementation */ }
 ```
 
@@ -363,7 +363,7 @@ static validateModalConfig(config) { /* similar validation logic */ }
 // In AlgorithmicPatternGenerator
 setupEventListeners() { /* event setup */ }
 
-// In ControlManager  
+// In ControlManager
 registerAllHandlers() { /* more event setup */ }
 ```
 
@@ -850,4 +850,4 @@ The implementation should be approached incrementally with comprehensive testing
 *Report generated on: [Current Date]*
 *Codebase analysed: Algorithmic Pattern Generator v1.0*
 *Total lines analysed: 5,816*
-*Files examined: 8 core files* 
+*Files examined: 8 core files*
