@@ -241,6 +241,7 @@ class SimulationLifecycleFramework {
         return {
             state: { ...initialState },
             subscribers: new Set(),
+            serializer: null,
             
             // Get current state
             getState() {
@@ -251,6 +252,40 @@ class SimulationLifecycleFramework {
             setState(newState) {
                 this.state = { ...this.state, ...newState };
                 this.notifySubscribers();
+            },
+
+            // Register simulation-specific serializer
+            registerSerializer(serializer) {
+                this.serializer = serializer;
+            },
+
+            // Whether a serializer is registered
+            hasSerializer() {
+                return !!this.serializer;
+            },
+
+            // Produce simulation-specific serialised fragment
+            serialize(simulationInstance) {
+                if (this.serializer && typeof this.serializer.capture === 'function') {
+                    try {
+                        return this.serializer.capture(simulationInstance) || {};
+                    } catch (error) {
+                        console.error('Error capturing simulation state:', error);
+                        return {};
+                    }
+                }
+                return {};
+            },
+
+            // Restore simulation-specific state
+            deserialize(simulationInstance, state) {
+                if (this.serializer && typeof this.serializer.restore === 'function') {
+                    try {
+                        this.serializer.restore(simulationInstance, state);
+                    } catch (error) {
+                        console.error('Error restoring simulation state:', error);
+                    }
+                }
             },
             
             // Subscribe to state changes
@@ -690,13 +725,19 @@ class BaseSimulation {
     // Override these methods in subclasses to preserve specific state
     getState() {
         // Default implementation - override in subclasses
-        return {
+        const baseState = {
             generation: this.generation,
             cellCount: this.cellCount,
             isRunning: this.isRunning,
             trailLength: this.trailLength,
             trailEnabled: this.trailEnabled
         };
+        // Merge in simulation-specific serialised state if available
+        if (this.stateManager && typeof this.stateManager.serialize === 'function') {
+            const extra = this.stateManager.serialize(this) || {};
+            return { ...baseState, ...extra };
+        }
+        return baseState;
     }
     
     setState(state) {
@@ -706,6 +747,10 @@ class BaseSimulation {
         this.isRunning = state.isRunning || false;
         this.trailLength = state.trailLength || 30;
         this.trailEnabled = state.trailEnabled !== undefined ? state.trailEnabled : true;
+        // Delegate simulation-specific restore if available
+        if (this.stateManager && typeof this.stateManager.deserialize === 'function') {
+            this.stateManager.deserialize(this, state);
+        }
     }
     
     start() {
@@ -1491,6 +1536,38 @@ class ConwayGameOfLife extends BaseSimulation {
         this.speed = 30; // FPS for simulation speed
         this.lastUpdateTime = 0;
         this.updateInterval = 1000 / this.speed; // milliseconds between updates
+
+        // Register serializer for grid state preservation
+        this.stateManager.registerSerializer({
+            capture: (sim) => {
+                const extra = {};
+                if (sim.grids) {
+                    extra.grids = {
+                        current: sim.grids.current.map(row => [...row]),
+                        next: sim.grids.next.map(row => [...row])
+                    };
+                }
+                return extra;
+            },
+            restore: (sim, state) => {
+                if (state.grids) {
+                    const oldCurrent = state.grids.current;
+                    const oldNext = state.grids.next;
+                    // Recreate grids for current dimensions
+                    sim.initGrids();
+                    const minRows = Math.min(oldCurrent.length, sim.rows);
+                    const minCols = Math.min(oldCurrent[0]?.length || 0, sim.cols);
+                    for (let row = 0; row < minRows; row++) {
+                        for (let col = 0; col < minCols; col++) {
+                            sim.grids.current[row][col] = oldCurrent[row][col];
+                            sim.grids.next[row][col] = oldNext[row][col];
+                        }
+                    }
+                    // Recompute cell count
+                    sim.cellCount = sim.countLiveCells(sim.grids.current);
+                }
+            }
+        });
     }
     
     init() {
@@ -1536,43 +1613,7 @@ class ConwayGameOfLife extends BaseSimulation {
         this.setState(preservedState);
     }
     
-    // Override to preserve grid data
-    getState() {
-        const state = super.getState();
-        if (this.grids) {
-            state.grids = {
-                current: this.grids.current.map(row => [...row]),
-                next: this.grids.next.map(row => [...row])
-            };
-        }
-        return state;
-    }
-    
-    setState(state) {
-        super.setState(state);
-        if (state.grids && this.grids) {
-            // Copy the preserved grid data to the new grid dimensions
-            const oldCurrent = state.grids.current;
-            const oldNext = state.grids.next;
-            
-            // Clear the new grids
-            this.initGrids();
-            
-            // Copy data from old grids to new grids, handling size differences
-            const minRows = Math.min(oldCurrent.length, this.rows);
-            const minCols = Math.min(oldCurrent[0]?.length || 0, this.cols);
-            
-            for (let row = 0; row < minRows; row++) {
-                for (let col = 0; col < minCols; col++) {
-                    this.grids.current[row][col] = oldCurrent[row][col];
-                    this.grids.next[row][col] = oldNext[row][col];
-                }
-            }
-            
-            // Update cell count
-            this.cellCount = this.countLiveCells(this.grids.current);
-        }
-    }
+    // Grid state now handled via registered serializer
     
     update() {
         // Step 1: Decrease each cell's brightness value by configurable amount
@@ -1674,6 +1715,37 @@ class TermiteAlgorithm extends BaseSimulation {
         
         // Set default cell size to ensure rows/cols are calculated properly
         this.cellSize = 10;
+
+        // Register serializer for wood chips and termites state preservation
+        this.stateManager.registerSerializer({
+            capture: (sim) => {
+                return {
+                    woodChips: Array.from(sim.woodChips),
+                    termites: sim.termites.map(t => ({
+                        x: t.x,
+                        y: t.y,
+                        angle: t.angle,
+                        carrying: !!t.carrying,
+                        trail: t.trail || []
+                    }))
+                };
+            },
+            restore: (sim, state) => {
+                if (Array.isArray(state.woodChips)) {
+                    sim.woodChips = new Set(state.woodChips);
+                }
+                if (Array.isArray(state.termites)) {
+                    sim.termites = state.termites.map(t => ({
+                        x: Math.max(0, Math.min(t.x, sim.canvas.width)),
+                        y: Math.max(0, Math.min(t.y, sim.canvas.height)),
+                        angle: t.angle || 0,
+                        carrying: !!t.carrying,
+                        trail: t.trail || []
+                    }));
+                }
+                sim.cellCount = sim.woodChips.size;
+            }
+        });
     }
     
     init() {
@@ -1928,6 +2000,38 @@ class LangtonsAnt extends BaseSimulation {
         
         // Set default cell size to ensure rows/cols are calculated properly
         this.cellSize = 10;
+
+        // Register serializer for grid and ants
+        this.stateManager.registerSerializer({
+            capture: (sim) => {
+                const extra = {};
+                if (sim.grid) extra.grid = sim.grid.map(row => [...row]);
+                if (sim.ants) extra.ants = sim.ants.map(ant => ({ ...ant }));
+                return extra;
+            },
+            restore: (sim, state) => {
+                if (state.grid) {
+                    const oldGrid = state.grid;
+                    sim.initGrid();
+                    const minRows = Math.min(oldGrid.length, sim.rows);
+                    const minCols = Math.min(oldGrid[0]?.length || 0, sim.cols);
+                    for (let row = 0; row < minRows; row++) {
+                        for (let col = 0; col < minCols; col++) {
+                            sim.grid[row][col] = oldGrid[row][col];
+                        }
+                    }
+                }
+                if (state.ants) {
+                    sim.ants = state.ants.map(ant => ({
+                        x: Math.max(0, Math.min(ant.x, sim.cols - 1)),
+                        y: Math.max(0, Math.min(ant.y, sim.rows - 1)),
+                        direction: ant.direction,
+                        trail: ant.trail || []
+                    }));
+                }
+                sim.cellCount = sim.countLiveCells(sim.grid);
+            }
+        });
     }
     
     init() {
@@ -1983,51 +2087,7 @@ class LangtonsAnt extends BaseSimulation {
         this.setState(preservedState);
     }
     
-    // Override to preserve grid and ant data
-    getState() {
-        const state = super.getState();
-        if (this.grid) {
-            state.grid = this.grid.map(row => [...row]);
-        }
-        if (this.ants) {
-            state.ants = this.ants.map(ant => ({ ...ant }));
-        }
-        return state;
-    }
-    
-    setState(state) {
-        super.setState(state);
-        if (state.grid && this.grid) {
-            // Copy the preserved grid data to the new grid dimensions
-            const oldGrid = state.grid;
-            
-            // Clear the new grid
-            this.initGrid();
-            
-            // Copy data from old grid to new grid, handling size differences
-            const minRows = Math.min(oldGrid.length, this.rows);
-            const minCols = Math.min(oldGrid[0]?.length || 0, this.cols);
-            
-            for (let row = 0; row < minRows; row++) {
-                for (let col = 0; col < minCols; col++) {
-                    this.grid[row][col] = oldGrid[row][col];
-                }
-            }
-        }
-        
-        if (state.ants && this.ants) {
-            // Restore ant positions, adjusting for new grid size
-            this.ants = state.ants.map(ant => ({
-                x: Math.min(ant.x, this.cols - 1),
-                y: Math.min(ant.y, this.rows - 1),
-                direction: ant.direction,
-                trail: ant.trail || [] // Preserve trail data
-            }));
-        }
-        
-        // Update cell count
-        this.cellCount = this.countLiveCells(this.grid);
-    }
+    // Grid and ants state now handled via registered serializer
     
     update() {
         // Update fade states before incrementing generation
