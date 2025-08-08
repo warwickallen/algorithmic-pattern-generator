@@ -32,6 +32,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
  - **EventFramework (enhanced)** - Declarative and delegated event registration with centralised cleanup
  - **ErrorHandler (new)** - Centralised error handling with simulation-specific strategies and metrics
   - **ColorUtils (new)** - Centralised colour parsing, HSL→RGB conversion, and colour interpolation used across rendering
+ - **AppConstants (new)** - Centralised constants for speeds, cell sizes, fading, layout margins, and UI slider ranges
 
 ## Quick Start
 
@@ -40,6 +41,8 @@ A sophisticated web application featuring three classic algorithmic simulations:
    # Simply open index.html in a modern web browser
    open index.html
    ```
+
+Ensure `constants.js` is loaded before other scripts (already referenced in `index.html`).
 
 2. **Select a Simulation**
    - Choose from the dropdown menu: Conway's Game of Life, Termite Algorithm, or Langton's Ant
@@ -139,6 +142,7 @@ The application uses a modular architecture with clear separation of concerns:
 - **`styles.css`** - Responsive styling with immersive mode support
 - **`i18n.js`** - Internationalisation system
 - **`dynamic-layout.js`** - Dynamic layout management
+- **`constants.js`** - Centralised application constants (browser global `AppConstants`)
 - **`test-runner.js`** - Programmatic testing framework
 
 ### Core Components

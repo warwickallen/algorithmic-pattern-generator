@@ -709,13 +709,13 @@ class BaseSimulation {
         this.brightness = 1.0; // Default brightness
 
         // Re-engineered fade-to-black configuration
-        this.fadeOutCycles = 5; // Number of cycles to fade to black (configurable)
-        this.fadeDecrement = 0.2; // Amount to decrease brightness each cycle (configurable)
+        this.fadeOutCycles = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.FADE_OUT_CYCLES_DEFAULT : 5); // Number of cycles to fade to black (configurable)
+        this.fadeDecrement = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.FADE_DECREMENT_DEFAULT : 0.2); // Amount to decrease brightness each cycle (configurable)
         this.cellBrightness = new Map(); // Track brightness for each cell: {row,col} -> brightness (0-1)
 
         // Performance optimization properties
         this.lastUpdateTime = 0;
-        this.updateInterval = 1000 / 30; // Default 30 FPS
+        this.updateInterval = 1000 / (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_DEFAULT : 30); // Default 30 FPS
         this.renderCache = new Map(); // Cache for rendered elements
         this.colorCache = new Map(); // Cache for brightness-adjusted colors
         this.maxCacheSize = 1000; // Limit cache size to prevent memory leaks
@@ -1196,7 +1196,7 @@ class BaseSimulation {
     }
 
     // Common random grid generation utility
-    randomizeGrid(grid, density = 0.3) {
+    randomizeGrid(grid, density = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT : 0.3)) {
         for (let row = 0; row < grid.length; row++) {
             const rowData = grid[row];
             for (let col = 0; col < rowData.length; col++) {
@@ -1465,7 +1465,9 @@ class BaseSimulation {
 
     // Set speed with validation
     setSpeed(stepsPerSecond) {
-        this.speed = Math.max(1, Math.min(60, stepsPerSecond));
+        const min = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MIN : 1);
+        const max = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MAX : 60);
+        this.speed = Math.max(min, Math.min(max, stepsPerSecond));
         this.updateInterval = 1000 / this.speed;
     }
 
@@ -1703,11 +1705,13 @@ class ConwayGameOfLife extends BaseSimulation {
     }
 
     setSpeed(stepsPerSecond) {
-        this.speed = Math.max(1, Math.min(60, stepsPerSecond));
+        const min = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MIN : 1);
+        const max = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MAX : 60);
+        this.speed = Math.max(min, Math.min(max, stepsPerSecond));
         this.updateInterval = 1000 / this.speed;
     }
 
-    randomize(likelihood = 0.3) {
+    randomize(likelihood = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT : 0.3)) {
         // Clear existing pattern
         this.initGrids();
 
@@ -1740,12 +1744,12 @@ class TermiteAlgorithm extends BaseSimulation {
         this.termites = [];
         this.woodChips = new Set();
         this.maxTermites = 50;
-        this.speed = 30; // steps per second
+        this.speed = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_DEFAULT : 30); // steps per second
         this.lastUpdateTime = 0;
         this.updateInterval = 1000 / this.speed; // milliseconds between updates
 
         // Set default cell size to ensure rows/cols are calculated properly
-        this.cellSize = 10;
+        this.cellSize = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.CELL_SIZE_DEFAULT : 10);
 
         // Register serializer for wood chips and termites state preservation
         this.stateManager.registerSerializer({
@@ -1804,7 +1808,8 @@ class TermiteAlgorithm extends BaseSimulation {
 
     initWoodChips() {
         this.woodChips.clear();
-        const numChips = Math.floor((this.cols * this.rows) * 0.3);
+        const defaultCoverage = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT : 0.3);
+        const numChips = Math.floor((this.cols * this.rows) * defaultCoverage);
 
         for (let i = 0; i < numChips; i++) {
             const x = Math.floor(Math.random() * this.cols) * this.cellSize;
@@ -1857,7 +1862,7 @@ class TermiteAlgorithm extends BaseSimulation {
             this.updateActorTrail(termite, termite.x, termite.y);
 
             // Move termite
-            const speed = 2; // Base movement speed
+            const speed = (typeof AppConstants !== 'undefined' ? AppConstants.TermiteDefaults.MOVE_SPEED : 2); // Base movement speed
             termite.x += Math.cos(termite.angle) * speed;
             termite.y += Math.sin(termite.angle) * speed;
 
@@ -1885,7 +1890,7 @@ class TermiteAlgorithm extends BaseSimulation {
             }
 
             // Random direction change
-            if (Math.random() < 0.1) {
+            if (Math.random() < (typeof AppConstants !== 'undefined' ? AppConstants.TermiteDefaults.RANDOM_TURN_PROBABILITY : 0.1)) {
                 termite.angle += (Math.random() - 0.5) * Math.PI / 2;
             }
         });
@@ -1927,7 +1932,9 @@ class TermiteAlgorithm extends BaseSimulation {
     }
 
     setSpeed(stepsPerSecond) {
-        this.speed = Math.max(1, Math.min(60, stepsPerSecond));
+        const min = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MIN : 1);
+        const max = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MAX : 60);
+        this.speed = Math.max(min, Math.min(max, stepsPerSecond));
         this.updateInterval = 1000 / this.speed;
     }
 
@@ -1978,7 +1985,7 @@ class TermiteAlgorithm extends BaseSimulation {
         }
     }
 
-    randomize(likelihood = 0.3) {
+    randomize(likelihood = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT : 0.3)) {
         this.woodChips.clear();
 
         // Use the same approach as other simulations for consistent coverage
@@ -2025,12 +2032,12 @@ class LangtonsAnt extends BaseSimulation {
         this.ants = [{ x: 0, y: 0, direction: 0 }]; // 0: up, 1: right, 2: down, 3: left
         this.grid = [];
         this.rules = ['R', 'L']; // Standard Langton's ant rules
-        this.speed = 30; // steps per second
+        this.speed = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_DEFAULT : 30); // steps per second
         this.lastUpdateTime = 0;
         this.updateInterval = 1000 / this.speed; // milliseconds between updates
 
         // Set default cell size to ensure rows/cols are calculated properly
-        this.cellSize = 10;
+        this.cellSize = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.CELL_SIZE_DEFAULT : 10);
 
         // Register serializer for grid and ants
         this.stateManager.registerSerializer({
@@ -2185,7 +2192,9 @@ class LangtonsAnt extends BaseSimulation {
     }
 
     setSpeed(stepsPerSecond) {
-        this.speed = Math.max(1, Math.min(60, stepsPerSecond));
+        const min = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MIN : 1);
+        const max = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MAX : 60);
+        this.speed = Math.max(min, Math.min(max, stepsPerSecond));
         this.updateInterval = 1000 / this.speed;
     }
 
