@@ -23,7 +23,7 @@
 - Ensure responsive user interface
 - Test across different browsers and screen sizes
 
-Remember: Working, minimal code that meets the immediate need, not perfect comprehensive solutions.
+Remember: Create modular, or otherwise reusable code, wherever possible.
 description:
 globs:
 alwaysApply: false
