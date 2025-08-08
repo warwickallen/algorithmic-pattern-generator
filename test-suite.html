@@ -921,12 +921,19 @@
                 const originalError = console.error;
                 
                 console.warn = (...args) => {
+                    const message = args.join(' ');
                     this.consoleWarnings.push({
                         type: 'warn',
-                        message: args.join(' '),
+                        message,
                         timestamp: new Date().toISOString()
                     });
-                    originalWarn.apply(console, args);
+                    // Suppress expected warnings triggered intentionally by tests
+                    const isExpectedTestWarning =
+                        message.includes('No content template found for simulation type: invalid') ||
+                        message.includes('No template found for simulation type: invalid');
+                    if (!isExpectedTestWarning) {
+                        originalWarn.apply(console, args);
+                    }
                 };
                 
                 console.error = (...args) => {
