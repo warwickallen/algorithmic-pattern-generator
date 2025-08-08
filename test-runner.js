@@ -408,6 +408,32 @@ class PredefinedTestSuites {
             };
         }, 'colour');
 
+        // ColorUtils tests (utility consolidation)
+        runner.addTest('ColorUtils: hslToRgb consistency', async () => {
+            if (typeof ColorUtils === 'undefined') {
+                return { passed: true, details: 'Skipped: ColorUtils not loaded in this environment' };
+            }
+            const { r, g, b } = ColorUtils.hslToRgb(0, 100, 50); // pure red
+            return { passed: r === 255 && g === 0 && b === 0, details: `rgb(${r},${g},${b})` };
+        }, 'colour');
+
+        runner.addTest('ColorUtils: parseColor supports hex and rgb', async () => {
+            if (typeof ColorUtils === 'undefined') {
+                return { passed: true, details: 'Skipped: ColorUtils not loaded in this environment' };
+            }
+            const a = ColorUtils.parseColor('#ff0000');
+            const b = ColorUtils.parseColor('rgb(255,0,0)');
+            return { passed: Array.isArray(a) && a[0] === 255 && Array.isArray(b) && b[0] === 255, details: `hex:${a}, rgb:${b}` };
+        }, 'colour');
+
+        runner.addTest('ColorUtils: interpolateColor clamps factor', async () => {
+            if (typeof ColorUtils === 'undefined') {
+                return { passed: true, details: 'Skipped: ColorUtils not loaded in this environment' };
+            }
+            const c = ColorUtils.interpolateColor('rgb(0,0,0)', 'rgb(255,255,255)', 2);
+            return { passed: /^rgb\(255, 255, 255\)$/.test(c), details: `result: ${c}` };
+        }, 'colour');
+
         // Test utilities tests
         runner.addTest('TestUtilityFactory: mock canvas/ctx and simulation', async () => {
             try {

@@ -138,37 +138,31 @@ class DynamicColourScheme {
         return result;
     }
 
-    // Convert HSL to RGB
+    // Convert HSL to RGB using shared utility
     hslToRgb(h, s, l) {
-        h /= 360;
-        s /= 100;
-        l /= 100;
-
-        const c = (1 - Math.abs(2 * l - 1)) * s;
-        const x = c * (1 - Math.abs((h * 6) % 2 - 1));
-        const m = l - c / 2;
-
-        let r, g, b;
-
-        if (h < 1/6) {
-            r = c; g = x; b = 0;
-        } else if (h < 2/6) {
-            r = x; g = c; b = 0;
-        } else if (h < 3/6) {
-            r = 0; g = c; b = x;
-        } else if (h < 4/6) {
-            r = 0; g = x; b = c;
-        } else if (h < 5/6) {
-            r = x; g = 0; b = c;
-        } else {
-            r = c; g = 0; b = x;
+        if (typeof ColorUtils !== 'undefined') {
+            return ColorUtils.hslToRgb(h, s, l);
         }
-
-        return {
-            r: Math.round((r + m) * 255),
-            g: Math.round((g + m) * 255),
-            b: Math.round((b + m) * 255)
-        };
+        // Fallback (should not be used when utils loaded)
+        const [r, g, b] = (function(hh, ss, ll){
+            hh /= 360; ss /= 100; ll /= 100;
+            const c = (1 - Math.abs(2 * ll - 1)) * ss;
+            const x = c * (1 - Math.abs((hh * 6) % 2 - 1));
+            const m = ll - c / 2;
+            let r, g, b;
+            if (hh < 1/6) { r = c; g = x; b = 0; }
+            else if (hh < 2/6) { r = x; g = c; b = 0; }
+            else if (hh < 3/6) { r = 0; g = c; b = x; }
+            else if (hh < 4/6) { r = 0; g = x; b = c; }
+            else if (hh < 5/6) { r = x; g = 0; b = c; }
+            else { r = c; g = 0; b = x; }
+            return [
+              Math.round((r + m) * 255),
+              Math.round((g + m) * 255),
+              Math.round((b + m) * 255)
+            ];
+        })(h, s, l);
+        return { r, g, b };
     }
 
     // Get RGB colour for a position with specified saturation and lightness
@@ -474,36 +468,32 @@ class RenderingUtils {
     // Unified colour management
     createColorManager() {
         return {
-            // Convert HSL to RGB
+            // Convert HSL to RGB using shared utility
             hslToRgb(h, s, l) {
-                h /= 360;
-                s /= 100;
-                l /= 100;
-
-                const c = (1 - Math.abs(2 * l - 1)) * s;
-                const x = c * (1 - Math.abs((h * 6) % 2 - 1));
-                const m = l - c / 2;
-
-                let r, g, b;
-                if (h < 1/6) {
-                    [r, g, b] = [c, x, 0];
-                } else if (h < 2/6) {
-                    [r, g, b] = [x, c, 0];
-                } else if (h < 3/6) {
-                    [r, g, b] = [0, c, x];
-                } else if (h < 4/6) {
-                    [r, g, b] = [0, x, c];
-                } else if (h < 5/6) {
-                    [r, g, b] = [x, 0, c];
-                } else {
-                    [r, g, b] = [c, 0, x];
+                if (typeof ColorUtils !== 'undefined') {
+                    const { r, g, b } = ColorUtils.hslToRgb(h, s, l);
+                    return [r, g, b];
                 }
-
-                return [
-                    Math.round((r + m) * 255),
-                    Math.round((g + m) * 255),
-                    Math.round((b + m) * 255)
-                ];
+                // Fallback minimal inline to avoid runtime breakage
+                const convert = (hh, ss, ll) => {
+                    hh /= 360; ss /= 100; ll /= 100;
+                    const c = (1 - Math.abs(2 * ll - 1)) * ss;
+                    const x = c * (1 - Math.abs((hh * 6) % 2 - 1));
+                    const m = ll - c / 2;
+                    let r, g, b;
+                    if (hh < 1/6) { r = c; g = x; b = 0; }
+                    else if (hh < 2/6) { r = x; g = c; b = 0; }
+                    else if (hh < 3/6) { r = 0; g = c; b = x; }
+                    else if (hh < 4/6) { r = 0; g = x; b = c; }
+                    else if (hh < 5/6) { r = x; g = 0; b = c; }
+                    else { r = c; g = 0; b = x; }
+                    return [
+                      Math.round((r + m) * 255),
+                      Math.round((g + m) * 255),
+                      Math.round((b + m) * 255)
+                    ];
+                };
+                return convert(h, s, l);
             },
 
             // Apply brightness to colour
@@ -541,51 +531,42 @@ class RenderingUtils {
                 return result;
             },
 
-            // Interpolate between two colours
+            // Interpolate between two colours using shared utility
             interpolateColor(color1, color2, factor) {
                 const cacheKey = `${color1}-${color2}-${factor}`;
                 if (this.colorCache.has(cacheKey)) {
                     this.performanceMetrics.cacheHits++;
                     return this.colorCache.get(cacheKey);
                 }
-
                 this.performanceMetrics.cacheMisses++;
-
-                // Convert colours to RGB arrays
-                const rgb1 = this.parseColor(color1);
-                const rgb2 = this.parseColor(color2);
-
-                if (!rgb1 || !rgb2) {
-                    return color1;
+                let result;
+                if (typeof ColorUtils !== 'undefined') {
+                    result = ColorUtils.interpolateColor(color1, color2, factor);
+                } else {
+                    // Minimal inline fallback
+                    const clamp = (v) => Math.max(0, Math.min(1, v));
+                    const f = clamp(factor);
+                    const parse = (c) => c.startsWith('#') ? [
+                        parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)
+                    ] : (c.match(/\d+/g)||[]).slice(0,3).map(Number);
+                    const a = parse(color1); const b = parse(color2);
+                    if (!a || !b || a.length<3 || b.length<3) return color1;
+                    const out = a.map((c1,i)=>Math.round(c1+(b[i]-c1)*f));
+                    result = `rgb(${out[0]}, ${out[1]}, ${out[2]})`;
                 }
-
-                const interpolated = rgb1.map((c1, i) =>
-                    Math.round(c1 + (rgb2[i] - c1) * factor)
-                );
-
-                const result = `rgb(${interpolated[0]}, ${interpolated[1]}, ${interpolated[2]})`;
-
-                // Cache the result
                 if (this.colorCache.size < this.maxCacheSize) {
                     this.colorCache.set(cacheKey, result);
                 }
-
                 return result;
             },
 
-            // Parse colour string to RGB array
+            // Parse colour string to RGB array using shared utility
             parseColor(color) {
-                if (color.startsWith('#')) {
-                    const hex = color.slice(1);
-                    return [
-                        parseInt(hex.slice(0, 2), 16),
-                        parseInt(hex.slice(2, 4), 16),
-                        parseInt(hex.slice(4, 6), 16)
-                    ];
-                } else if (color.startsWith('rgb')) {
-                    return color.match(/\d+/g).map(Number);
+                if (typeof ColorUtils !== 'undefined') {
+                    return ColorUtils.parseColor(color);
                 }
-                return null;
+                const matches = color && color.match && color.match(/\d+/g);
+                return matches ? matches.slice(0,3).map(Number) : null;
             }
         };
     }
@@ -1377,69 +1358,19 @@ class BaseSimulation {
     }
 
     interpolateColor(color1, color2, factor) {
-        // Parse color1 (supports rgb, rgba, and hex formats)
-        let r1, g1, b1;
-
-        if (color1.startsWith('rgb')) {
-            // Handle rgb(r, g, b) or rgba(r, g, b, a) format
-            const match = color1.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-            if (match) {
-                r1 = parseInt(match[1]);
-                g1 = parseInt(match[2]);
-                b1 = parseInt(match[3]);
-            }
-        } else if (color1.startsWith('#')) {
-            // Handle hex format
-            const hex = color1.slice(1);
-            if (hex.length === 3) {
-                r1 = parseInt(hex[0] + hex[0], 16);
-                g1 = parseInt(hex[1] + hex[1], 16);
-                b1 = parseInt(hex[2] + hex[2], 16);
-            } else if (hex.length === 6) {
-                r1 = parseInt(hex.slice(0, 2), 16);
-                g1 = parseInt(hex.slice(2, 4), 16);
-                b1 = parseInt(hex.slice(4, 6), 16);
-            }
+        if (typeof ColorUtils !== 'undefined') {
+            return ColorUtils.interpolateColor(color1, color2, factor);
         }
-
-        // Parse color2 (supports rgb, rgba, and hex formats)
-        let r2, g2, b2;
-
-        if (color2.startsWith('rgb')) {
-            // Handle rgb(r, g, b) or rgba(r, g, b, a) format
-            const match = color2.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-            if (match) {
-                r2 = parseInt(match[1]);
-                g2 = parseInt(match[2]);
-                b2 = parseInt(match[3]);
-            }
-        } else if (color2.startsWith('#')) {
-            // Handle hex format
-            const hex = color2.slice(1);
-            if (hex.length === 3) {
-                r2 = parseInt(hex[0] + hex[0], 16);
-                g2 = parseInt(hex[1] + hex[1], 16);
-                b2 = parseInt(hex[2] + hex[2], 16);
-            } else if (hex.length === 6) {
-                r2 = parseInt(hex.slice(0, 2), 16);
-                g2 = parseInt(hex.slice(2, 4), 16);
-                b2 = parseInt(hex.slice(4, 6), 16);
-            }
-        }
-
-        // Check if both colors were parsed successfully
-        if (r1 !== undefined && g1 !== undefined && b1 !== undefined &&
-            r2 !== undefined && g2 !== undefined && b2 !== undefined) {
-
-            const r = Math.round(r1 + (r2 - r1) * factor);
-            const g = Math.round(g1 + (g2 - g1) * factor);
-            const b = Math.round(b1 + (b2 - b1) * factor);
-
-            return `rgb(${r}, ${g}, ${b})`;
-        }
-
-        // Return original color if parsing failed
-        return color1;
+        // Minimal inline fallback
+        const clamp = (v) => Math.max(0, Math.min(1, v));
+        const f = clamp(factor);
+        const parse = (c) => c.startsWith('#') ? [
+            parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)
+        ] : (c.match(/\d+/g)||[]).slice(0,3).map(Number);
+        const a = parse(color1); const b = parse(color2);
+        if (!a || !b || a.length<3 || b.length<3) return color1;
+        const out = a.map((c1,i)=>Math.round(c1+(b[i]-c1)*f));
+        return `rgb(${out[0]}, ${out[1]}, ${out[2]})`;
     }
 
     // Glow effect utility with performance optimization

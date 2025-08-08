@@ -31,6 +31,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
  - **PerformanceUtils** - Centralised debounce/throttle utilities used across the app
  - **EventFramework (enhanced)** - Declarative and delegated event registration with centralised cleanup
  - **ErrorHandler (new)** - Centralised error handling with simulation-specific strategies and metrics
+  - **ColorUtils (new)** - Centralised colour parsing, HSL→RGB conversion, and colour interpolation used across rendering
 
 ## Quick Start
 
