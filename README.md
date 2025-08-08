@@ -298,5 +298,4 @@ For issues or questions:
 2. Verify all required files are loaded
 3. Ensure you're using a supported browser
 4. Review the test suite for functionality verification
-
-The application is designed to be robust and self-contained, with comprehensive error handling and fallback mechanisms.
+5. If you use Cursor/VS Code on Windows and encounter direnv errors or agent-run command hangs, see this troubleshooting guide: [Fix direnv and shell command hangs in Cursor/VS Code on Windows (Git Bash per‑project)](https://gist.github.com/warwickallen/dd9051ec2462f4f90f5ec9763ca0bf04). This link is included to help Windows users quickly resolve editor/terminal configuration issues without changing global settings.
