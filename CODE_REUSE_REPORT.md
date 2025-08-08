@@ -760,19 +760,24 @@ function createMockContext() {
 - JS: `UIComponentLibrary` now defaults `controlGroup` className to `control-group control-panel`
 - Tests: Updated visibility test to assert class-based visibility, added a new test verifying unified `control-panel` class presence on all containers
 
-### 2. **Modal System Redesign**
+### 2. **Modal System Redesign** ✅ **IMPLEMENTED**
 
-**Current State**: Each simulation has its own modal with similar structure.
+**Current State (before)**: Multiple modal structures and ad-hoc show/hide logic; app code touched `ModalManager` directly.
 
-**Proposed Change**: Single dynamic modal that loads content based on simulation type, with:
+**Change Implemented**: Introduced `UnifiedModalSystem` facade on top of `ModalManager` and `ModalTemplateManager`:
 
-- Unified modal styling
-- Dynamic content loading
-- Consistent interaction patterns
+- Single dynamic modal with template-driven content per simulation type (leveraging existing `ModalTemplateManager`)
+- Simple APIs for the app: `openLearn(simType)`, `openCustom(title, html)`, `openById(id, simType?)`, `close()`
+- Scroll position preserved per simulation via the underlying manager
+- `AlgorithmicPatternGenerator` switched to use the facade for Learn modal operations
 
-**Impact**: Minor visual change but major code reduction and improved maintainability.
+**Impact**: Cleaner call sites and increased reuse; consistent modal behaviour across all usages. Minor or no visual changes.
 
-**Code Reduction**: 150-200 lines
+**Code Reduction**: ~40-60 lines (call-site simplifications and consolidation) in addition to earlier modal HTML consolidation
+
+**Testing**: Extended `test-suite.html` with a new test "UnifiedModalSystem opens custom content" verifying title/content injection and visibility
+
+**Documentation**: Updated `README.md` and `AS-BUILT.md` to describe the new facade and its API
 
 ### 3. **Responsive Layout System**
 
@@ -964,31 +969,31 @@ The implementation should be approached incrementally with comprehensive testing
 4. ✅ **Phase 1.4 COMPLETED**: Simulation-Specific Control Visibility Management implemented (CSS-based visibility system with comprehensive testing)
 5. ✅ **Phase 1.5 COMPLETED**: Event Handler Registration Duplication implemented (EventHandlerFactory with context injection and comprehensive testing)
 
-*✅ **Phase 1 COMPLETE** - All high-priority opportunities implemented and documented*
+_✅ **Phase 1 COMPLETE** - All high-priority opportunities implemented and documented_
 
 6. ✅ **Phase 2.1 COMPLETED**: Modal Content Duplication implemented (ModalTemplateManager with dynamic content injection, scroll position management, and comprehensive testing)
 7. ✅ **Phase 2.4 COMPLETED**: Control Visibility Management implemented (CSS-based visibility system with comprehensive testing)
 8. ✅ **Phase 2.2 COMPLETED**: UI Component Library Enhancement implemented (comprehensive component library with lifecycle management and 18 test cases)
 
-*✅ **Phase 2 COMPLETE**: All medium-priority UI enhancement opportunities have been implemented and documented*
+_✅ **Phase 2 COMPLETE**: All medium-priority UI enhancement opportunities have been implemented and documented_
 
 9. ✅ **Phase 3.1 COMPLETED**: Simulation State Management implemented (unified StateManager with serializers; resize/state preservation verified)
 10. ✅ **Phase 3.2 COMPLETED**: Performance Optimisation Consolidation implemented (PerformanceUtils; EventFramework delegation)
 11. ✅ **Phase 3.3 COMPLETED**: Event Framework Enhancement implemented (declarative/delegated APIs; ModalManager integration)
 12. ✅ **Phase 3.4 COMPLETED**: Error Handling Consolidation implemented (central ErrorHandler; metrics and tests)
 
-*✅ **Phase 3 COMPLETE***
+_✅ **Phase 3 COMPLETE**_
 
 12. ✅ **Phase 4.1 COMPLETED**: Test Pattern Duplication implemented (TestUtilityFactory added, tests refactored, suite integration)
 13. ✅ **Phase 4.2 COMPLETED**: Utility Function Consolidation implemented (`ColorUtils` centralised; simulations shifted to shared utilities; tests added)
 14. ✅ **Phase 4.3 COMPLETED**: Constants Consolidation implemented (AppConstants; refactors; tests and docs updated)
 15. ✅ **Phase 4.4 COMPLETED**: Documentation Consolidation (standardised JSDoc patterns via `types.js`)
 
-*✅ **Phase 4 COMPLETE***
+_✅ **Phase 4 COMPLETE**_
 
 16. ✅ **Phase 5.1 COMPLETED**: Unified Control Panel Design implemented (shared `control-panel` class, unified CSS rules, UIComponentLibrary default update, new test, documentation updates)
-17. ▶ **Phase 5 NEXT**: Visual/Functional changes
-    - Modal System Redesign
+17. ✅ **Phase 5.2 COMPLETED**: Modal System Redesign implemented (UnifiedModalSystem facade; tests and docs updated)
+18. ▶ **Phase 5 NEXT**: Visual/Functional changes
     - Responsive Layout System
 
 ---

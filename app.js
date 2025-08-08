@@ -3173,6 +3173,76 @@ class ModalManager {
   }
 }
 
+// Unified Modal System - Facade over ModalManager and ModalTemplateManager
+class UnifiedModalSystem {
+  constructor(eventFramework = null, modalManager = null) {
+    // Reuse an existing ModalManager if provided (for maximum reuse/testing compatibility)
+    this.modalManager = modalManager || new ModalManager(eventFramework);
+    this.eventFramework = eventFramework || null;
+    this.dynamicModalId = this.modalManager.dynamicModalId;
+  }
+
+  // Ensure the dynamic modal is registered
+  ensureDynamicRegistered() {
+    if (!this.modalManager.modals.has(this.dynamicModalId)) {
+      this.modalManager.register(this.dynamicModalId);
+    }
+  }
+
+  // Open the Learn modal for a given simulation type
+  openLearn(simType) {
+    if (!simType) return;
+    this.modalManager.registerDynamicModal(simType);
+    this.modalManager.show(this.dynamicModalId, simType);
+  }
+
+  // Open a modal by id (optionally with simType for dynamic content injection)
+  openById(modalId, simType = null) {
+    this.modalManager.register(modalId);
+    this.modalManager.show(modalId, simType);
+  }
+
+  // Close a modal by id
+  closeById(modalId) {
+    this.modalManager.hide(modalId);
+  }
+
+  // Close the dynamic modal
+  close() {
+    this.closeById(this.dynamicModalId);
+  }
+
+  // Set modal title by id
+  setTitleById(modalId, title) {
+    const modalConfig = this.modalManager.modals.get(modalId);
+    const el = modalConfig && modalConfig.element;
+    if (!el) return;
+    const titleEl = el.querySelector("[data-modal-title]");
+    if (titleEl) titleEl.textContent = title;
+  }
+
+  // Set modal content by id (expects HTML string)
+  setContentById(modalId, html) {
+    const modalConfig = this.modalManager.modals.get(modalId);
+    const el = modalConfig && modalConfig.element;
+    if (!el) return;
+    const contentEl = el.querySelector("[data-modal-content]");
+    if (contentEl) contentEl.innerHTML = html;
+  }
+
+  // Convenience: open the dynamic modal with custom title/content
+  openCustom(title, htmlContent) {
+    this.ensureDynamicRegistered();
+    this.setTitleById(this.dynamicModalId, title);
+    this.setContentById(this.dynamicModalId, htmlContent);
+    this.modalManager.show(this.dynamicModalId);
+  }
+
+  // Expose underlying manager for advanced operations/tests
+  getManager() {
+    return this.modalManager;
+  }
+}
 // Main application class with performance optimization
 class AlgorithmicPatternGenerator {
   constructor() {
@@ -3197,6 +3267,10 @@ class AlgorithmicPatternGenerator {
     // Initialize managers
     this.eventFramework = new EventFramework();
     this.modalManager = new ModalManager(this.eventFramework);
+    this.modalSystem = new UnifiedModalSystem(
+      this.eventFramework,
+      this.modalManager
+    );
     this.eventHandlerFactory = new EventHandlerFactory(this.eventFramework);
     this.controlManager = new ControlManager(this.eventFramework);
     this.keyboardHandler = new KeyboardHandler(this);
@@ -3575,16 +3649,11 @@ class AlgorithmicPatternGenerator {
   showLearnModal(simType) {
     // Always use the current simulation type for the Learn modal
     const currentSimType = this.currentType;
-
-    // Register dynamic modal for this simulation type
-    this.modalManager.registerDynamicModal(currentSimType);
-
-    // Show the dynamic modal with the current simulation type
-    this.modalManager.show(this.modalManager.dynamicModalId, currentSimType);
+    this.modalSystem.openLearn(currentSimType);
   }
 
   hideLearnModal(simType) {
-    this.modalManager.hide(this.modalManager.dynamicModalId);
+    this.modalSystem.close();
   }
 
   // Generic add ant handler

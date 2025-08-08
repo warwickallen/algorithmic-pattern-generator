@@ -700,6 +700,31 @@ Template-based modal content management system:
 - Content injection with robust element selection
 - Extensibility for adding new simulations and modal content templates
 
+#### UnifiedModalSystem (Facade)
+
+To maximise reuse and present a simple API to the application, a small facade wraps the existing modal stack:
+
+Features:
+
+- `openLearn(simType)`: ensures the dynamic modal is registered and injects content via `ModalTemplateManager`
+- `openCustom(title, htmlContent)`: opens the same modal container with arbitrary content and title
+- `openById(id, simType?)`: convenience open for any modal id with optional simulation content injection
+- `close()`: closes the active dynamic modal
+- Delegates to `ModalManager` which retains scroll state per simulation type
+
+Usage (excerpt from `AlgorithmicPatternGenerator`):
+
+```javascript
+this.modalManager = new ModalManager(this.eventFramework);
+this.modalSystem = new UnifiedModalSystem(
+  this.eventFramework,
+  this.modalManager
+);
+
+// Show Learn modal for current simulation
+this.modalSystem.openLearn(this.currentType);
+```
+
 **Core Methods:**
 
 ```javascript

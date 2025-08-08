@@ -25,7 +25,10 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **TestUtilityFactory** - Centralised test helpers for mock canvas/ctx and simulation creation
 - **CSS-Based Control Visibility** - Declarative control visibility management using CSS classes and data attributes
 - **EventHandlerFactory** - Template-based event handler creation and registration system
-- **ModalTemplateManager** - Template-based modal content management with dynamic content injection and scroll position management
+- **Modal System**
+  - **ModalTemplateManager** - Template-based content with dynamic injection and scroll position management
+  - **ModalManager** - Rendering/visibility, input handling, and scroll state per simulation
+  - **UnifiedModalSystem (new)** - Facade providing simple APIs: `openLearn(simType)`, `openCustom(title, html)`, `openById(id, simType?)`, `close()`
 - **UIComponentLibrary** - Comprehensive UI component library with 8 component types, lifecycle management, and factory methods
 - **CSS Utility Framework** - Design token system with utility classes for glass effects, layout, and performance optimization
 - **Unified Control Panel Design** - Consistent control panel styling via a shared `control-panel` class across all control groups
