@@ -1,965 +1,1011 @@
 // UI Component Library (R3 Implementation)
 class SharedComponents {
-    // Common slider component with performance optimization
-    static createSlider(config) {
-        const { id, min, max, step, value, label, format } = config;
-        return {
-            element: document.getElementById(id),
-            valueElement: document.getElementById(`${id}-value`),
-            label,
-            format: format || ((val) => val.toString()),
-            range: { min, max, step, default: value }
-        };
-    }
+  // Common slider component with performance optimization
+  static createSlider(config) {
+    const { id, min, max, step, value, label, format } = config;
+    return {
+      element: document.getElementById(id),
+      valueElement: document.getElementById(`${id}-value`),
+      label,
+      format: format || ((val) => val.toString()),
+      range: { min, max, step, default: value },
+    };
+  }
 
-    // Common button component
-    static createButton(id, label, className = 'btn secondary') {
-        const element = document.getElementById(id);
-        if (element) {
-            element.textContent = label;
-            element.className = className;
+  // Common button component
+  static createButton(id, label, className = "btn secondary") {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = label;
+      element.className = className;
+    }
+    return element;
+  }
+
+  // Common control group wrapper
+  static createControlGroup(controls) {
+    return controls
+      .map((control) => {
+        if (control.type === "slider") {
+          return this.createSlider(control);
+        } else if (control.type === "button") {
+          return this.createButton(
+            control.id,
+            control.label,
+            control.className
+          );
         }
-        return element;
-    }
-
-    // Common control group wrapper
-    static createControlGroup(controls) {
-        return controls.map(control => {
-            if (control.type === 'slider') {
-                return this.createSlider(control);
-            } else if (control.type === 'button') {
-                return this.createButton(control.id, control.label, control.className);
-            }
-            return null;
-        }).filter(Boolean);
-    }
+        return null;
+      })
+      .filter(Boolean);
+  }
 }
 
 // Enhanced UI Component Library with comprehensive lifecycle management
 class UIComponentLibrary {
-    constructor(eventFramework) {
-        this.components = new Map();
-        this.lifecycleHooks = new Map();
-        this.componentTypes = new Set();
-        this.defaultConfigs = new Map();
-        this.eventFramework = eventFramework;
-        this.initDefaultConfigs();
-    }
-
-    // Initialize default configurations for all component types
-    initDefaultConfigs() {
-        const speedDefaults = (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED : { min: 0, max: 100, step: 1, value: 50 });
-        this.defaultConfigs.set('slider', {
-            min: speedDefaults.min,
-            max: speedDefaults.max,
-            step: speedDefaults.step,
-            value: speedDefaults.value,
-            format: (val) => val.toString(),
-            className: 'slider'
-        });
-
-        this.defaultConfigs.set('button', {
-            className: 'btn secondary',
-            disabled: false,
-            pressed: false
-        });
-
-        this.defaultConfigs.set('select', {
-            className: 'simulation-select',
-            placeholder: 'Select option...'
-        });
-
-        this.defaultConfigs.set('controlGroup', {
-            className: 'control-group',
-            layout: 'horizontal', // horizontal, vertical, grid
-            gap: '0.5rem',
-            visible: true
-        });
-
-        this.defaultConfigs.set('statusDisplay', {
-            className: 'status-info',
-            layout: 'horizontal',
-            gap: '0.5rem',
-            format: (value) => value.toString()
-        });
-
-        this.defaultConfigs.set('modal', {
-            className: 'modal',
-            backdrop: true,
-            closeOnEscape: true,
-            closeOnBackdrop: true,
-            animation: true
-        });
-
-        this.defaultConfigs.set('label', {
-            className: 'control-label',
-            required: false
-        });
-
-        this.defaultConfigs.set('container', {
-            className: 'ui-container',
-            layout: 'horizontal',
-            gap: '0.5rem',
-            visible: true
-        });
-    }
-
-    // Create a standardized slider component with enhanced features
-    createSlider(config) {
-        const defaultConfig = this.defaultConfigs.get('slider');
-        const mergedConfig = { ...defaultConfig, ...config };
-
-        const component = {
-            type: 'slider',
-            id: mergedConfig.id,
-            element: document.getElementById(mergedConfig.id),
-            valueElement: document.getElementById(mergedConfig.valueElementId),
-            config: mergedConfig,
-            state: {
-                value: mergedConfig.value || mergedConfig.min,
-                isEnabled: !mergedConfig.disabled,
-                isVisible: true,
-                isDragging: false
-            },
-            methods: {
-                setValue: (value) => this.setSliderValue(component, value),
-                getValue: () => this.getSliderValue(component),
-                enable: () => this.enableComponent(component),
-                disable: () => this.disableComponent(component),
-                show: () => this.showComponent(component),
-                hide: () => this.hideComponent(component),
-                update: (newConfig) => this.updateSlider(component, newConfig),
-                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
-                removeEventListener: (event) => this.removeComponentEventListener(component, event)
-            }
-        };
-
-        this.components.set(mergedConfig.id, component);
-        this.componentTypes.add('slider');
-        this.initializeComponent(component);
-        return component;
-    }
-
-    // Create a standardized button component with enhanced features
-    createButton(config) {
-        const defaultConfig = this.defaultConfigs.get('button');
-        const mergedConfig = { ...defaultConfig, ...config };
-
-        const component = {
-            type: 'button',
-            id: mergedConfig.id,
-            element: document.getElementById(mergedConfig.id),
-            config: mergedConfig,
-            state: {
-                isEnabled: !mergedConfig.disabled,
-                isPressed: mergedConfig.pressed || false,
-                isVisible: true,
-                text: mergedConfig.label || mergedConfig.text || ''
-            },
-            methods: {
-                setText: (text) => this.setButtonText(component, text),
-                getText: () => this.getButtonText(component),
-                enable: () => this.enableComponent(component),
-                disable: () => this.disableComponent(component),
-                show: () => this.showComponent(component),
-                hide: () => this.hideComponent(component),
-                press: () => this.pressButton(component),
-                release: () => this.releaseButton(component),
-                toggle: () => this.toggleButton(component),
-                update: (newConfig) => this.updateButton(component, newConfig),
-                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
-                removeEventListener: (event) => this.removeComponentEventListener(component, event)
-            }
-        };
-
-        this.components.set(mergedConfig.id, component);
-        this.componentTypes.add('button');
-        this.initializeComponent(component);
-        return component;
-    }
-
-    // Create a select dropdown component
-    createSelect(config) {
-        const defaultConfig = this.defaultConfigs.get('select');
-        const mergedConfig = { ...defaultConfig, ...config };
-
-        const component = {
-            type: 'select',
-            id: mergedConfig.id,
-            element: document.getElementById(mergedConfig.id),
-            config: mergedConfig,
-            state: {
-                value: mergedConfig.value || '',
-                isEnabled: !mergedConfig.disabled,
-                isVisible: true,
-                options: mergedConfig.options || []
-            },
-            methods: {
-                setValue: (value) => this.setSelectValue(component, value),
-                getValue: () => this.getSelectValue(component),
-                setOptions: (options) => this.setSelectOptions(component, options),
-                getOptions: () => this.getSelectOptions(component),
-                enable: () => this.enableComponent(component),
-                disable: () => this.disableComponent(component),
-                show: () => this.showComponent(component),
-                hide: () => this.hideComponent(component),
-                update: (newConfig) => this.updateSelect(component, newConfig),
-                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
-                removeEventListener: (event) => this.removeComponentEventListener(component, event)
-            }
-        };
-
-        this.components.set(mergedConfig.id, component);
-        this.componentTypes.add('select');
-        this.initializeComponent(component);
-        return component;
-    }
-
-    // Create a control group component with enhanced layout options
-    createControlGroup(groupId, controls = []) {
-        const defaultConfig = this.defaultConfigs.get('controlGroup');
-        const mergedConfig = { ...defaultConfig, ...controls };
-
-        const component = {
-            type: 'controlGroup',
-            id: groupId,
-            element: document.getElementById(groupId),
-            controls: controls,
-            config: mergedConfig,
-            state: {
-                isVisible: mergedConfig.visible,
-                isEnabled: true,
-                layout: mergedConfig.layout,
-                gap: mergedConfig.gap
-            },
-            methods: {
-                show: () => this.showControlGroup(component),
-                hide: () => this.hideControlGroup(component),
-                enable: () => this.enableComponent(component),
-                disable: () => this.disableComponent(component),
-                setLayout: (layout) => this.setControlGroupLayout(component, layout),
-                addControl: (control) => this.addControlToGroup(component, control),
-                removeControl: (controlId) => this.removeControlFromGroup(component, controlId),
-                updateControls: (newControls) => this.updateControlGroup(component, newControls),
-                getControls: () => this.getControlGroupControls(component),
-                update: (newConfig) => this.updateControlGroup(component, newConfig)
-            }
-        };
-
-        this.components.set(groupId, component);
-        this.componentTypes.add('controlGroup');
-        this.initializeComponent(component);
-        return component;
-    }
-
-    // Create a status display component
-    createStatusDisplay(config) {
-        const defaultConfig = this.defaultConfigs.get('statusDisplay');
-        const mergedConfig = { ...defaultConfig, ...config };
-
-        const component = {
-            type: 'statusDisplay',
-            id: mergedConfig.id,
-            element: document.getElementById(mergedConfig.id),
-            config: mergedConfig,
-            state: {
-                values: mergedConfig.values || {},
-                isVisible: true,
-                layout: mergedConfig.layout,
-                gap: mergedConfig.gap
-            },
-            methods: {
-                setValue: (key, value) => this.setStatusValue(component, key, value),
-                getValue: (key) => this.getStatusValue(component, key),
-                setValues: (values) => this.setStatusValues(component, values),
-                getValues: () => this.getStatusValues(component),
-                show: () => this.showComponent(component),
-                hide: () => this.hideComponent(component),
-                setLayout: (layout) => this.setStatusLayout(component, layout),
-                update: (newConfig) => this.updateStatusDisplay(component, newConfig),
-                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
-                removeEventListener: (event) => this.removeComponentEventListener(component, event)
-            }
-        };
-
-        this.components.set(mergedConfig.id, component);
-        this.componentTypes.add('statusDisplay');
-        this.initializeComponent(component);
-        return component;
-    }
-
-    // Create a modal component
-    createModal(config) {
-        const defaultConfig = this.defaultConfigs.get('modal');
-        const mergedConfig = { ...defaultConfig, ...config };
-
-        const component = {
-            type: 'modal',
-            id: mergedConfig.id,
-            element: document.getElementById(mergedConfig.id),
-            config: mergedConfig,
-            state: {
-                isVisible: false,
-                isOpen: false,
-                title: mergedConfig.title || '',
-                content: mergedConfig.content || '',
-                backdrop: mergedConfig.backdrop,
-                closeOnEscape: mergedConfig.closeOnEscape,
-                closeOnBackdrop: mergedConfig.closeOnBackdrop,
-                animation: mergedConfig.animation
-            },
-            methods: {
-                open: () => this.openModal(component),
-                close: () => this.closeModal(component),
-                toggle: () => this.toggleModal(component),
-                setContent: (content) => this.setModalContent(component, content),
-                getContent: () => this.getModalContent(component),
-                setTitle: (title) => this.setModalTitle(component, title),
-                getTitle: () => this.getModalTitle(component),
-                update: (newConfig) => this.updateModal(component, newConfig),
-                addEventListener: (event, handler) => this.addComponentEventListener(component, event, handler),
-                removeEventListener: (event) => this.removeComponentEventListener(component, event)
-            }
-        };
-
-        this.components.set(mergedConfig.id, component);
-        this.componentTypes.add('modal');
-        this.initializeComponent(component);
-        return component;
-    }
-
-    // Create a label component
-    createLabel(config) {
-        const defaultConfig = this.defaultConfigs.get('label');
-        const mergedConfig = { ...defaultConfig, ...config };
-
-        const component = {
-            type: 'label',
-            id: mergedConfig.id,
-            element: document.getElementById(mergedConfig.id),
-            config: mergedConfig,
-            state: {
-                text: mergedConfig.text || mergedConfig.label || '',
-                isVisible: true,
-                required: mergedConfig.required
-            },
-            methods: {
-                setText: (text) => this.setLabelText(component, text),
-                getText: () => this.getLabelText(component),
-                show: () => this.showComponent(component),
-                hide: () => this.hideComponent(component),
-                setRequired: (required) => this.setLabelRequired(component, required),
-                update: (newConfig) => this.updateLabel(component, newConfig)
-            }
-        };
-
-        this.components.set(mergedConfig.id, component);
-        this.componentTypes.add('label');
-        this.initializeComponent(component);
-        return component;
-    }
-
-    // Create a container component for layout management
-    createContainer(config) {
-        const defaultConfig = this.defaultConfigs.get('container');
-        const mergedConfig = { ...defaultConfig, ...config };
-
-        const component = {
-            type: 'container',
-            id: mergedConfig.id,
-            element: document.getElementById(mergedConfig.id),
-            config: mergedConfig,
-            state: {
-                isVisible: mergedConfig.visible,
-                layout: mergedConfig.layout,
-                gap: mergedConfig.gap,
-                children: mergedConfig.children || []
-            },
-            methods: {
-                show: () => this.showComponent(component),
-                hide: () => this.hideComponent(component),
-                setLayout: (layout) => this.setContainerLayout(component, layout),
-                addChild: (childId) => this.addContainerChild(component, childId),
-                removeChild: (childId) => this.removeChildFromGroup(component, childId),
-                getChildren: () => this.getContainerChildren(component),
-                update: (newConfig) => this.updateContainer(component, newConfig)
-            }
-        };
-
-        this.components.set(mergedConfig.id, component);
-        this.componentTypes.add('container');
-        this.initializeComponent(component);
-        return component;
-    }
-
-    // Component lifecycle management
-    initializeComponent(component) {
-        switch (component.type) {
-            case 'slider':
-                this.initializeSlider(component);
-                break;
-            case 'button':
-                this.initializeButton(component);
-                break;
-            case 'select':
-                this.initializeSelect(component);
-                break;
-            case 'controlGroup':
-                this.initializeControlGroup(component);
-                break;
-            case 'statusDisplay':
-                this.initializeStatusDisplay(component);
-                break;
-            case 'modal':
-                this.initializeModal(component);
-                break;
-            case 'label':
-                this.initializeLabel(component);
-                break;
-            case 'container':
-                this.initializeContainer(component);
-                break;
-        }
-
-        // Register lifecycle hooks
-        this.registerLifecycleHooks(component);
-
-        // Trigger onMount hook
-        const hooks = this.lifecycleHooks.get(component.id);
-        if (hooks && hooks.onMount) {
-            hooks.onMount();
-        }
-    }
-
-    // Initialize specific component types
-    initializeSlider(component) {
-        if (component.element) {
-            component.element.min = component.config.min;
-            component.element.max = component.config.max;
-            component.element.step = component.config.step;
-            component.element.value = component.state.value;
-            component.element.className = component.config.className;
-
-            if (component.valueElement) {
-                component.valueElement.textContent = component.config.format(component.state.value);
-            }
-        }
-    }
-
-    initializeButton(component) {
-        if (component.element) {
-            component.element.textContent = component.state.text;
-            component.element.className = component.config.className;
-            component.element.disabled = !component.state.isEnabled;
-
-            if (component.state.isPressed) {
-                component.element.classList.add('pressed');
-            }
-        }
-    }
-
-    initializeSelect(component) {
-        if (component.element) {
-            component.element.className = component.config.className;
-            component.element.disabled = !component.state.isEnabled;
-
-            if (component.state.options.length > 0) {
-                this.setSelectOptions(component, component.state.options);
-            }
-
-            if (component.state.value) {
-                component.element.value = component.state.value;
-            }
-        }
-    }
-
-    initializeControlGroup(component) {
-        if (component.element) {
-            component.element.style.display = component.state.isVisible ? 'flex' : 'none';
-            component.element.className = component.config.className;
-
-            // Apply layout styles
-            if (component.state.layout === 'vertical') {
-                component.element.style.flexDirection = 'column';
-            } else if (component.state.layout === 'grid') {
-                component.element.style.display = 'grid';
-            }
-
-            component.element.style.gap = component.state.gap;
-        }
-    }
-
-    initializeStatusDisplay(component) {
-        if (component.element) {
-            component.element.style.display = component.state.isVisible ? 'flex' : 'none';
-            component.element.className = component.config.className;
-
-            if (component.state.layout === 'vertical') {
-                component.element.style.flexDirection = 'column';
-            }
-
-            component.element.style.gap = component.state.gap;
-        }
-    }
-
-    initializeModal(component) {
-        if (component.element) {
-            component.element.className = component.config.className;
-            component.element.style.display = 'none';
-        }
-    }
-
-    initializeLabel(component) {
-        if (component.element) {
-            component.element.textContent = component.state.text;
-            component.element.className = component.config.className;
-            component.element.style.display = component.state.isVisible ? 'block' : 'none';
-
-            if (component.state.required) {
-                component.element.classList.add('required');
-            }
-        }
-    }
-
-    initializeContainer(component) {
-        if (component.element) {
-            component.element.style.display = component.state.isVisible ? 'flex' : 'none';
-            component.element.className = component.config.className;
-
-            if (component.state.layout === 'vertical') {
-                component.element.style.flexDirection = 'column';
-            } else if (component.state.layout === 'grid') {
-                component.element.style.display = 'grid';
-            }
-
-            component.element.style.gap = component.state.gap;
-        }
-    }
-
-    // Component state management methods
-    setSliderValue(component, value) {
-        if (component.element) {
-            component.state.value = value;
-            component.element.value = value;
-
-            if (component.valueElement) {
-                component.valueElement.textContent = component.config.format(value);
-            }
-
-            this.triggerUpdateHook(component);
-        }
-    }
-
-    getSliderValue(component) {
-        return component.state.value;
-    }
-
-    setButtonText(component, text) {
-        if (component.element) {
-            component.state.text = text;
-            component.element.textContent = text;
-            this.triggerUpdateHook(component);
-        }
-    }
-
-    getButtonText(component) {
-        return component.state.text;
-    }
-
-    setSelectValue(component, value) {
-        if (component.element) {
-            component.state.value = value;
-            component.element.value = value;
-            this.triggerUpdateHook(component);
-        }
-    }
-
-    getSelectValue(component) {
-        return component.state.value;
-    }
-
-    setSelectOptions(component, options) {
-        if (component.element) {
-            component.state.options = options;
-            component.element.innerHTML = '';
-
-            options.forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option.value;
-                optionElement.textContent = option.label || option.text;
-                component.element.appendChild(optionElement);
-            });
-
-            this.triggerUpdateHook(component);
-        }
-    }
-
-    getSelectOptions(component) {
-        return component.state.options;
-    }
-
-    setStatusValue(component, key, value) {
-        component.state.values[key] = value;
-
-        if (component.element) {
-            const valueElement = component.element.querySelector(`[data-key="${key}"]`);
-            if (valueElement) {
-                valueElement.textContent = component.config.format(value);
-            }
-        }
-
-        this.triggerUpdateHook(component);
-    }
-
-    getStatusValue(component, key) {
-        return component.state.values[key];
-    }
-
-    setStatusValues(component, values) {
-        component.state.values = { ...values };
-
-        if (component.element) {
-            Object.entries(values).forEach(([key, value]) => {
-                const valueElement = component.element.querySelector(`[data-key="${key}"]`);
-                if (valueElement) {
-                    valueElement.textContent = component.config.format(value);
-                }
-            });
-        }
-
-        this.triggerUpdateHook(component);
-    }
-
-    getStatusValues(component) {
-        return { ...component.state.values };
-    }
-
-    setLabelText(component, text) {
-        if (component.element) {
-            component.state.text = text;
-            component.element.textContent = text;
-            this.triggerUpdateHook(component);
-        }
-    }
-
-    getLabelText(component) {
-        return component.state.text;
-    }
-
-    // Component visibility and state management
-    enableComponent(component) {
-        component.state.isEnabled = true;
-        if (component.element) {
-            component.element.disabled = false;
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    disableComponent(component) {
-        component.state.isEnabled = false;
-        if (component.element) {
-            component.element.disabled = true;
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    showComponent(component) {
-        component.state.isVisible = true;
-        if (component.element) {
-            component.element.style.display = component.type === 'label' ? 'block' : 'flex';
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    hideComponent(component) {
-        component.state.isVisible = false;
-        if (component.element) {
-            component.element.style.display = 'none';
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    showControlGroup(component) {
-        this.showComponent(component);
-    }
-
-    hideControlGroup(component) {
-        this.hideComponent(component);
-    }
-
-    pressButton(component) {
-        component.state.isPressed = true;
-        if (component.element) {
-            component.element.classList.add('pressed');
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    releaseButton(component) {
-        component.state.isPressed = false;
-        if (component.element) {
-            component.element.classList.remove('pressed');
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    toggleButton(component) {
-        if (component.state.isPressed) {
-            this.releaseButton(component);
-        } else {
-            this.pressButton(component);
-        }
-    }
-
-    // Modal-specific methods
-    openModal(component) {
-        if (component.element) {
-            component.state.isVisible = true;
-            component.state.isOpen = true;
-            component.element.style.display = 'block';
-
-            if (component.state.backdrop) {
-                this.createModalBackdrop(component);
-            }
-
-            if (component.state.closeOnEscape) {
-                this.setupModalEscapeHandler(component);
-            }
-
-            this.triggerUpdateHook(component);
-        }
-    }
-
-    closeModal(component) {
-        if (component.element) {
-            component.state.isVisible = false;
-            component.state.isOpen = false;
-            component.element.style.display = 'none';
-
-            this.removeModalBackdrop(component);
-            this.removeModalEscapeHandler(component);
-
-            this.triggerUpdateHook(component);
-        }
-    }
-
-    toggleModal(component) {
-        if (component.state.isOpen) {
-            this.closeModal(component);
-        } else {
-            this.openModal(component);
-        }
-    }
-
-    setModalContent(component, content) {
-        if (component.element) {
-            const contentElement = component.element.querySelector('[data-modal-content]');
-            if (contentElement) {
-                contentElement.innerHTML = content;
-            }
-        }
-    }
-
-    getModalContent(component) {
-        if (component.element) {
-            const contentElement = component.element.querySelector('[data-modal-content]');
-            return contentElement ? contentElement.innerHTML : '';
-        }
-        return '';
-    }
-
-    setModalTitle(component, title) {
-        if (component.element) {
-            const titleElement = component.element.querySelector('[data-modal-title]');
-            if (titleElement) {
-                titleElement.textContent = title;
-            }
-        }
-    }
-
-    getModalTitle(component) {
-        if (component.element) {
-            const titleElement = component.element.querySelector('[data-modal-title]');
-            return titleElement ? titleElement.textContent : '';
-        }
-        return '';
-    }
-
-    // Control group specific methods
-    setControlGroupLayout(component, layout) {
-        component.state.layout = layout;
-        if (component.element) {
-            if (layout === 'vertical') {
-                component.element.style.flexDirection = 'column';
-            } else if (layout === 'grid') {
-                component.element.style.display = 'grid';
-            } else {
-                component.element.style.display = 'flex';
-                component.element.style.flexDirection = 'row';
-            }
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    addControlToGroup(component, control) {
-        component.state.children.push(control);
-        this.triggerUpdateHook(component);
-    }
-
-    removeControlFromGroup(component, controlId) {
-        component.state.children = component.state.children.filter(child => child.id !== controlId);
-        this.triggerUpdateHook(component);
-    }
-
-    getControlGroupControls(component) {
-        return [...component.state.children];
-    }
-
-    // Status display specific methods
-    setStatusLayout(component, layout) {
-        component.state.layout = layout;
-        if (component.element) {
-            if (layout === 'vertical') {
-                component.element.style.flexDirection = 'column';
-            } else {
-                component.element.style.flexDirection = 'row';
-            }
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    // Container specific methods
-    setContainerLayout(component, layout) {
-        component.state.layout = layout;
-        if (component.element) {
-            if (layout === 'vertical') {
-                component.element.style.flexDirection = 'column';
-            } else if (layout === 'grid') {
-                component.element.style.display = 'grid';
-            } else {
-                component.element.style.display = 'flex';
-                component.element.style.flexDirection = 'row';
-            }
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    addContainerChild(component, childId) {
-        component.state.children.push(childId);
-        this.triggerUpdateHook(component);
-    }
-
-    removeContainerChild(component, childId) {
-        component.state.children = component.state.children.filter(id => id !== childId);
-        this.triggerUpdateHook(component);
-    }
-
-    getContainerChildren(component) {
-        return [...component.state.children];
-    }
-
-    // Label specific methods
-    setLabelRequired(component, required) {
-        component.state.required = required;
-        if (component.element) {
-            if (required) {
-                component.element.classList.add('required');
-            } else {
-                component.element.classList.remove('required');
-            }
-        }
-        this.triggerUpdateHook(component);
-    }
-
-    // Component update methods
-    updateSlider(component, newConfig) {
-        Object.assign(component.config, newConfig);
+  constructor(eventFramework) {
+    this.components = new Map();
+    this.lifecycleHooks = new Map();
+    this.componentTypes = new Set();
+    this.defaultConfigs = new Map();
+    this.eventFramework = eventFramework;
+    this.initDefaultConfigs();
+  }
+
+  // Initialize default configurations for all component types
+  initDefaultConfigs() {
+    const speedDefaults =
+      typeof AppConstants !== "undefined"
+        ? AppConstants.UISliders.SPEED
+        : { min: 0, max: 100, step: 1, value: 50 };
+    this.defaultConfigs.set("slider", {
+      min: speedDefaults.min,
+      max: speedDefaults.max,
+      step: speedDefaults.step,
+      value: speedDefaults.value,
+      format: (val) => val.toString(),
+      className: "slider",
+    });
+
+    this.defaultConfigs.set("button", {
+      className: "btn secondary",
+      disabled: false,
+      pressed: false,
+    });
+
+    this.defaultConfigs.set("select", {
+      className: "simulation-select",
+      placeholder: "Select option...",
+    });
+
+    this.defaultConfigs.set("controlGroup", {
+      className: "control-group control-panel",
+      layout: "horizontal", // horizontal, vertical, grid
+      gap: "0.5rem",
+      visible: true,
+    });
+
+    this.defaultConfigs.set("statusDisplay", {
+      className: "status-info",
+      layout: "horizontal",
+      gap: "0.5rem",
+      format: (value) => value.toString(),
+    });
+
+    this.defaultConfigs.set("modal", {
+      className: "modal",
+      backdrop: true,
+      closeOnEscape: true,
+      closeOnBackdrop: true,
+      animation: true,
+    });
+
+    this.defaultConfigs.set("label", {
+      className: "control-label",
+      required: false,
+    });
+
+    this.defaultConfigs.set("container", {
+      className: "ui-container",
+      layout: "horizontal",
+      gap: "0.5rem",
+      visible: true,
+    });
+  }
+
+  // Create a standardized slider component with enhanced features
+  createSlider(config) {
+    const defaultConfig = this.defaultConfigs.get("slider");
+    const mergedConfig = { ...defaultConfig, ...config };
+
+    const component = {
+      type: "slider",
+      id: mergedConfig.id,
+      element: document.getElementById(mergedConfig.id),
+      valueElement: document.getElementById(mergedConfig.valueElementId),
+      config: mergedConfig,
+      state: {
+        value: mergedConfig.value || mergedConfig.min,
+        isEnabled: !mergedConfig.disabled,
+        isVisible: true,
+        isDragging: false,
+      },
+      methods: {
+        setValue: (value) => this.setSliderValue(component, value),
+        getValue: () => this.getSliderValue(component),
+        enable: () => this.enableComponent(component),
+        disable: () => this.disableComponent(component),
+        show: () => this.showComponent(component),
+        hide: () => this.hideComponent(component),
+        update: (newConfig) => this.updateSlider(component, newConfig),
+        addEventListener: (event, handler) =>
+          this.addComponentEventListener(component, event, handler),
+        removeEventListener: (event) =>
+          this.removeComponentEventListener(component, event),
+      },
+    };
+
+    this.components.set(mergedConfig.id, component);
+    this.componentTypes.add("slider");
+    this.initializeComponent(component);
+    return component;
+  }
+
+  // Create a standardized button component with enhanced features
+  createButton(config) {
+    const defaultConfig = this.defaultConfigs.get("button");
+    const mergedConfig = { ...defaultConfig, ...config };
+
+    const component = {
+      type: "button",
+      id: mergedConfig.id,
+      element: document.getElementById(mergedConfig.id),
+      config: mergedConfig,
+      state: {
+        isEnabled: !mergedConfig.disabled,
+        isPressed: mergedConfig.pressed || false,
+        isVisible: true,
+        text: mergedConfig.label || mergedConfig.text || "",
+      },
+      methods: {
+        setText: (text) => this.setButtonText(component, text),
+        getText: () => this.getButtonText(component),
+        enable: () => this.enableComponent(component),
+        disable: () => this.disableComponent(component),
+        show: () => this.showComponent(component),
+        hide: () => this.hideComponent(component),
+        press: () => this.pressButton(component),
+        release: () => this.releaseButton(component),
+        toggle: () => this.toggleButton(component),
+        update: (newConfig) => this.updateButton(component, newConfig),
+        addEventListener: (event, handler) =>
+          this.addComponentEventListener(component, event, handler),
+        removeEventListener: (event) =>
+          this.removeComponentEventListener(component, event),
+      },
+    };
+
+    this.components.set(mergedConfig.id, component);
+    this.componentTypes.add("button");
+    this.initializeComponent(component);
+    return component;
+  }
+
+  // Create a select dropdown component
+  createSelect(config) {
+    const defaultConfig = this.defaultConfigs.get("select");
+    const mergedConfig = { ...defaultConfig, ...config };
+
+    const component = {
+      type: "select",
+      id: mergedConfig.id,
+      element: document.getElementById(mergedConfig.id),
+      config: mergedConfig,
+      state: {
+        value: mergedConfig.value || "",
+        isEnabled: !mergedConfig.disabled,
+        isVisible: true,
+        options: mergedConfig.options || [],
+      },
+      methods: {
+        setValue: (value) => this.setSelectValue(component, value),
+        getValue: () => this.getSelectValue(component),
+        setOptions: (options) => this.setSelectOptions(component, options),
+        getOptions: () => this.getSelectOptions(component),
+        enable: () => this.enableComponent(component),
+        disable: () => this.disableComponent(component),
+        show: () => this.showComponent(component),
+        hide: () => this.hideComponent(component),
+        update: (newConfig) => this.updateSelect(component, newConfig),
+        addEventListener: (event, handler) =>
+          this.addComponentEventListener(component, event, handler),
+        removeEventListener: (event) =>
+          this.removeComponentEventListener(component, event),
+      },
+    };
+
+    this.components.set(mergedConfig.id, component);
+    this.componentTypes.add("select");
+    this.initializeComponent(component);
+    return component;
+  }
+
+  // Create a control group component with enhanced layout options
+  createControlGroup(groupId, controls = []) {
+    const defaultConfig = this.defaultConfigs.get("controlGroup");
+    const mergedConfig = { ...defaultConfig, ...controls };
+
+    const component = {
+      type: "controlGroup",
+      id: groupId,
+      element: document.getElementById(groupId),
+      controls: controls,
+      config: mergedConfig,
+      state: {
+        isVisible: mergedConfig.visible,
+        isEnabled: true,
+        layout: mergedConfig.layout,
+        gap: mergedConfig.gap,
+      },
+      methods: {
+        show: () => this.showControlGroup(component),
+        hide: () => this.hideControlGroup(component),
+        enable: () => this.enableComponent(component),
+        disable: () => this.disableComponent(component),
+        setLayout: (layout) => this.setControlGroupLayout(component, layout),
+        addControl: (control) => this.addControlToGroup(component, control),
+        removeControl: (controlId) =>
+          this.removeControlFromGroup(component, controlId),
+        updateControls: (newControls) =>
+          this.updateControlGroup(component, newControls),
+        getControls: () => this.getControlGroupControls(component),
+        update: (newConfig) => this.updateControlGroup(component, newConfig),
+      },
+    };
+
+    this.components.set(groupId, component);
+    this.componentTypes.add("controlGroup");
+    this.initializeComponent(component);
+    return component;
+  }
+
+  // Create a status display component
+  createStatusDisplay(config) {
+    const defaultConfig = this.defaultConfigs.get("statusDisplay");
+    const mergedConfig = { ...defaultConfig, ...config };
+
+    const component = {
+      type: "statusDisplay",
+      id: mergedConfig.id,
+      element: document.getElementById(mergedConfig.id),
+      config: mergedConfig,
+      state: {
+        values: mergedConfig.values || {},
+        isVisible: true,
+        layout: mergedConfig.layout,
+        gap: mergedConfig.gap,
+      },
+      methods: {
+        setValue: (key, value) => this.setStatusValue(component, key, value),
+        getValue: (key) => this.getStatusValue(component, key),
+        setValues: (values) => this.setStatusValues(component, values),
+        getValues: () => this.getStatusValues(component),
+        show: () => this.showComponent(component),
+        hide: () => this.hideComponent(component),
+        setLayout: (layout) => this.setStatusLayout(component, layout),
+        update: (newConfig) => this.updateStatusDisplay(component, newConfig),
+        addEventListener: (event, handler) =>
+          this.addComponentEventListener(component, event, handler),
+        removeEventListener: (event) =>
+          this.removeComponentEventListener(component, event),
+      },
+    };
+
+    this.components.set(mergedConfig.id, component);
+    this.componentTypes.add("statusDisplay");
+    this.initializeComponent(component);
+    return component;
+  }
+
+  // Create a modal component
+  createModal(config) {
+    const defaultConfig = this.defaultConfigs.get("modal");
+    const mergedConfig = { ...defaultConfig, ...config };
+
+    const component = {
+      type: "modal",
+      id: mergedConfig.id,
+      element: document.getElementById(mergedConfig.id),
+      config: mergedConfig,
+      state: {
+        isVisible: false,
+        isOpen: false,
+        title: mergedConfig.title || "",
+        content: mergedConfig.content || "",
+        backdrop: mergedConfig.backdrop,
+        closeOnEscape: mergedConfig.closeOnEscape,
+        closeOnBackdrop: mergedConfig.closeOnBackdrop,
+        animation: mergedConfig.animation,
+      },
+      methods: {
+        open: () => this.openModal(component),
+        close: () => this.closeModal(component),
+        toggle: () => this.toggleModal(component),
+        setContent: (content) => this.setModalContent(component, content),
+        getContent: () => this.getModalContent(component),
+        setTitle: (title) => this.setModalTitle(component, title),
+        getTitle: () => this.getModalTitle(component),
+        update: (newConfig) => this.updateModal(component, newConfig),
+        addEventListener: (event, handler) =>
+          this.addComponentEventListener(component, event, handler),
+        removeEventListener: (event) =>
+          this.removeComponentEventListener(component, event),
+      },
+    };
+
+    this.components.set(mergedConfig.id, component);
+    this.componentTypes.add("modal");
+    this.initializeComponent(component);
+    return component;
+  }
+
+  // Create a label component
+  createLabel(config) {
+    const defaultConfig = this.defaultConfigs.get("label");
+    const mergedConfig = { ...defaultConfig, ...config };
+
+    const component = {
+      type: "label",
+      id: mergedConfig.id,
+      element: document.getElementById(mergedConfig.id),
+      config: mergedConfig,
+      state: {
+        text: mergedConfig.text || mergedConfig.label || "",
+        isVisible: true,
+        required: mergedConfig.required,
+      },
+      methods: {
+        setText: (text) => this.setLabelText(component, text),
+        getText: () => this.getLabelText(component),
+        show: () => this.showComponent(component),
+        hide: () => this.hideComponent(component),
+        setRequired: (required) => this.setLabelRequired(component, required),
+        update: (newConfig) => this.updateLabel(component, newConfig),
+      },
+    };
+
+    this.components.set(mergedConfig.id, component);
+    this.componentTypes.add("label");
+    this.initializeComponent(component);
+    return component;
+  }
+
+  // Create a container component for layout management
+  createContainer(config) {
+    const defaultConfig = this.defaultConfigs.get("container");
+    const mergedConfig = { ...defaultConfig, ...config };
+
+    const component = {
+      type: "container",
+      id: mergedConfig.id,
+      element: document.getElementById(mergedConfig.id),
+      config: mergedConfig,
+      state: {
+        isVisible: mergedConfig.visible,
+        layout: mergedConfig.layout,
+        gap: mergedConfig.gap,
+        children: mergedConfig.children || [],
+      },
+      methods: {
+        show: () => this.showComponent(component),
+        hide: () => this.hideComponent(component),
+        setLayout: (layout) => this.setContainerLayout(component, layout),
+        addChild: (childId) => this.addContainerChild(component, childId),
+        removeChild: (childId) => this.removeChildFromGroup(component, childId),
+        getChildren: () => this.getContainerChildren(component),
+        update: (newConfig) => this.updateContainer(component, newConfig),
+      },
+    };
+
+    this.components.set(mergedConfig.id, component);
+    this.componentTypes.add("container");
+    this.initializeComponent(component);
+    return component;
+  }
+
+  // Component lifecycle management
+  initializeComponent(component) {
+    switch (component.type) {
+      case "slider":
         this.initializeSlider(component);
-        this.triggerUpdateHook(component);
-    }
-
-    updateButton(component, newConfig) {
-        Object.assign(component.config, newConfig);
+        break;
+      case "button":
         this.initializeButton(component);
-        this.triggerUpdateHook(component);
-    }
-
-    updateSelect(component, newConfig) {
-        Object.assign(component.config, newConfig);
+        break;
+      case "select":
         this.initializeSelect(component);
-        this.triggerUpdateHook(component);
-    }
-
-    updateControlGroup(component, newConfig) {
-        Object.assign(component.config, newConfig);
+        break;
+      case "controlGroup":
         this.initializeControlGroup(component);
-        this.triggerUpdateHook(component);
-    }
-
-    updateStatusDisplay(component, newConfig) {
-        Object.assign(component.config, newConfig);
+        break;
+      case "statusDisplay":
         this.initializeStatusDisplay(component);
-        this.triggerUpdateHook(component);
-    }
-
-    updateModal(component, newConfig) {
-        Object.assign(component.config, newConfig);
+        break;
+      case "modal":
         this.initializeModal(component);
-        this.triggerUpdateHook(component);
-    }
-
-    updateLabel(component, newConfig) {
-        Object.assign(component.config, newConfig);
+        break;
+      case "label":
         this.initializeLabel(component);
-        this.triggerUpdateHook(component);
-    }
-
-    updateContainer(component, newConfig) {
-        Object.assign(component.config, newConfig);
+        break;
+      case "container":
         this.initializeContainer(component);
-        this.triggerUpdateHook(component);
+        break;
     }
 
-    // Event handling methods
-    addComponentEventListener(component, event, handler) {
-        if (component.element && this.eventFramework) {
-            this.eventFramework.register(component.element, event, handler);
+    // Register lifecycle hooks
+    this.registerLifecycleHooks(component);
+
+    // Trigger onMount hook
+    const hooks = this.lifecycleHooks.get(component.id);
+    if (hooks && hooks.onMount) {
+      hooks.onMount();
+    }
+  }
+
+  // Initialize specific component types
+  initializeSlider(component) {
+    if (component.element) {
+      component.element.min = component.config.min;
+      component.element.max = component.config.max;
+      component.element.step = component.config.step;
+      component.element.value = component.state.value;
+      component.element.className = component.config.className;
+
+      if (component.valueElement) {
+        component.valueElement.textContent = component.config.format(
+          component.state.value
+        );
+      }
+    }
+  }
+
+  initializeButton(component) {
+    if (component.element) {
+      component.element.textContent = component.state.text;
+      component.element.className = component.config.className;
+      component.element.disabled = !component.state.isEnabled;
+
+      if (component.state.isPressed) {
+        component.element.classList.add("pressed");
+      }
+    }
+  }
+
+  initializeSelect(component) {
+    if (component.element) {
+      component.element.className = component.config.className;
+      component.element.disabled = !component.state.isEnabled;
+
+      if (component.state.options.length > 0) {
+        this.setSelectOptions(component, component.state.options);
+      }
+
+      if (component.state.value) {
+        component.element.value = component.state.value;
+      }
+    }
+  }
+
+  initializeControlGroup(component) {
+    if (component.element) {
+      component.element.style.display = component.state.isVisible
+        ? "flex"
+        : "none";
+      component.element.className = component.config.className;
+
+      // Apply layout styles
+      if (component.state.layout === "vertical") {
+        component.element.style.flexDirection = "column";
+      } else if (component.state.layout === "grid") {
+        component.element.style.display = "grid";
+      }
+
+      component.element.style.gap = component.state.gap;
+    }
+  }
+
+  initializeStatusDisplay(component) {
+    if (component.element) {
+      component.element.style.display = component.state.isVisible
+        ? "flex"
+        : "none";
+      component.element.className = component.config.className;
+
+      if (component.state.layout === "vertical") {
+        component.element.style.flexDirection = "column";
+      }
+
+      component.element.style.gap = component.state.gap;
+    }
+  }
+
+  initializeModal(component) {
+    if (component.element) {
+      component.element.className = component.config.className;
+      component.element.style.display = "none";
+    }
+  }
+
+  initializeLabel(component) {
+    if (component.element) {
+      component.element.textContent = component.state.text;
+      component.element.className = component.config.className;
+      component.element.style.display = component.state.isVisible
+        ? "block"
+        : "none";
+
+      if (component.state.required) {
+        component.element.classList.add("required");
+      }
+    }
+  }
+
+  initializeContainer(component) {
+    if (component.element) {
+      component.element.style.display = component.state.isVisible
+        ? "flex"
+        : "none";
+      component.element.className = component.config.className;
+
+      if (component.state.layout === "vertical") {
+        component.element.style.flexDirection = "column";
+      } else if (component.state.layout === "grid") {
+        component.element.style.display = "grid";
+      }
+
+      component.element.style.gap = component.state.gap;
+    }
+  }
+
+  // Component state management methods
+  setSliderValue(component, value) {
+    if (component.element) {
+      component.state.value = value;
+      component.element.value = value;
+
+      if (component.valueElement) {
+        component.valueElement.textContent = component.config.format(value);
+      }
+
+      this.triggerUpdateHook(component);
+    }
+  }
+
+  getSliderValue(component) {
+    return component.state.value;
+  }
+
+  setButtonText(component, text) {
+    if (component.element) {
+      component.state.text = text;
+      component.element.textContent = text;
+      this.triggerUpdateHook(component);
+    }
+  }
+
+  getButtonText(component) {
+    return component.state.text;
+  }
+
+  setSelectValue(component, value) {
+    if (component.element) {
+      component.state.value = value;
+      component.element.value = value;
+      this.triggerUpdateHook(component);
+    }
+  }
+
+  getSelectValue(component) {
+    return component.state.value;
+  }
+
+  setSelectOptions(component, options) {
+    if (component.element) {
+      component.state.options = options;
+      component.element.innerHTML = "";
+
+      options.forEach((option) => {
+        const optionElement = document.createElement("option");
+        optionElement.value = option.value;
+        optionElement.textContent = option.label || option.text;
+        component.element.appendChild(optionElement);
+      });
+
+      this.triggerUpdateHook(component);
+    }
+  }
+
+  getSelectOptions(component) {
+    return component.state.options;
+  }
+
+  setStatusValue(component, key, value) {
+    component.state.values[key] = value;
+
+    if (component.element) {
+      const valueElement = component.element.querySelector(
+        `[data-key="${key}"]`
+      );
+      if (valueElement) {
+        valueElement.textContent = component.config.format(value);
+      }
+    }
+
+    this.triggerUpdateHook(component);
+  }
+
+  getStatusValue(component, key) {
+    return component.state.values[key];
+  }
+
+  setStatusValues(component, values) {
+    component.state.values = { ...values };
+
+    if (component.element) {
+      Object.entries(values).forEach(([key, value]) => {
+        const valueElement = component.element.querySelector(
+          `[data-key="${key}"]`
+        );
+        if (valueElement) {
+          valueElement.textContent = component.config.format(value);
         }
+      });
     }
 
-    removeComponentEventListener(component, event) {
-        if (component.element && this.eventFramework) {
-            this.eventFramework.remove(component.element, event);
-        }
+    this.triggerUpdateHook(component);
+  }
+
+  getStatusValues(component) {
+    return { ...component.state.values };
+  }
+
+  setLabelText(component, text) {
+    if (component.element) {
+      component.state.text = text;
+      component.element.textContent = text;
+      this.triggerUpdateHook(component);
     }
+  }
 
-    // Lifecycle hook management
-    registerLifecycleHooks(component) {
-        const hooks = {
-            onMount: () => console.log(`Component ${component.id} mounted`),
-            onUnmount: () => console.log(`Component ${component.id} unmounted`),
-            onUpdate: () => console.log(`Component ${component.id} updated`),
-            onShow: () => console.log(`Component ${component.id} shown`),
-            onHide: () => console.log(`Component ${component.id} hidden`),
-            onEnable: () => console.log(`Component ${component.id} enabled`),
-            onDisable: () => console.log(`Component ${component.id} disabled`)
-        };
+  getLabelText(component) {
+    return component.state.text;
+  }
 
-        this.lifecycleHooks.set(component.id, hooks);
+  // Component visibility and state management
+  enableComponent(component) {
+    component.state.isEnabled = true;
+    if (component.element) {
+      component.element.disabled = false;
     }
+    this.triggerUpdateHook(component);
+  }
 
-    triggerUpdateHook(component) {
-        const hooks = this.lifecycleHooks.get(component.id);
-        if (hooks && hooks.onUpdate) {
-            hooks.onUpdate();
-        }
+  disableComponent(component) {
+    component.state.isEnabled = false;
+    if (component.element) {
+      component.element.disabled = true;
     }
+    this.triggerUpdateHook(component);
+  }
 
-    // Modal helper methods
-    createModalBackdrop(component) {
-        const backdrop = document.createElement('div');
-        backdrop.className = 'modal-backdrop';
-        backdrop.style.cssText = `
+  showComponent(component) {
+    component.state.isVisible = true;
+    if (component.element) {
+      component.element.style.display =
+        component.type === "label" ? "block" : "flex";
+    }
+    this.triggerUpdateHook(component);
+  }
+
+  hideComponent(component) {
+    component.state.isVisible = false;
+    if (component.element) {
+      component.element.style.display = "none";
+    }
+    this.triggerUpdateHook(component);
+  }
+
+  showControlGroup(component) {
+    this.showComponent(component);
+  }
+
+  hideControlGroup(component) {
+    this.hideComponent(component);
+  }
+
+  pressButton(component) {
+    component.state.isPressed = true;
+    if (component.element) {
+      component.element.classList.add("pressed");
+    }
+    this.triggerUpdateHook(component);
+  }
+
+  releaseButton(component) {
+    component.state.isPressed = false;
+    if (component.element) {
+      component.element.classList.remove("pressed");
+    }
+    this.triggerUpdateHook(component);
+  }
+
+  toggleButton(component) {
+    if (component.state.isPressed) {
+      this.releaseButton(component);
+    } else {
+      this.pressButton(component);
+    }
+  }
+
+  // Modal-specific methods
+  openModal(component) {
+    if (component.element) {
+      component.state.isVisible = true;
+      component.state.isOpen = true;
+      component.element.style.display = "block";
+
+      if (component.state.backdrop) {
+        this.createModalBackdrop(component);
+      }
+
+      if (component.state.closeOnEscape) {
+        this.setupModalEscapeHandler(component);
+      }
+
+      this.triggerUpdateHook(component);
+    }
+  }
+
+  closeModal(component) {
+    if (component.element) {
+      component.state.isVisible = false;
+      component.state.isOpen = false;
+      component.element.style.display = "none";
+
+      this.removeModalBackdrop(component);
+      this.removeModalEscapeHandler(component);
+
+      this.triggerUpdateHook(component);
+    }
+  }
+
+  toggleModal(component) {
+    if (component.state.isOpen) {
+      this.closeModal(component);
+    } else {
+      this.openModal(component);
+    }
+  }
+
+  setModalContent(component, content) {
+    if (component.element) {
+      const contentElement = component.element.querySelector(
+        "[data-modal-content]"
+      );
+      if (contentElement) {
+        contentElement.innerHTML = content;
+      }
+    }
+  }
+
+  getModalContent(component) {
+    if (component.element) {
+      const contentElement = component.element.querySelector(
+        "[data-modal-content]"
+      );
+      return contentElement ? contentElement.innerHTML : "";
+    }
+    return "";
+  }
+
+  setModalTitle(component, title) {
+    if (component.element) {
+      const titleElement =
+        component.element.querySelector("[data-modal-title]");
+      if (titleElement) {
+        titleElement.textContent = title;
+      }
+    }
+  }
+
+  getModalTitle(component) {
+    if (component.element) {
+      const titleElement =
+        component.element.querySelector("[data-modal-title]");
+      return titleElement ? titleElement.textContent : "";
+    }
+    return "";
+  }
+
+  // Control group specific methods
+  setControlGroupLayout(component, layout) {
+    component.state.layout = layout;
+    if (component.element) {
+      if (layout === "vertical") {
+        component.element.style.flexDirection = "column";
+      } else if (layout === "grid") {
+        component.element.style.display = "grid";
+      } else {
+        component.element.style.display = "flex";
+        component.element.style.flexDirection = "row";
+      }
+    }
+    this.triggerUpdateHook(component);
+  }
+
+  addControlToGroup(component, control) {
+    component.state.children.push(control);
+    this.triggerUpdateHook(component);
+  }
+
+  removeControlFromGroup(component, controlId) {
+    component.state.children = component.state.children.filter(
+      (child) => child.id !== controlId
+    );
+    this.triggerUpdateHook(component);
+  }
+
+  getControlGroupControls(component) {
+    return [...component.state.children];
+  }
+
+  // Status display specific methods
+  setStatusLayout(component, layout) {
+    component.state.layout = layout;
+    if (component.element) {
+      if (layout === "vertical") {
+        component.element.style.flexDirection = "column";
+      } else {
+        component.element.style.flexDirection = "row";
+      }
+    }
+    this.triggerUpdateHook(component);
+  }
+
+  // Container specific methods
+  setContainerLayout(component, layout) {
+    component.state.layout = layout;
+    if (component.element) {
+      if (layout === "vertical") {
+        component.element.style.flexDirection = "column";
+      } else if (layout === "grid") {
+        component.element.style.display = "grid";
+      } else {
+        component.element.style.display = "flex";
+        component.element.style.flexDirection = "row";
+      }
+    }
+    this.triggerUpdateHook(component);
+  }
+
+  addContainerChild(component, childId) {
+    component.state.children.push(childId);
+    this.triggerUpdateHook(component);
+  }
+
+  removeContainerChild(component, childId) {
+    component.state.children = component.state.children.filter(
+      (id) => id !== childId
+    );
+    this.triggerUpdateHook(component);
+  }
+
+  getContainerChildren(component) {
+    return [...component.state.children];
+  }
+
+  // Label specific methods
+  setLabelRequired(component, required) {
+    component.state.required = required;
+    if (component.element) {
+      if (required) {
+        component.element.classList.add("required");
+      } else {
+        component.element.classList.remove("required");
+      }
+    }
+    this.triggerUpdateHook(component);
+  }
+
+  // Component update methods
+  updateSlider(component, newConfig) {
+    Object.assign(component.config, newConfig);
+    this.initializeSlider(component);
+    this.triggerUpdateHook(component);
+  }
+
+  updateButton(component, newConfig) {
+    Object.assign(component.config, newConfig);
+    this.initializeButton(component);
+    this.triggerUpdateHook(component);
+  }
+
+  updateSelect(component, newConfig) {
+    Object.assign(component.config, newConfig);
+    this.initializeSelect(component);
+    this.triggerUpdateHook(component);
+  }
+
+  updateControlGroup(component, newConfig) {
+    Object.assign(component.config, newConfig);
+    this.initializeControlGroup(component);
+    this.triggerUpdateHook(component);
+  }
+
+  updateStatusDisplay(component, newConfig) {
+    Object.assign(component.config, newConfig);
+    this.initializeStatusDisplay(component);
+    this.triggerUpdateHook(component);
+  }
+
+  updateModal(component, newConfig) {
+    Object.assign(component.config, newConfig);
+    this.initializeModal(component);
+    this.triggerUpdateHook(component);
+  }
+
+  updateLabel(component, newConfig) {
+    Object.assign(component.config, newConfig);
+    this.initializeLabel(component);
+    this.triggerUpdateHook(component);
+  }
+
+  updateContainer(component, newConfig) {
+    Object.assign(component.config, newConfig);
+    this.initializeContainer(component);
+    this.triggerUpdateHook(component);
+  }
+
+  // Event handling methods
+  addComponentEventListener(component, event, handler) {
+    if (component.element && this.eventFramework) {
+      this.eventFramework.register(component.element, event, handler);
+    }
+  }
+
+  removeComponentEventListener(component, event) {
+    if (component.element && this.eventFramework) {
+      this.eventFramework.remove(component.element, event);
+    }
+  }
+
+  // Lifecycle hook management
+  registerLifecycleHooks(component) {
+    const hooks = {
+      onMount: () => console.log(`Component ${component.id} mounted`),
+      onUnmount: () => console.log(`Component ${component.id} unmounted`),
+      onUpdate: () => console.log(`Component ${component.id} updated`),
+      onShow: () => console.log(`Component ${component.id} shown`),
+      onHide: () => console.log(`Component ${component.id} hidden`),
+      onEnable: () => console.log(`Component ${component.id} enabled`),
+      onDisable: () => console.log(`Component ${component.id} disabled`),
+    };
+
+    this.lifecycleHooks.set(component.id, hooks);
+  }
+
+  triggerUpdateHook(component) {
+    const hooks = this.lifecycleHooks.get(component.id);
+    if (hooks && hooks.onUpdate) {
+      hooks.onUpdate();
+    }
+  }
+
+  // Modal helper methods
+  createModalBackdrop(component) {
+    const backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop";
+    backdrop.style.cssText = `
             position: fixed;
             top: 0;
             left: 0;
@@ -969,356 +1015,364 @@ class UIComponentLibrary {
             z-index: 999;
         `;
 
-        if (component.state.closeOnBackdrop) {
-            backdrop.addEventListener('click', () => this.closeModal(component));
-        }
-
-        document.body.appendChild(backdrop);
-        component.backdropElement = backdrop;
+    if (component.state.closeOnBackdrop) {
+      backdrop.addEventListener("click", () => this.closeModal(component));
     }
 
-    removeModalBackdrop(component) {
-        if (component.backdropElement) {
-            component.backdropElement.remove();
-            component.backdropElement = null;
-        }
+    document.body.appendChild(backdrop);
+    component.backdropElement = backdrop;
+  }
+
+  removeModalBackdrop(component) {
+    if (component.backdropElement) {
+      component.backdropElement.remove();
+      component.backdropElement = null;
     }
+  }
 
-    setupModalEscapeHandler(component) {
-        const escapeHandler = (e) => {
-            if (e.key === 'Escape') {
-                this.closeModal(component);
-            }
-        };
+  setupModalEscapeHandler(component) {
+    const escapeHandler = (e) => {
+      if (e.key === "Escape") {
+        this.closeModal(component);
+      }
+    };
 
-        document.addEventListener('keydown', escapeHandler);
-        component.escapeHandler = escapeHandler;
+    document.addEventListener("keydown", escapeHandler);
+    component.escapeHandler = escapeHandler;
+  }
+
+  removeModalEscapeHandler(component) {
+    if (component.escapeHandler) {
+      document.removeEventListener("keydown", component.escapeHandler);
+      component.escapeHandler = null;
     }
+  }
 
-    removeModalEscapeHandler(component) {
-        if (component.escapeHandler) {
-            document.removeEventListener('keydown', component.escapeHandler);
-            component.escapeHandler = null;
-        }
-    }
+  // Utility methods
+  getComponent(id) {
+    return this.components.get(id);
+  }
 
-    // Utility methods
-    getComponent(id) {
-        return this.components.get(id);
-    }
+  getAllComponents() {
+    return Array.from(this.components.values());
+  }
 
-    getAllComponents() {
-        return Array.from(this.components.values());
-    }
+  getComponentsByType(type) {
+    return Array.from(this.components.values()).filter(
+      (component) => component.type === type
+    );
+  }
 
-    getComponentsByType(type) {
-        return Array.from(this.components.values()).filter(component => component.type === type);
-    }
+  hasComponent(id) {
+    return this.components.has(id);
+  }
 
-    hasComponent(id) {
-        return this.components.has(id);
-    }
+  getComponentTypes() {
+    return this.componentTypes;
+  }
 
-    getComponentTypes() {
-        return this.componentTypes;
-    }
+  // Batch operations
+  showAllComponents() {
+    this.components.forEach((component) => {
+      this.showComponent(component);
+    });
+  }
 
-    // Batch operations
-    showAllComponents() {
-        this.components.forEach(component => {
-            this.showComponent(component);
-        });
-    }
+  hideAllComponents() {
+    this.components.forEach((component) => {
+      this.hideComponent(component);
+    });
+  }
 
-    hideAllComponents() {
-        this.components.forEach(component => {
-            this.hideComponent(component);
-        });
-    }
+  enableAllComponents() {
+    this.components.forEach((component) => {
+      this.enableComponent(component);
+    });
+  }
 
-    enableAllComponents() {
-        this.components.forEach(component => {
-            this.enableComponent(component);
-        });
-    }
+  disableAllComponents() {
+    this.components.forEach((component) => {
+      this.disableComponent(component);
+    });
+  }
 
-    disableAllComponents() {
-        this.components.forEach(component => {
-            this.disableComponent(component);
-        });
-    }
+  // Component cleanup
+  cleanup() {
+    // Trigger onUnmount hooks
+    this.components.forEach((component) => {
+      const hooks = this.lifecycleHooks.get(component.id);
+      if (hooks && hooks.onUnmount) {
+        hooks.onUnmount();
+      }
+    });
 
-    // Component cleanup
-    cleanup() {
-        // Trigger onUnmount hooks
-        this.components.forEach(component => {
-            const hooks = this.lifecycleHooks.get(component.id);
-            if (hooks && hooks.onUnmount) {
-                hooks.onUnmount();
-            }
-        });
+    this.components.clear();
+    this.lifecycleHooks.clear();
+    this.componentTypes.clear();
+  }
 
-        this.components.clear();
-        this.lifecycleHooks.clear();
-        this.componentTypes.clear();
-    }
+  // Factory methods for common component combinations
+  createSliderWithLabel(config) {
+    const slider = this.createSlider(config);
+    const label = this.createLabel({
+      id: `${config.id}-label`,
+      text: config.label,
+      for: config.id,
+    });
 
-    // Factory methods for common component combinations
-    createSliderWithLabel(config) {
-        const slider = this.createSlider(config);
-        const label = this.createLabel({
-            id: `${config.id}-label`,
-            text: config.label,
-            for: config.id
-        });
+    return { slider, label };
+  }
 
-        return { slider, label };
-    }
+  createButtonGroup(buttons) {
+    const groupId = `button-group-${Date.now()}`;
+    const group = this.createControlGroup(groupId, {
+      layout: "horizontal",
+      className: "button-group",
+    });
 
-    createButtonGroup(buttons) {
-        const groupId = `button-group-${Date.now()}`;
-        const group = this.createControlGroup(groupId, {
-            layout: 'horizontal',
-            className: 'button-group'
-        });
+    buttons.forEach((buttonConfig) => {
+      const button = this.createButton(buttonConfig);
+      group.methods.addControl(button);
+    });
 
-        buttons.forEach(buttonConfig => {
-            const button = this.createButton(buttonConfig);
-            group.methods.addControl(button);
-        });
+    return group;
+  }
 
-        return group;
-    }
+  createFormGroup(controls) {
+    const groupId = `form-group-${Date.now()}`;
+    const group = this.createControlGroup(groupId, {
+      layout: "vertical",
+      className: "form-group",
+    });
 
-    createFormGroup(controls) {
-        const groupId = `form-group-${Date.now()}`;
-        const group = this.createControlGroup(groupId, {
-            layout: 'vertical',
-            className: 'form-group'
-        });
+    controls.forEach((controlConfig) => {
+      let control;
+      switch (controlConfig.type) {
+        case "slider":
+          control = this.createSlider(controlConfig);
+          break;
+        case "button":
+          control = this.createButton(controlConfig);
+          break;
+        case "select":
+          control = this.createSelect(controlConfig);
+          break;
+        case "label":
+          control = this.createLabel(controlConfig);
+          break;
+      }
 
-        controls.forEach(controlConfig => {
-            let control;
-            switch (controlConfig.type) {
-                case 'slider':
-                    control = this.createSlider(controlConfig);
-                    break;
-                case 'button':
-                    control = this.createButton(controlConfig);
-                    break;
-                case 'select':
-                    control = this.createSelect(controlConfig);
-                    break;
-                case 'label':
-                    control = this.createLabel(controlConfig);
-                    break;
-            }
+      if (control) {
+        group.methods.addControl(control);
+      }
+    });
 
-            if (control) {
-                group.methods.addControl(control);
-            }
-        });
-
-        return group;
-    }
+    return group;
+  }
 }
 
 // Dynamic Speed Slider - consolidates multiple speed sliders into a single dynamic component
 class DynamicSpeedSlider {
-    constructor(eventFramework) {
-        this.eventFramework = eventFramework;
-        this.currentSimType = null;
-        this.slider = null;
-        this.valueElement = null;
-        this.container = null;
-        this.speedValues = new Map(); // Store speed values for each simulation
-        this.isInitialized = false;
+  constructor(eventFramework) {
+    this.eventFramework = eventFramework;
+    this.currentSimType = null;
+    this.slider = null;
+    this.valueElement = null;
+    this.container = null;
+    this.speedValues = new Map(); // Store speed values for each simulation
+    this.isInitialized = false;
 
-        this.init();
+    this.init();
+  }
+
+  init() {
+    this.slider = document.getElementById("dynamic-speed-slider");
+    this.valueElement = document.getElementById("dynamic-speed-value");
+    this.container = document.querySelector(".speed-control .control-group");
+
+    if (!this.slider || !this.valueElement || !this.container) {
+      console.error("DynamicSpeedSlider: Required elements not found");
+      return;
     }
 
-    init() {
-        this.slider = document.getElementById('dynamic-speed-slider');
-        this.valueElement = document.getElementById('dynamic-speed-value');
-        this.container = document.querySelector('.speed-control .control-group');
+    this.isInitialized = true;
+    this.setupEventListeners();
+  }
 
-        if (!this.slider || !this.valueElement || !this.container) {
-            console.error('DynamicSpeedSlider: Required elements not found');
-            return;
-        }
+  setupEventListeners() {
+    if (!this.isInitialized) return;
 
-        this.isInitialized = true;
-        this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        if (!this.isInitialized) return;
-
-        // Debounced input handler for smooth performance - increased debounce time
-        const debouncedInputHandler = this.eventFramework.debounce((e) => {
-            if (this.currentSimType) {
-                const value = parseFloat(e.target.value);
-                this.speedValues.set(this.currentSimType, value);
-                this.onSpeedChange(value);
-            }
-        }, 100, 'dynamic-speed-debounce'); // Increased from 16ms to 100ms for better performance
-
-        // Immediate visual feedback for value display
-        const immediateValueHandler = (e) => {
-            const value = parseFloat(e.target.value);
-            this.updateDisplay(value);
-        };
-
-        this.eventFramework.register(this.slider, 'input', immediateValueHandler);
-        this.eventFramework.register(this.slider, 'change', debouncedInputHandler);
-    }
-
-    switchToSimulation(simType, app) {
-        if (!this.isInitialized) return;
-
-        // Only update if the simulation type has actually changed
-        if (this.currentSimType === simType) return;
-
-        this.currentSimType = simType;
-        this.app = app;
-
-        // Get the stored speed value for this simulation, or use default
-        const storedValue = this.speedValues.get(simType) || 30;
-
-        // Update slider value and display
-        this.slider.value = storedValue;
-        this.updateDisplay(storedValue);
-
-        // Show the speed control container
-        this.container.style.display = 'block';
-    }
-
-    hide() {
-        if (!this.isInitialized) return;
-        this.container.style.display = 'none';
-    }
-
-    updateDisplay(value) {
-        if (!this.isInitialized) return;
-
-        // Only update DOM if the value has actually changed
-        const newText = `${value} steps/s`;
-        if (this.valueElement.textContent !== newText) {
-            this.valueElement.textContent = newText;
-        }
-    }
-
-    onSpeedChange(value) {
-        if (this.currentSimType && this.app) {
-            // Only trigger speed change if the value has actually changed
-            const currentSpeed = this.app.currentSimulation ? this.app.currentSimulation.speed : null;
-            if (currentSpeed !== value) {
-                this.app.handleSpeedChange(this.currentSimType, value);
-            }
-        }
-    }
-
-    getValue() {
-        if (!this.isInitialized) return 30;
-        return parseFloat(this.slider.value);
-    }
-
-    setValue(value) {
-        if (!this.isInitialized) return;
-        this.slider.value = value;
-        this.updateDisplay(value);
+    // Debounced input handler for smooth performance - increased debounce time
+    const debouncedInputHandler = this.eventFramework.debounce(
+      (e) => {
         if (this.currentSimType) {
-            this.speedValues.set(this.currentSimType, value);
+          const value = parseFloat(e.target.value);
+          this.speedValues.set(this.currentSimType, value);
+          this.onSpeedChange(value);
         }
+      },
+      100,
+      "dynamic-speed-debounce"
+    ); // Increased from 16ms to 100ms for better performance
+
+    // Immediate visual feedback for value display
+    const immediateValueHandler = (e) => {
+      const value = parseFloat(e.target.value);
+      this.updateDisplay(value);
+    };
+
+    this.eventFramework.register(this.slider, "input", immediateValueHandler);
+    this.eventFramework.register(this.slider, "change", debouncedInputHandler);
+  }
+
+  switchToSimulation(simType, app) {
+    if (!this.isInitialized) return;
+
+    // Only update if the simulation type has actually changed
+    if (this.currentSimType === simType) return;
+
+    this.currentSimType = simType;
+    this.app = app;
+
+    // Get the stored speed value for this simulation, or use default
+    const storedValue = this.speedValues.get(simType) || 30;
+
+    // Update slider value and display
+    this.slider.value = storedValue;
+    this.updateDisplay(storedValue);
+
+    // Show the speed control container
+    this.container.style.display = "block";
+  }
+
+  hide() {
+    if (!this.isInitialized) return;
+    this.container.style.display = "none";
+  }
+
+  updateDisplay(value) {
+    if (!this.isInitialized) return;
+
+    // Only update DOM if the value has actually changed
+    const newText = `${value} steps/s`;
+    if (this.valueElement.textContent !== newText) {
+      this.valueElement.textContent = newText;
     }
+  }
 
-    adjustSpeed(direction) {
-        if (!this.isInitialized) return;
-
-        const currentValue = parseFloat(this.slider.value);
-        const step = 1; // Default step value
-        const newValue = Math.max(
-            parseInt(this.slider.min),
-            Math.min(parseInt(this.slider.max), currentValue + (direction * step))
-        );
-
-        this.setValue(newValue);
-        this.onSpeedChange(newValue);
+  onSpeedChange(value) {
+    if (this.currentSimType && this.app) {
+      // Only trigger speed change if the value has actually changed
+      const currentSpeed = this.app.currentSimulation
+        ? this.app.currentSimulation.speed
+        : null;
+      if (currentSpeed !== value) {
+        this.app.handleSpeedChange(this.currentSimType, value);
+      }
     }
+  }
 
-    cleanup() {
-        if (!this.isInitialized) return;
+  getValue() {
+    if (!this.isInitialized) return 30;
+    return parseFloat(this.slider.value);
+  }
 
-        this.eventFramework.remove(this.slider, 'input');
-        this.eventFramework.remove(this.slider, 'change');
-        this.speedValues.clear();
-        this.currentSimType = null;
-        this.app = null;
+  setValue(value) {
+    if (!this.isInitialized) return;
+    this.slider.value = value;
+    this.updateDisplay(value);
+    if (this.currentSimType) {
+      this.speedValues.set(this.currentSimType, value);
     }
+  }
+
+  adjustSpeed(direction) {
+    if (!this.isInitialized) return;
+
+    const currentValue = parseFloat(this.slider.value);
+    const step = 1; // Default step value
+    const newValue = Math.max(
+      parseInt(this.slider.min),
+      Math.min(parseInt(this.slider.max), currentValue + direction * step)
+    );
+
+    this.setValue(newValue);
+    this.onSpeedChange(newValue);
+  }
+
+  cleanup() {
+    if (!this.isInitialized) return;
+
+    this.eventFramework.remove(this.slider, "input");
+    this.eventFramework.remove(this.slider, "change");
+    this.speedValues.clear();
+    this.currentSimType = null;
+    this.app = null;
+  }
 }
 
 // Dynamic Fill Button - consolidates multiple random buttons into a single dynamic button
 class DynamicFillButton {
-    constructor(eventFramework) {
-        this.eventFramework = eventFramework;
-        this.currentSimType = null;
-        this.app = null;
-        this.isInitialized = false;
+  constructor(eventFramework) {
+    this.eventFramework = eventFramework;
+    this.currentSimType = null;
+    this.app = null;
+    this.isInitialized = false;
+  }
+
+  init() {
+    if (this.isInitialized) return;
+
+    this.button = this.eventFramework.getElement("#dynamic-fill-btn");
+    if (!this.button) {
+      console.warn("Dynamic fill button not found");
+      return;
     }
 
-    init() {
-        if (this.isInitialized) return;
+    this.setupEventListeners();
+    this.isInitialized = true;
+  }
 
-        this.button = this.eventFramework.getElement('#dynamic-fill-btn');
-        if (!this.button) {
-            console.warn('Dynamic fill button not found');
-            return;
-        }
+  setupEventListeners() {
+    if (!this.button) return;
 
-        this.setupEventListeners();
-        this.isInitialized = true;
+    this.eventFramework.register(this.button, "click", () => {
+      if (this.currentSimType && this.app) {
+        this.app.handleRandomPattern(this.currentSimType);
+      }
+    });
+  }
+
+  switchToSimulation(simType, app) {
+    this.currentSimType = simType;
+    this.app = app;
+
+    // Show button for simulations that support random patterns
+    if (["conway", "termite", "langton"].includes(simType)) {
+      this.show();
+    } else {
+      this.hide();
     }
+  }
 
-    setupEventListeners() {
-        if (!this.button) return;
-
-        this.eventFramework.register(this.button, 'click', () => {
-            if (this.currentSimType && this.app) {
-                this.app.handleRandomPattern(this.currentSimType);
-            }
-        });
+  show() {
+    if (this.button) {
+      this.button.style.display = "inline-block";
     }
+  }
 
-    switchToSimulation(simType, app) {
-        this.currentSimType = simType;
-        this.app = app;
-
-        // Show button for simulations that support random patterns
-        if (['conway', 'termite', 'langton'].includes(simType)) {
-            this.show();
-        } else {
-            this.hide();
-        }
+  hide() {
+    if (this.button) {
+      this.button.style.display = "none";
     }
+  }
 
-    show() {
-        if (this.button) {
-            this.button.style.display = 'inline-block';
-        }
+  cleanup() {
+    if (this.isInitialized && this.button) {
+      this.eventFramework.removeAll(this.button);
     }
-
-    hide() {
-        if (this.button) {
-            this.button.style.display = 'none';
-        }
-    }
-
-    cleanup() {
-        if (this.isInitialized && this.button) {
-            this.eventFramework.removeAll(this.button);
-        }
-        this.isInitialized = false;
-    }
+    this.isInitialized = false;
+  }
 }
 
 /**
@@ -1326,63 +1380,72 @@ class DynamicFillButton {
  * Replaces JavaScript-based show/hide logic with declarative CSS classes and data attributes
  */
 class ControlVisibilityManager {
-    constructor() {
-        this.activeSimulation = null;
-        this.controlGroups = new Map();
-        this.visibilityStates = new Map();
-        this.isInitialized = false;
-    }
+  constructor() {
+    this.activeSimulation = null;
+    this.controlGroups = new Map();
+    this.visibilityStates = new Map();
+    this.isInitialized = false;
+  }
 
-    /**
-     * Initialize the visibility manager
-     */
-    init() {
-        if (this.isInitialized) return;
+  /**
+   * Initialize the visibility manager
+   */
+  init() {
+    if (this.isInitialized) return;
 
-        // Define control group mappings
-        this.controlGroups = new Map([
-            ['conway', ['conway-controls']],
-            ['termite', ['termite-controls', 'termites-container']],
-            ['langton', ['langton-controls']]
-        ]);
+    // Define control group mappings
+    this.controlGroups = new Map([
+      ["conway", ["conway-controls"]],
+      ["termite", ["termite-controls", "termites-container"]],
+      ["langton", ["langton-controls"]],
+    ]);
 
-        // Define visibility states for each simulation
-        this.visibilityStates = new Map([
-            ['conway', {
-                'conway-controls': 'visible',
-                'termite-controls': 'hidden',
-                'langton-controls': 'hidden',
-                'termites-container': 'hidden'
-            }],
-            ['termite', {
-                'conway-controls': 'hidden',
-                'termite-controls': 'visible',
-                'langton-controls': 'hidden',
-                'termites-container': 'visible'
-            }],
-            ['langton', {
-                'conway-controls': 'hidden',
-                'termite-controls': 'hidden',
-                'langton-controls': 'visible',
-                'termites-container': 'hidden'
-            }]
-        ]);
+    // Define visibility states for each simulation
+    this.visibilityStates = new Map([
+      [
+        "conway",
+        {
+          "conway-controls": "visible",
+          "termite-controls": "hidden",
+          "langton-controls": "hidden",
+          "termites-container": "hidden",
+        },
+      ],
+      [
+        "termite",
+        {
+          "conway-controls": "hidden",
+          "termite-controls": "visible",
+          "langton-controls": "hidden",
+          "termites-container": "visible",
+        },
+      ],
+      [
+        "langton",
+        {
+          "conway-controls": "hidden",
+          "termite-controls": "hidden",
+          "langton-controls": "visible",
+          "termites-container": "hidden",
+        },
+      ],
+    ]);
 
-        // Add CSS classes to document if not already present
-        this.ensureCSSClasses();
+    // Add CSS classes to document if not already present
+    this.ensureCSSClasses();
 
-        this.isInitialized = true;
-    }
+    this.isInitialized = true;
+  }
 
-    /**
-     * Ensure required CSS classes are available
-     */
-    ensureCSSClasses() {
-        if (document.getElementById('control-visibility-styles')) return;
+  /**
+   * Ensure required CSS classes are available
+   */
+  ensureCSSClasses() {
+    if (document.getElementById("control-visibility-styles")) return;
 
-        const style = document.createElement('style');
-        style.id = 'control-visibility-styles';
-        style.textContent = `
+    const style = document.createElement("style");
+    style.id = "control-visibility-styles";
+    style.textContent = `
             /* Control visibility states */
             .control-group[data-simulation="conway"] {
                 display: none;
@@ -1423,223 +1486,229 @@ class ControlVisibilityManager {
             }
         `;
 
-        document.head.appendChild(style);
+    document.head.appendChild(style);
+  }
+
+  /**
+   * Set the active simulation and update visibility
+   * @param {string} simType - The simulation type to activate
+   */
+  setActiveSimulation(simType) {
+    if (!this.isInitialized) {
+      this.init();
     }
 
-    /**
-     * Set the active simulation and update visibility
-     * @param {string} simType - The simulation type to activate
-     */
-    setActiveSimulation(simType) {
-        if (!this.isInitialized) {
-            this.init();
+    // Remove active class from all control groups
+    this.clearActiveStates();
+
+    // Set new active simulation
+    this.activeSimulation = simType;
+
+    // Apply visibility states for the active simulation
+    this.applyVisibilityStates(simType);
+
+    // Trigger layout repositioning if needed
+    if (window.layoutManager) {
+      setTimeout(() => window.layoutManager.repositionElements(), 50);
+    }
+  }
+
+  /**
+   * Clear all active states from control groups
+   */
+  clearActiveStates() {
+    // Clear from simulation controls
+    document
+      .querySelectorAll(".simulation-controls[data-simulation]")
+      .forEach((element) => {
+        element.classList.remove("active");
+      });
+
+    // Clear from special containers
+    document
+      .querySelectorAll("#termites-container[data-simulation]")
+      .forEach((element) => {
+        element.classList.remove("active");
+      });
+
+    // Clear from control groups
+    document
+      .querySelectorAll(".control-group[data-simulation]")
+      .forEach((element) => {
+        element.classList.remove("active");
+      });
+  }
+
+  /**
+   * Apply visibility states for a specific simulation
+   * @param {string} simType - The simulation type
+   */
+  applyVisibilityStates(simType) {
+    const states = this.visibilityStates.get(simType);
+    if (!states) return;
+
+    Object.entries(states).forEach(([elementId, visibility]) => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        if (visibility === "visible") {
+          element.setAttribute("data-simulation", simType);
+          element.classList.add("active");
+        } else {
+          element.classList.remove("active");
         }
+      }
+    });
+  }
 
-        // Remove active class from all control groups
-        this.clearActiveStates();
+  /**
+   * Show controls for a specific simulation (backward compatibility)
+   * @param {string} simType - The simulation type
+   */
+  showControls(simType) {
+    this.setActiveSimulation(simType);
+  }
 
-        // Set new active simulation
-        this.activeSimulation = simType;
+  /**
+   * Hide all controls (backward compatibility)
+   */
+  hideAllControls() {
+    this.clearActiveStates();
+    this.activeSimulation = null;
+  }
 
-        // Apply visibility states for the active simulation
-        this.applyVisibilityStates(simType);
+  /**
+   * Get the currently active simulation
+   * @returns {string|null} The active simulation type
+   */
+  getActiveSimulation() {
+    return this.activeSimulation;
+  }
 
-        // Trigger layout repositioning if needed
-        if (window.layoutManager) {
-            setTimeout(() => window.layoutManager.repositionElements(), 50);
-        }
-    }
+  /**
+   * Check if a control group is visible for the current simulation
+   * @param {string} elementId - The element ID to check
+   * @returns {boolean} True if visible
+   */
+  isControlVisible(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) return false;
 
-    /**
-     * Clear all active states from control groups
-     */
-    clearActiveStates() {
-        // Clear from simulation controls
-        document.querySelectorAll('.simulation-controls[data-simulation]').forEach(element => {
-            element.classList.remove('active');
-        });
+    return element.classList.contains("active");
+  }
 
-        // Clear from special containers
-        document.querySelectorAll('#termites-container[data-simulation]').forEach(element => {
-            element.classList.remove('active');
-        });
+  /**
+   * Add a new control group mapping
+   * @param {string} simType - The simulation type
+   * @param {Array<string>} controlIds - Array of control element IDs
+   */
+  addControlGroup(simType, controlIds) {
+    this.controlGroups.set(simType, controlIds);
+  }
 
-        // Clear from control groups
-        document.querySelectorAll('.control-group[data-simulation]').forEach(element => {
-            element.classList.remove('active');
-        });
-    }
+  /**
+   * Add visibility states for a new simulation
+   * @param {string} simType - The simulation type
+   * @param {Object} states - Visibility states object
+   */
+  addVisibilityStates(simType, states) {
+    this.visibilityStates.set(simType, states);
+  }
 
-    /**
-     * Apply visibility states for a specific simulation
-     * @param {string} simType - The simulation type
-     */
-    applyVisibilityStates(simType) {
-        const states = this.visibilityStates.get(simType);
-        if (!states) return;
-
-        Object.entries(states).forEach(([elementId, visibility]) => {
-            const element = document.getElementById(elementId);
-            if (element) {
-                if (visibility === 'visible') {
-                    element.setAttribute('data-simulation', simType);
-                    element.classList.add('active');
-                } else {
-                    element.classList.remove('active');
-                }
-            }
-        });
-    }
-
-    /**
-     * Show controls for a specific simulation (backward compatibility)
-     * @param {string} simType - The simulation type
-     */
-    showControls(simType) {
-        this.setActiveSimulation(simType);
-    }
-
-    /**
-     * Hide all controls (backward compatibility)
-     */
-    hideAllControls() {
-        this.clearActiveStates();
-        this.activeSimulation = null;
-    }
-
-    /**
-     * Get the currently active simulation
-     * @returns {string|null} The active simulation type
-     */
-    getActiveSimulation() {
-        return this.activeSimulation;
-    }
-
-    /**
-     * Check if a control group is visible for the current simulation
-     * @param {string} elementId - The element ID to check
-     * @returns {boolean} True if visible
-     */
-    isControlVisible(elementId) {
-        const element = document.getElementById(elementId);
-        if (!element) return false;
-
-        return element.classList.contains('active');
-    }
-
-    /**
-     * Add a new control group mapping
-     * @param {string} simType - The simulation type
-     * @param {Array<string>} controlIds - Array of control element IDs
-     */
-    addControlGroup(simType, controlIds) {
-        this.controlGroups.set(simType, controlIds);
-    }
-
-    /**
-     * Add visibility states for a new simulation
-     * @param {string} simType - The simulation type
-     * @param {Object} states - Visibility states object
-     */
-    addVisibilityStates(simType, states) {
-        this.visibilityStates.set(simType, states);
-    }
-
-    /**
-     * Cleanup the visibility manager
-     */
-    cleanup() {
-        this.clearActiveStates();
-        this.controlGroups.clear();
-        this.visibilityStates.clear();
-        this.activeSimulation = null;
-        this.isInitialized = false;
-    }
+  /**
+   * Cleanup the visibility manager
+   */
+  cleanup() {
+    this.clearActiveStates();
+    this.controlGroups.clear();
+    this.visibilityStates.clear();
+    this.activeSimulation = null;
+    this.isInitialized = false;
+  }
 }
 
 // Centralised performance utilities
 class PerformanceUtils {
-    static #globalDebounceTimers = new Map();
-    static #globalThrottleTimers = new Map();
+  static #globalDebounceTimers = new Map();
+  static #globalThrottleTimers = new Map();
 
-    // Debounce with optional shared store (Map) and key
-    static debounce(func, wait, key = null, store = null) {
-        const timerStore = store || PerformanceUtils.#globalDebounceTimers;
-        const timerKey = key || func;
-        return (...args) => {
-            const existing = timerStore.get(timerKey);
-            if (existing) clearTimeout(existing);
-            const timeout = setTimeout(() => {
-                timerStore.delete(timerKey);
-                func.apply(this, args);
-            }, wait);
-            timerStore.set(timerKey, timeout);
-        };
-    }
+  // Debounce with optional shared store (Map) and key
+  static debounce(func, wait, key = null, store = null) {
+    const timerStore = store || PerformanceUtils.#globalDebounceTimers;
+    const timerKey = key || func;
+    return (...args) => {
+      const existing = timerStore.get(timerKey);
+      if (existing) clearTimeout(existing);
+      const timeout = setTimeout(() => {
+        timerStore.delete(timerKey);
+        func.apply(this, args);
+      }, wait);
+      timerStore.set(timerKey, timeout);
+    };
+  }
 
-    // Throttle with optional shared store (Map) and key
-    static throttle(func, limit, key = null, store = null) {
-        const timerStore = store || PerformanceUtils.#globalThrottleTimers;
-        const timerKey = key || func;
-        return (...args) => {
-            if (!timerStore.has(timerKey)) {
-                func.apply(this, args);
-                timerStore.set(timerKey, true);
-                setTimeout(() => {
-                    timerStore.delete(timerKey);
-                }, limit);
-            }
-        };
-    }
+  // Throttle with optional shared store (Map) and key
+  static throttle(func, limit, key = null, store = null) {
+    const timerStore = store || PerformanceUtils.#globalThrottleTimers;
+    const timerKey = key || func;
+    return (...args) => {
+      if (!timerStore.has(timerKey)) {
+        func.apply(this, args);
+        timerStore.set(timerKey, true);
+        setTimeout(() => {
+          timerStore.delete(timerKey);
+        }, limit);
+      }
+    };
+  }
 }
 
 // Backwards-compatible PerformanceOptimizer delegating to PerformanceUtils
 class PerformanceOptimizer {
-    static debounce(func, wait) {
-        return PerformanceUtils.debounce(func, wait);
-    }
+  static debounce(func, wait) {
+    return PerformanceUtils.debounce(func, wait);
+  }
 
-    static throttle(func, limit) {
-        return PerformanceUtils.throttle(func, limit);
-    }
+  static throttle(func, limit) {
+    return PerformanceUtils.throttle(func, limit);
+  }
 
-    static createElementCache() {
-        const cache = new Map();
-        return {
-            get: (selector) => {
-                if (!cache.has(selector)) {
-                    cache.set(selector, document.querySelector(selector));
-                }
-                return cache.get(selector);
-            },
-            clear: () => cache.clear()
-        };
-    }
+  static createElementCache() {
+    const cache = new Map();
+    return {
+      get: (selector) => {
+        if (!cache.has(selector)) {
+          cache.set(selector, document.querySelector(selector));
+        }
+        return cache.get(selector);
+      },
+      clear: () => cache.clear(),
+    };
+  }
 
-    static createEventListenerManager() {
-        const listeners = new Map();
-        return {
-            add: (element, event, handler, options = {}) => {
-                const key = `${element.id || 'anonymous'}-${event}`;
-                if (listeners.has(key)) {
-                    element.removeEventListener(event, listeners.get(key), options);
-                }
-                listeners.set(key, handler);
-                element.addEventListener(event, handler, options);
-            },
-            remove: (element, event) => {
-                const key = `${element.id || 'anonymous'}-${event}`;
-                const handler = listeners.get(key);
-                if (handler) {
-                    element.removeEventListener(event, handler);
-                    listeners.delete(key);
-                }
-            },
-            clear: () => {
-                listeners.clear();
-            }
-        };
-    }
+  static createEventListenerManager() {
+    const listeners = new Map();
+    return {
+      add: (element, event, handler, options = {}) => {
+        const key = `${element.id || "anonymous"}-${event}`;
+        if (listeners.has(key)) {
+          element.removeEventListener(event, listeners.get(key), options);
+        }
+        listeners.set(key, handler);
+        element.addEventListener(event, handler, options);
+      },
+      remove: (element, event) => {
+        const key = `${element.id || "anonymous"}-${event}`;
+        const handler = listeners.get(key);
+        if (handler) {
+          element.removeEventListener(event, handler);
+          listeners.delete(key);
+        }
+      },
+      clear: () => {
+        listeners.clear();
+      },
+    };
+  }
 }
 
 /**
@@ -1647,320 +1716,334 @@ class PerformanceOptimizer {
  * Eliminates duplication in event handler creation and registration
  */
 class EventHandlerFactory {
-    constructor(eventFramework) {
-        this.eventFramework = eventFramework;
-        this.handlerTemplates = new Map();
-        this.registeredHandlers = new Map();
-        this.initHandlerTemplates();
-    }
+  constructor(eventFramework) {
+    this.eventFramework = eventFramework;
+    this.handlerTemplates = new Map();
+    this.registeredHandlers = new Map();
+    this.initHandlerTemplates();
+  }
 
-    /**
-     * Initialize standard handler templates
-     */
-    initHandlerTemplates() {
-        // Slider handler templates
-        this.handlerTemplates.set('slider', {
-            input: this.createSliderInputHandler.bind(this),
-            change: this.createSliderChangeHandler.bind(this)
-        });
+  /**
+   * Initialize standard handler templates
+   */
+  initHandlerTemplates() {
+    // Slider handler templates
+    this.handlerTemplates.set("slider", {
+      input: this.createSliderInputHandler.bind(this),
+      change: this.createSliderChangeHandler.bind(this),
+    });
 
-        // Button handler templates
-        this.handlerTemplates.set('button', {
-            click: this.createButtonClickHandler.bind(this)
-        });
+    // Button handler templates
+    this.handlerTemplates.set("button", {
+      click: this.createButtonClickHandler.bind(this),
+    });
 
-        // Simulation-specific handler templates
-        this.handlerTemplates.set('simulation', {
-            speedChange: this.createSpeedChangeHandler.bind(this),
-            randomPattern: this.createRandomPatternHandler.bind(this),
-            showLearnModal: this.createShowLearnModalHandler.bind(this),
-            addAnt: this.createAddAntHandler.bind(this),
-            termiteCountChange: this.createTermiteCountChangeHandler.bind(this),
-            brightnessChange: this.createBrightnessChangeHandler.bind(this),
-            likelihoodChange: this.createLikelihoodChangeHandler.bind(this)
-        });
-    }
+    // Simulation-specific handler templates
+    this.handlerTemplates.set("simulation", {
+      speedChange: this.createSpeedChangeHandler.bind(this),
+      randomPattern: this.createRandomPatternHandler.bind(this),
+      showLearnModal: this.createShowLearnModalHandler.bind(this),
+      addAnt: this.createAddAntHandler.bind(this),
+      termiteCountChange: this.createTermiteCountChangeHandler.bind(this),
+      brightnessChange: this.createBrightnessChangeHandler.bind(this),
+      likelihoodChange: this.createLikelihoodChangeHandler.bind(this),
+    });
+  }
 
-    /**
-     * Create simulation-specific handlers with context injection
-     * @param {string} simType - The simulation type
-     * @param {Object} app - The main application instance
-     * @returns {Object} Object containing all simulation handlers
-     */
-    createSimulationHandlers(simType, app) {
-        const handlers = {
-            speedChange: (value) => app.handleSpeedChange(simType, value),
-            randomPattern: () => app.handleRandomPattern(simType),
-            showLearnModal: () => app.showLearnModal(), // No simType parameter needed
-            addAnt: () => app.handleAddAnt(simType),
-            termiteCountChange: (count) => app.handleTermiteCountChange(count),
-            brightnessChange: (value) => app.setBrightness(value),
-            likelihoodChange: (value) => app.setLikelihood(value)
-        };
+  /**
+   * Create simulation-specific handlers with context injection
+   * @param {string} simType - The simulation type
+   * @param {Object} app - The main application instance
+   * @returns {Object} Object containing all simulation handlers
+   */
+  createSimulationHandlers(simType, app) {
+    const handlers = {
+      speedChange: (value) => app.handleSpeedChange(simType, value),
+      randomPattern: () => app.handleRandomPattern(simType),
+      showLearnModal: () => app.showLearnModal(), // No simType parameter needed
+      addAnt: () => app.handleAddAnt(simType),
+      termiteCountChange: (count) => app.handleTermiteCountChange(count),
+      brightnessChange: (value) => app.setBrightness(value),
+      likelihoodChange: (value) => app.setLikelihood(value),
+    };
 
-        // Store handlers for cleanup
-        this.registeredHandlers.set(simType, handlers);
-        return handlers;
-    }
+    // Store handlers for cleanup
+    this.registeredHandlers.set(simType, handlers);
+    return handlers;
+  }
 
-    /**
-     * Create slider input handler with immediate visual feedback
-     * @param {Object} config - Slider configuration
-     * @param {Object} handlers - Simulation handlers
-     * @returns {Function} Input event handler
-     */
-    createSliderInputHandler(config, handlers) {
-        return (e) => {
-            const value = config.format ? config.format(e.target.value) : e.target.value;
-            const valueElement = this.eventFramework.getElement(`#${config.valueElementId}`);
-            if (valueElement) {
-                valueElement.textContent = value;
-            }
-        };
-    }
+  /**
+   * Create slider input handler with immediate visual feedback
+   * @param {Object} config - Slider configuration
+   * @param {Object} handlers - Simulation handlers
+   * @returns {Function} Input event handler
+   */
+  createSliderInputHandler(config, handlers) {
+    return (e) => {
+      const value = config.format
+        ? config.format(e.target.value)
+        : e.target.value;
+      const valueElement = this.eventFramework.getElement(
+        `#${config.valueElementId}`
+      );
+      if (valueElement) {
+        valueElement.textContent = value;
+      }
+    };
+  }
 
-    /**
-     * Create slider change handler with debounced processing
-     * @param {Object} config - Slider configuration
-     * @param {Object} handlers - Simulation handlers
-     * @returns {Function} Change event handler
-     */
-    createSliderChangeHandler(config, handlers) {
-        return this.eventFramework.debounce((e) => {
-            const value = config.format ? config.format(e.target.value) : e.target.value;
-            const valueElement = this.eventFramework.getElement(`#${config.valueElementId}`);
-            if (valueElement) {
-                valueElement.textContent = value;
-            }
+  /**
+   * Create slider change handler with debounced processing
+   * @param {Object} config - Slider configuration
+   * @param {Object} handlers - Simulation handlers
+   * @returns {Function} Change event handler
+   */
+  createSliderChangeHandler(config, handlers) {
+    return this.eventFramework.debounce(
+      (e) => {
+        const value = config.format
+          ? config.format(e.target.value)
+          : e.target.value;
+        const valueElement = this.eventFramework.getElement(
+          `#${config.valueElementId}`
+        );
+        if (valueElement) {
+          valueElement.textContent = value;
+        }
 
-            // Route to appropriate handler based on control type
-            if (config.id.includes('speed')) {
-                handlers.speedChange(parseFloat(e.target.value));
-            } else if (config.id.includes('termites')) {
-                handlers.termiteCountChange(parseInt(e.target.value));
-            } else if (config.id.includes('brightness')) {
-                handlers.brightnessChange(parseFloat(e.target.value));
-            } else if (config.id.includes('likelihood')) {
-                handlers.likelihoodChange(parseInt(e.target.value));
-            }
-        }, 16, `${config.id}-debounce`);
-    }
+        // Route to appropriate handler based on control type
+        if (config.id.includes("speed")) {
+          handlers.speedChange(parseFloat(e.target.value));
+        } else if (config.id.includes("termites")) {
+          handlers.termiteCountChange(parseInt(e.target.value));
+        } else if (config.id.includes("brightness")) {
+          handlers.brightnessChange(parseFloat(e.target.value));
+        } else if (config.id.includes("likelihood")) {
+          handlers.likelihoodChange(parseInt(e.target.value));
+        }
+      },
+      16,
+      `${config.id}-debounce`
+    );
+  }
 
-    /**
-     * Create button click handler with conditional routing
-     * @param {Object} config - Button configuration
-     * @param {Object} handlers - Simulation handlers
-     * @returns {Function} Click event handler
-     */
-    createButtonClickHandler(config, handlers) {
-        return () => {
-            if (config.id.includes('learn')) {
-                handlers.showLearnModal();
-            } else if (config.id.includes('add-ant')) {
-                handlers.addAnt();
-            } else if (config.id.includes('random') || config.id.includes('fill')) {
-                handlers.randomPattern();
-            }
-        };
-    }
+  /**
+   * Create button click handler with conditional routing
+   * @param {Object} config - Button configuration
+   * @param {Object} handlers - Simulation handlers
+   * @returns {Function} Click event handler
+   */
+  createButtonClickHandler(config, handlers) {
+    return () => {
+      if (config.id.includes("learn")) {
+        handlers.showLearnModal();
+      } else if (config.id.includes("add-ant")) {
+        handlers.addAnt();
+      } else if (config.id.includes("random") || config.id.includes("fill")) {
+        handlers.randomPattern();
+      }
+    };
+  }
 
-    /**
-     * Create speed change handler with simulation context
-     * @param {string} simType - Simulation type
-     * @param {Object} app - Application instance
-     * @returns {Function} Speed change handler
-     */
-    createSpeedChangeHandler(simType, app) {
-        return (value) => app.handleSpeedChange(simType, value);
-    }
+  /**
+   * Create speed change handler with simulation context
+   * @param {string} simType - Simulation type
+   * @param {Object} app - Application instance
+   * @returns {Function} Speed change handler
+   */
+  createSpeedChangeHandler(simType, app) {
+    return (value) => app.handleSpeedChange(simType, value);
+  }
 
-    /**
-     * Create random pattern handler with simulation context
-     * @param {string} simType - Simulation type
-     * @param {Object} app - Application instance
-     * @returns {Function} Random pattern handler
-     */
-    createRandomPatternHandler(simType, app) {
-        return () => app.handleRandomPattern(simType);
-    }
+  /**
+   * Create random pattern handler with simulation context
+   * @param {string} simType - Simulation type
+   * @param {Object} app - Application instance
+   * @returns {Function} Random pattern handler
+   */
+  createRandomPatternHandler(simType, app) {
+    return () => app.handleRandomPattern(simType);
+  }
 
-    /**
-     * Create show learn modal handler with simulation context
-     * @param {string} simType - Simulation type
-     * @param {Object} app - Application instance
-     * @returns {Function} Show learn modal handler
-     */
-    createShowLearnModalHandler(simType, app) {
-        return () => app.showLearnModal(simType);
-    }
+  /**
+   * Create show learn modal handler with simulation context
+   * @param {string} simType - Simulation type
+   * @param {Object} app - Application instance
+   * @returns {Function} Show learn modal handler
+   */
+  createShowLearnModalHandler(simType, app) {
+    return () => app.showLearnModal(simType);
+  }
 
-    /**
-     * Create add ant handler with simulation context
-     * @param {string} simType - Simulation type
-     * @param {Object} app - Application instance
-     * @returns {Function} Add ant handler
-     */
-    createAddAntHandler(simType, app) {
-        return () => app.handleAddAnt(simType);
-    }
+  /**
+   * Create add ant handler with simulation context
+   * @param {string} simType - Simulation type
+   * @param {Object} app - Application instance
+   * @returns {Function} Add ant handler
+   */
+  createAddAntHandler(simType, app) {
+    return () => app.handleAddAnt(simType);
+  }
 
-    /**
-     * Create termite count change handler
-     * @param {Object} app - Application instance
-     * @returns {Function} Termite count change handler
-     */
-    createTermiteCountChangeHandler(app) {
-        return (count) => app.handleTermiteCountChange(count);
-    }
+  /**
+   * Create termite count change handler
+   * @param {Object} app - Application instance
+   * @returns {Function} Termite count change handler
+   */
+  createTermiteCountChangeHandler(app) {
+    return (count) => app.handleTermiteCountChange(count);
+  }
 
-    /**
-     * Create brightness change handler
-     * @param {Object} app - Application instance
-     * @returns {Function} Brightness change handler
-     */
-    createBrightnessChangeHandler(app) {
-        return (value) => app.setBrightness(value);
-    }
+  /**
+   * Create brightness change handler
+   * @param {Object} app - Application instance
+   * @returns {Function} Brightness change handler
+   */
+  createBrightnessChangeHandler(app) {
+    return (value) => app.setBrightness(value);
+  }
 
-    /**
-     * Create likelihood change handler
-     * @param {Object} app - Application instance
-     * @returns {Function} Likelihood change handler
-     */
-    createLikelihoodChangeHandler(app) {
-        return (value) => app.setLikelihood(value);
-    }
+  /**
+   * Create likelihood change handler
+   * @param {Object} app - Application instance
+   * @returns {Function} Likelihood change handler
+   */
+  createLikelihoodChangeHandler(app) {
+    return (value) => app.setLikelihood(value);
+  }
 
-    /**
-     * Setup slider control with factory-generated handlers
-     * @param {Object} config - Slider configuration
-     * @param {Object} handlers - Simulation handlers
-     */
-    setupSlider(config, handlers) {
-        const slider = this.eventFramework.getElement(`#${config.id}`);
-        if (!slider) return;
+  /**
+   * Setup slider control with factory-generated handlers
+   * @param {Object} config - Slider configuration
+   * @param {Object} handlers - Simulation handlers
+   */
+  setupSlider(config, handlers) {
+    const slider = this.eventFramework.getElement(`#${config.id}`);
+    if (!slider) return;
 
-        const inputHandler = this.createSliderInputHandler(config, handlers);
-        const changeHandler = this.createSliderChangeHandler(config, handlers);
+    const inputHandler = this.createSliderInputHandler(config, handlers);
+    const changeHandler = this.createSliderChangeHandler(config, handlers);
 
-        this.eventFramework.register(slider, 'input', inputHandler);
-        this.eventFramework.register(slider, 'change', changeHandler);
-    }
+    this.eventFramework.register(slider, "input", inputHandler);
+    this.eventFramework.register(slider, "change", changeHandler);
+  }
 
-    /**
-     * Setup button control with factory-generated handlers
-     * @param {Object} config - Button configuration
-     * @param {Object} handlers - Simulation handlers
-     */
-    setupButton(config, handlers) {
-        const button = this.eventFramework.getElement(`#${config.id}`);
-        if (!button) return;
+  /**
+   * Setup button control with factory-generated handlers
+   * @param {Object} config - Button configuration
+   * @param {Object} handlers - Simulation handlers
+   */
+  setupButton(config, handlers) {
+    const button = this.eventFramework.getElement(`#${config.id}`);
+    if (!button) return;
 
-        const clickHandler = this.createButtonClickHandler(config, handlers);
-        this.eventFramework.register(button, 'click', clickHandler);
-    }
+    const clickHandler = this.createButtonClickHandler(config, handlers);
+    this.eventFramework.register(button, "click", clickHandler);
+  }
 
-    /**
-     * Setup controls for a simulation type using factory-generated handlers
-     * @param {string} simType - Simulation type
-     * @param {Object} handlers - Simulation handlers
-     */
-    setupControls(simType, handlers) {
-        const config = ConfigurationManager.getConfig(simType);
-        if (!config || !config.controls) return;
+  /**
+   * Setup controls for a simulation type using factory-generated handlers
+   * @param {string} simType - Simulation type
+   * @param {Object} handlers - Simulation handlers
+   */
+  setupControls(simType, handlers) {
+    const config = ConfigurationManager.getConfig(simType);
+    if (!config || !config.controls) return;
 
-        Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
-            if (controlConfig.type === 'slider') {
-                this.setupSlider(controlConfig, handlers);
-            } else if (controlConfig.type === 'button') {
-                this.setupButton(controlConfig, handlers);
-            }
-            // Dynamic controls are handled by their own classes
-        });
-    }
+    Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
+      if (controlConfig.type === "slider") {
+        this.setupSlider(controlConfig, handlers);
+      } else if (controlConfig.type === "button") {
+        this.setupButton(controlConfig, handlers);
+      }
+      // Dynamic controls are handled by their own classes
+    });
+  }
 
-    /**
-     * Register all simulation handlers using factory
-     * @param {Object} app - Application instance
-     */
-    registerAllSimulationHandlers(app) {
-        Object.keys(ConfigurationManager.getAllConfigs()).forEach(simType => {
-            const handlers = this.createSimulationHandlers(simType, app);
-            this.setupControls(simType, handlers);
-        });
-    }
+  /**
+   * Register all simulation handlers using factory
+   * @param {Object} app - Application instance
+   */
+  registerAllSimulationHandlers(app) {
+    Object.keys(ConfigurationManager.getAllConfigs()).forEach((simType) => {
+      const handlers = this.createSimulationHandlers(simType, app);
+      this.setupControls(simType, handlers);
+    });
+  }
 
-    /**
-     * Create custom handler with context injection
-     * @param {string} handlerType - Type of handler to create
-     * @param {Object} context - Context object to inject
-     * @param {Function} handlerFunction - Base handler function
-     * @returns {Function} Context-injected handler
-     */
-    createCustomHandler(handlerType, context, handlerFunction) {
-        return (...args) => {
-            return handlerFunction.call(context, ...args);
-        };
-    }
+  /**
+   * Create custom handler with context injection
+   * @param {string} handlerType - Type of handler to create
+   * @param {Object} context - Context object to inject
+   * @param {Function} handlerFunction - Base handler function
+   * @returns {Function} Context-injected handler
+   */
+  createCustomHandler(handlerType, context, handlerFunction) {
+    return (...args) => {
+      return handlerFunction.call(context, ...args);
+    };
+  }
 
-    /**
-     * Create batch event registration
-     * @param {Array} registrations - Array of registration objects
-     */
-    createBatchRegistration(registrations) {
-        const batch = registrations.map(reg => ({
-            element: this.eventFramework.getElement(reg.selector),
-            event: reg.event,
-            handler: reg.handler,
-            options: reg.options || {}
-        })).filter(reg => reg.element);
+  /**
+   * Create batch event registration
+   * @param {Array} registrations - Array of registration objects
+   */
+  createBatchRegistration(registrations) {
+    const batch = registrations
+      .map((reg) => ({
+        element: this.eventFramework.getElement(reg.selector),
+        event: reg.event,
+        handler: reg.handler,
+        options: reg.options || {},
+      }))
+      .filter((reg) => reg.element);
 
-        this.eventFramework.registerBatch(batch);
-    }
+    this.eventFramework.registerBatch(batch);
+  }
 
-    /**
-     * Cleanup all registered handlers
-     */
-    cleanup() {
-        // Clear registered handlers and templates
-        this.registeredHandlers.clear();
-        this.handlerTemplates.clear();
-    }
+  /**
+   * Cleanup all registered handlers
+   */
+  cleanup() {
+    // Clear registered handlers and templates
+    this.registeredHandlers.clear();
+    this.handlerTemplates.clear();
+  }
 
-    /**
-     * Get registered handlers for a simulation type
-     * @param {string} simType - Simulation type
-     * @returns {Object|null} Registered handlers or null
-     */
-    getRegisteredHandlers(simType) {
-        return this.registeredHandlers.get(simType) || null;
-    }
+  /**
+   * Get registered handlers for a simulation type
+   * @param {string} simType - Simulation type
+   * @returns {Object|null} Registered handlers or null
+   */
+  getRegisteredHandlers(simType) {
+    return this.registeredHandlers.get(simType) || null;
+  }
 
-    /**
-     * Check if handlers are registered for a simulation type
-     * @param {string} simType - Simulation type
-     * @returns {boolean} True if handlers are registered
-     */
-    hasRegisteredHandlers(simType) {
-        return this.registeredHandlers.has(simType);
-    }
+  /**
+   * Check if handlers are registered for a simulation type
+   * @param {string} simType - Simulation type
+   * @returns {boolean} True if handlers are registered
+   */
+  hasRegisteredHandlers(simType) {
+    return this.registeredHandlers.has(simType);
+  }
 }
 
 class ModalTemplateManager {
-    constructor() {
-        this.modalTemplates = new Map();
-        this.contentTemplates = new Map();
-        this.init();
-    }
+  constructor() {
+    this.modalTemplates = new Map();
+    this.contentTemplates = new Map();
+    this.init();
+  }
 
-    init() {
-        this.setupBaseTemplates();
-        this.setupContentTemplates();
-    }
+  init() {
+    this.setupBaseTemplates();
+    this.setupContentTemplates();
+  }
 
-    setupBaseTemplates() {
-        // Base modal structure template
-        this.baseModalTemplate = `
+  setupBaseTemplates() {
+    // Base modal structure template
+    this.baseModalTemplate = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 data-title></h2>
@@ -1971,13 +2054,13 @@ class ModalTemplateManager {
                 </div>
             </div>
         `;
-    }
+  }
 
-    setupContentTemplates() {
-        // Conway's Game of Life content template
-        this.contentTemplates.set('conway', {
-            title: "Conway's Game of Life",
-            content: `
+  setupContentTemplates() {
+    // Conway's Game of Life content template
+    this.contentTemplates.set("conway", {
+      title: "Conway's Game of Life",
+      content: `
                 <h3>Rules</h3>
                 <p>Conway's Game of Life is a cellular automaton with simple rules:</p>
                 <ul>
@@ -2004,13 +2087,13 @@ class ModalTemplateManager {
 
                 <h3>How to Use</h3>
                 <p>Click on the grid to toggle cells between alive and dead states. Use the controls to start, pause, and reset the simulation.</p>
-            `
-        });
+            `,
+    });
 
-        // Termite Algorithm content template
-        this.contentTemplates.set('termite', {
-            title: "Termite Algorithm",
-            content: `
+    // Termite Algorithm content template
+    this.contentTemplates.set("termite", {
+      title: "Termite Algorithm",
+      content: `
                 <h3>How It Works</h3>
                 <p>The Termite Algorithm demonstrates emergent behaviour through simple rules:</p>
                 <ul>
@@ -2038,13 +2121,13 @@ class ModalTemplateManager {
 
                 <h3>Controls</h3>
                 <p>Use the speed slider to control termite movement speed, the termites slider to adjust the number of termites, and the random button to create a new random distribution of wood chips.</p>
-            `
-        });
+            `,
+    });
 
-        // Langton's Ant content template
-        this.contentTemplates.set('langton', {
-            title: "Langton's Ant",
-            content: `
+    // Langton's Ant content template
+    this.contentTemplates.set("langton", {
+      title: "Langton's Ant",
+      content: `
                 <h3>Rules</h3>
                 <p>Langton's Ant follows simple rules that create complex emergent behaviour:</p>
                 <ul>
@@ -2072,1577 +2155,1701 @@ class ModalTemplateManager {
 
                 <h3>Controls</h3>
                 <p>Use the speed slider to control ant movement speed, the Add Ant button (or press 'a') to add new ants, and the random button to create a random pattern of white and black cells.</p>
-            `
-        });
+            `,
+    });
+  }
+
+  createModalContent(simType) {
+    const template = this.contentTemplates.get(simType);
+    if (!template) {
+      console.warn(`No content template found for simulation type: ${simType}`);
+      return null;
     }
 
-    createModalContent(simType) {
-        const template = this.contentTemplates.get(simType);
-        if (!template) {
-            console.warn(`No content template found for simulation type: ${simType}`);
-            return null;
-        }
+    // Create modal structure with content
+    const modalHTML = this.baseModalTemplate
+      .replace("[data-title]", template.title)
+      .replace("[data-close-btn]", "")
+      .replace("[data-content]", template.content);
 
-        // Create modal structure with content
-        const modalHTML = this.baseModalTemplate
-            .replace('[data-title]', template.title)
-            .replace('[data-close-btn]', '')
-            .replace('[data-content]', template.content);
+    return {
+      title: template.title,
+      content: modalHTML,
+    };
+  }
 
-        return {
-            title: template.title,
-            content: modalHTML
-        };
-    }
+  generateModalHTML(simType) {
+    const content = this.createModalContent(simType);
+    if (!content) return null;
 
-    generateModalHTML(simType) {
-        const content = this.createModalContent(simType);
-        if (!content) return null;
-
-        return `
+    return `
             <div id="${simType}-modal" class="modal">
                 ${content.content}
             </div>
         `;
+  }
+
+  injectModalContent(simType, modalElement) {
+    const template = this.contentTemplates.get(simType);
+    if (!template || !modalElement) return false;
+
+    // Update title using data attribute for more robust selection
+    const titleElement = modalElement.querySelector("[data-modal-title]");
+    if (titleElement) {
+      titleElement.textContent = template.title;
     }
 
-    injectModalContent(simType, modalElement) {
-        const template = this.contentTemplates.get(simType);
-        if (!template || !modalElement) return false;
-
-        // Update title using data attribute for more robust selection
-        const titleElement = modalElement.querySelector('[data-modal-title]');
-        if (titleElement) {
-            titleElement.textContent = template.title;
-        }
-
-        // Update content using data attribute for more robust selection
-        const contentElement = modalElement.querySelector('[data-modal-content]');
-        if (contentElement) {
-            contentElement.innerHTML = template.content;
-        }
-
-        return true;
+    // Update content using data attribute for more robust selection
+    const contentElement = modalElement.querySelector("[data-modal-content]");
+    if (contentElement) {
+      contentElement.innerHTML = template.content;
     }
 
-    addContentTemplate(simType, template) {
-        if (!template.title || !template.content) {
-            console.error('Template must have title and content properties');
-            return false;
-        }
+    return true;
+  }
 
-        this.contentTemplates.set(simType, template);
-        return true;
+  addContentTemplate(simType, template) {
+    if (!template.title || !template.content) {
+      console.error("Template must have title and content properties");
+      return false;
     }
 
-    getAvailableSimulations() {
-        return Array.from(this.contentTemplates.keys());
-    }
+    this.contentTemplates.set(simType, template);
+    return true;
+  }
 
-    hasTemplate(simType) {
-        return this.contentTemplates.has(simType);
-    }
+  getAvailableSimulations() {
+    return Array.from(this.contentTemplates.keys());
+  }
 
-    cleanup() {
-        this.modalTemplates.clear();
-        this.contentTemplates.clear();
-    }
+  hasTemplate(simType) {
+    return this.contentTemplates.has(simType);
+  }
+
+  cleanup() {
+    this.modalTemplates.clear();
+    this.contentTemplates.clear();
+  }
 }
 
 // Control Template Manager for Simulation Control Configuration Consolidation
 class ControlTemplateManager {
-    // Base templates for common control types
-    static baseTemplates = {
-        dynamicSpeedSlider: {
-            type: 'dynamicSlider',
-            min: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED.min : 1),
-            max: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED.max : 60),
-            step: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED.step : 1),
-            value: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED.value : 30),
-            label: 'Speed',
-            format: (value) => `${value} steps/s`,
-            id: 'dynamic-speed-slider',
-            valueElementId: 'dynamic-speed-value'
+  // Base templates for common control types
+  static baseTemplates = {
+    dynamicSpeedSlider: {
+      type: "dynamicSlider",
+      min:
+        typeof AppConstants !== "undefined"
+          ? AppConstants.UISliders.SPEED.min
+          : 1,
+      max:
+        typeof AppConstants !== "undefined"
+          ? AppConstants.UISliders.SPEED.max
+          : 60,
+      step:
+        typeof AppConstants !== "undefined"
+          ? AppConstants.UISliders.SPEED.step
+          : 1,
+      value:
+        typeof AppConstants !== "undefined"
+          ? AppConstants.UISliders.SPEED.value
+          : 30,
+      label: "Speed",
+      format: (value) => `${value} steps/s`,
+      id: "dynamic-speed-slider",
+      valueElementId: "dynamic-speed-value",
+    },
+    dynamicFillButton: {
+      type: "dynamicButton",
+      label: "Fill",
+    },
+    learnButton: {
+      type: "button",
+      label: "Learn",
+    },
+    addAntButton: {
+      type: "button",
+      label: "Add Ant",
+    },
+    termiteCountSlider: {
+      type: "slider",
+      min:
+        typeof AppConstants !== "undefined"
+          ? AppConstants.UISliders.TERMITES.min
+          : 10,
+      max:
+        typeof AppConstants !== "undefined"
+          ? AppConstants.UISliders.TERMITES.max
+          : 100,
+      step:
+        typeof AppConstants !== "undefined"
+          ? AppConstants.UISliders.TERMITES.step
+          : 1,
+      value:
+        typeof AppConstants !== "undefined"
+          ? AppConstants.UISliders.TERMITES.value
+          : 50,
+      label: "Termites",
+      format: (value) => value.toString(),
+    },
+  };
+
+  // Simulation-specific control configurations with overrides
+  static simulationControlTemplates = {
+    conway: {
+      controls: {
+        // Speed control handled by DynamicSpeedSlider
+        // Fill button handled by DynamicFillButton
+        learn: {
+          template: "learnButton",
+          id: "learn-btn",
         },
-        dynamicFillButton: {
-            type: 'dynamicButton',
-            label: 'Fill'
+      },
+    },
+    termite: {
+      controls: {
+        // Speed control handled by DynamicSpeedSlider
+        termiteCount: {
+          template: "termiteCountSlider",
+          id: "termites-slider",
+          valueElementId: "termites-value",
         },
-        learnButton: {
-            type: 'button',
-            label: 'Learn'
+        // Fill button handled by DynamicFillButton
+        learn: {
+          template: "learnButton",
+          id: "learn-btn",
         },
-        addAntButton: {
-            type: 'button',
-            label: 'Add Ant'
+      },
+    },
+    langton: {
+      controls: {
+        // Speed control handled by DynamicSpeedSlider
+        addAnt: {
+          template: "addAntButton",
+          id: "add-ant-btn",
         },
-        termiteCountSlider: {
-            type: 'slider',
-            min: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.TERMITES.min : 10),
-            max: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.TERMITES.max : 100),
-            step: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.TERMITES.step : 1),
-            value: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.TERMITES.value : 50),
-            label: 'Termites',
-            format: (value) => value.toString()
-        }
+        // Fill button handled by DynamicFillButton
+        learn: {
+          template: "learnButton",
+          id: "learn-btn",
+        },
+      },
+    },
+  };
+
+  // Generate complete control configuration from templates
+  static generateControlConfig(simType, controlName) {
+    const simTemplate = this.simulationControlTemplates[simType];
+    if (!simTemplate || !simTemplate.controls[controlName]) {
+      throw new Error(
+        `Control template not found for ${simType}.${controlName}`
+      );
+    }
+
+    const controlTemplate = simTemplate.controls[controlName];
+    const baseTemplate = this.baseTemplates[controlTemplate.template];
+
+    if (!baseTemplate) {
+      throw new Error(`Base template not found: ${controlTemplate.template}`);
+    }
+
+    // Merge base template with simulation-specific overrides
+    return {
+      ...baseTemplate,
+      ...controlTemplate,
     };
+  }
 
-    // Simulation-specific control configurations with overrides
-    static simulationControlTemplates = {
-        conway: {
-            controls: {
-                // Speed control handled by DynamicSpeedSlider
-                // Fill button handled by DynamicFillButton
-                learn: {
-                    template: 'learnButton',
-                    id: 'learn-btn'
-                }
-            }
-        },
-        termite: {
-            controls: {
-                // Speed control handled by DynamicSpeedSlider
-                termiteCount: {
-                    template: 'termiteCountSlider',
-                    id: 'termites-slider',
-                    valueElementId: 'termites-value'
-                },
-                // Fill button handled by DynamicFillButton
-                learn: {
-                    template: 'learnButton',
-                    id: 'learn-btn'
-                }
-            }
-        },
-        langton: {
-            controls: {
-                // Speed control handled by DynamicSpeedSlider
-                addAnt: {
-                    template: 'addAntButton',
-                    id: 'add-ant-btn'
-                },
-                // Fill button handled by DynamicFillButton
-                learn: {
-                    template: 'learnButton',
-                    id: 'learn-btn'
-                }
-            }
-        }
+  // Generate complete simulation configuration
+  static generateSimulationConfig(simType) {
+    const simTemplate = this.simulationControlTemplates[simType];
+    if (!simTemplate) {
+      throw new Error(`Simulation template not found: ${simType}`);
+    }
+
+    const controls = {};
+    Object.keys(simTemplate.controls).forEach((controlName) => {
+      controls[controlName] = this.generateControlConfig(simType, controlName);
+    });
+
+    return {
+      name: this.getSimulationName(simType),
+      controls,
+      modal: this.getModalConfig(simType),
     };
+  }
 
-    // Generate complete control configuration from templates
-    static generateControlConfig(simType, controlName) {
-        const simTemplate = this.simulationControlTemplates[simType];
-        if (!simTemplate || !simTemplate.controls[controlName]) {
-            throw new Error(`Control template not found for ${simType}.${controlName}`);
+  // Get simulation name
+  static getSimulationName(simType) {
+    const names = {
+      conway: "Conway's Game of Life",
+      termite: "Termite Algorithm",
+      langton: "Langton's Ant",
+    };
+    return names[simType] || simType;
+  }
+
+  // Get modal configuration
+  static getModalConfig(simType) {
+    // All simulations now use the dynamic modal
+    return {
+      id: "dynamic-modal",
+      closeId: "dynamic-modal-close",
+    };
+  }
+
+  // Get all simulation configurations
+  static getAllSimulationConfigs() {
+    const configs = {};
+    Object.keys(this.simulationControlTemplates).forEach((simType) => {
+      configs[simType] = this.generateSimulationConfig(simType);
+    });
+    return configs;
+  }
+
+  // Add new simulation template
+  static addSimulationTemplate(simType, template) {
+    this.simulationControlTemplates[simType] = template;
+  }
+
+  // Add new base template
+  static addBaseTemplate(templateName, template) {
+    this.baseTemplates[templateName] = template;
+  }
+
+  // Validate template configuration
+  static validateTemplate(template) {
+    if (!template.controls || typeof template.controls !== "object") {
+      throw new Error("Template must have controls object");
+    }
+
+    Object.entries(template.controls).forEach(
+      ([controlName, controlConfig]) => {
+        if (!controlConfig.template) {
+          throw new Error(
+            `Control ${controlName} must have a template reference`
+          );
         }
-
-        const controlTemplate = simTemplate.controls[controlName];
-        const baseTemplate = this.baseTemplates[controlTemplate.template];
-
-        if (!baseTemplate) {
-            throw new Error(`Base template not found: ${controlTemplate.template}`);
+        if (!this.baseTemplates[controlConfig.template]) {
+          throw new Error(`Base template not found: ${controlConfig.template}`);
         }
-
-        // Merge base template with simulation-specific overrides
-        return {
-            ...baseTemplate,
-            ...controlTemplate
-        };
-    }
-
-    // Generate complete simulation configuration
-    static generateSimulationConfig(simType) {
-        const simTemplate = this.simulationControlTemplates[simType];
-        if (!simTemplate) {
-            throw new Error(`Simulation template not found: ${simType}`);
-        }
-
-        const controls = {};
-        Object.keys(simTemplate.controls).forEach(controlName => {
-            controls[controlName] = this.generateControlConfig(simType, controlName);
-        });
-
-        return {
-            name: this.getSimulationName(simType),
-            controls,
-            modal: this.getModalConfig(simType)
-        };
-    }
-
-    // Get simulation name
-    static getSimulationName(simType) {
-        const names = {
-            conway: "Conway's Game of Life",
-            termite: 'Termite Algorithm',
-            langton: "Langton's Ant"
-        };
-        return names[simType] || simType;
-    }
-
-    // Get modal configuration
-    static getModalConfig(simType) {
-        // All simulations now use the dynamic modal
-        return {
-            id: 'dynamic-modal',
-            closeId: 'dynamic-modal-close'
-        };
-    }
-
-    // Get all simulation configurations
-    static getAllSimulationConfigs() {
-        const configs = {};
-        Object.keys(this.simulationControlTemplates).forEach(simType => {
-            configs[simType] = this.generateSimulationConfig(simType);
-        });
-        return configs;
-    }
-
-    // Add new simulation template
-    static addSimulationTemplate(simType, template) {
-        this.simulationControlTemplates[simType] = template;
-    }
-
-    // Add new base template
-    static addBaseTemplate(templateName, template) {
-        this.baseTemplates[templateName] = template;
-    }
-
-    // Validate template configuration
-    static validateTemplate(template) {
-        if (!template.controls || typeof template.controls !== 'object') {
-            throw new Error('Template must have controls object');
-        }
-
-        Object.entries(template.controls).forEach(([controlName, controlConfig]) => {
-            if (!controlConfig.template) {
-                throw new Error(`Control ${controlName} must have a template reference`);
-            }
-            if (!this.baseTemplates[controlConfig.template]) {
-                throw new Error(`Base template not found: ${controlConfig.template}`);
-            }
-        });
-    }
+      }
+    );
+  }
 }
 
 // Unified Configuration Manager
 class ConfigurationManager {
-    static simulationConfigs = null;
+  static simulationConfigs = null;
 
-    static getConfig(simType) {
-        if (!this.simulationConfigs) {
-            this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
+  static getConfig(simType) {
+    if (!this.simulationConfigs) {
+      this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
+    }
+    return this.simulationConfigs[simType];
+  }
+
+  static getAllConfigs() {
+    if (!this.simulationConfigs) {
+      this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
+    }
+    return this.simulationConfigs;
+  }
+
+  // Factory methods for creating standardized configurations (R2 Implementation)
+  static createSliderConfig(
+    id,
+    valueElementId,
+    min,
+    max,
+    step,
+    value,
+    label,
+    format = null
+  ) {
+    return {
+      type: "slider",
+      id,
+      valueElementId,
+      min,
+      max,
+      step,
+      value,
+      label,
+      format: format || ((val) => val.toString()),
+    };
+  }
+
+  static createButtonConfig(id, label, className = "btn secondary") {
+    return {
+      type: "button",
+      id,
+      label,
+      className,
+    };
+  }
+
+  static createModalConfig(id, closeId, onShow = null, onHide = null) {
+    return {
+      id,
+      closeId,
+      onShow,
+      onHide,
+    };
+  }
+
+  static createSimulationConfig(name, controls, modal) {
+    return {
+      name,
+      controls,
+      modal,
+    };
+  }
+
+  // Validation methods
+  static validateSliderConfig(config) {
+    const required = [
+      "id",
+      "valueElementId",
+      "min",
+      "max",
+      "step",
+      "value",
+      "label",
+    ];
+    return required.every((prop) => config.hasOwnProperty(prop));
+  }
+
+  static validateButtonConfig(config) {
+    const required = ["id", "label"];
+    return required.every((prop) => config.hasOwnProperty(prop));
+  }
+
+  static validateModalConfig(config) {
+    const required = ["id", "closeId"];
+    return required.every((prop) => config.hasOwnProperty(prop));
+  }
+
+  static validateSimulationConfig(config) {
+    const required = ["name", "controls", "modal"];
+    return required.every((prop) => config.hasOwnProperty(prop));
+  }
+
+  // Factory method to create a complete simulation configuration
+  static createCompleteSimulationConfig(
+    simType,
+    name,
+    controlConfigs,
+    modalConfig
+  ) {
+    const controls = {};
+
+    // Process control configurations
+    Object.entries(controlConfigs).forEach(([controlName, controlConfig]) => {
+      if (controlConfig.type === "slider") {
+        if (!this.validateSliderConfig(controlConfig)) {
+          throw new Error(
+            `Invalid slider config for ${simType}.${controlName}`
+          );
         }
-        return this.simulationConfigs[simType];
-    }
-
-    static getAllConfigs() {
-        if (!this.simulationConfigs) {
-            this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
+      } else if (controlConfig.type === "button") {
+        if (!this.validateButtonConfig(controlConfig)) {
+          throw new Error(
+            `Invalid button config for ${simType}.${controlName}`
+          );
         }
-        return this.simulationConfigs;
+      }
+      controls[controlName] = controlConfig;
+    });
+
+    // Validate modal configuration
+    if (!this.validateModalConfig(modalConfig)) {
+      throw new Error(`Invalid modal config for ${simType}`);
     }
 
-    // Factory methods for creating standardized configurations (R2 Implementation)
-    static createSliderConfig(id, valueElementId, min, max, step, value, label, format = null) {
-        return {
-            type: 'slider',
-            id,
-            valueElementId,
-            min,
-            max,
-            step,
-            value,
-            label,
-            format: format || ((val) => val.toString())
-        };
+    const simulationConfig = this.createSimulationConfig(
+      name,
+      controls,
+      modalConfig
+    );
+
+    if (!this.validateSimulationConfig(simulationConfig)) {
+      throw new Error(`Invalid simulation config for ${simType}`);
     }
 
-    static createButtonConfig(id, label, className = 'btn secondary') {
-        return {
-            type: 'button',
-            id,
-            label,
-            className
-        };
-    }
+    return simulationConfig;
+  }
 
-    static createModalConfig(id, closeId, onShow = null, onHide = null) {
-        return {
-            id,
-            closeId,
-            onShow,
-            onHide
-        };
-    }
-
-    static createSimulationConfig(name, controls, modal) {
-        return {
-            name,
-            controls,
-            modal
-        };
-    }
-
-    // Validation methods
-    static validateSliderConfig(config) {
-        const required = ['id', 'valueElementId', 'min', 'max', 'step', 'value', 'label'];
-        return required.every(prop => config.hasOwnProperty(prop));
-    }
-
-    static validateButtonConfig(config) {
-        const required = ['id', 'label'];
-        return required.every(prop => config.hasOwnProperty(prop));
-    }
-
-    static validateModalConfig(config) {
-        const required = ['id', 'closeId'];
-        return required.every(prop => config.hasOwnProperty(prop));
-    }
-
-    static validateSimulationConfig(config) {
-        const required = ['name', 'controls', 'modal'];
-        return required.every(prop => config.hasOwnProperty(prop));
-    }
-
-    // Factory method to create a complete simulation configuration
-    static createCompleteSimulationConfig(simType, name, controlConfigs, modalConfig) {
-        const controls = {};
-
-        // Process control configurations
-        Object.entries(controlConfigs).forEach(([controlName, controlConfig]) => {
-            if (controlConfig.type === 'slider') {
-                if (!this.validateSliderConfig(controlConfig)) {
-                    throw new Error(`Invalid slider config for ${simType}.${controlName}`);
-                }
-            } else if (controlConfig.type === 'button') {
-                if (!this.validateButtonConfig(controlConfig)) {
-                    throw new Error(`Invalid button config for ${simType}.${controlName}`);
-                }
-            }
-            controls[controlName] = controlConfig;
-        });
-
-        // Validate modal configuration
-        if (!this.validateModalConfig(modalConfig)) {
-            throw new Error(`Invalid modal config for ${simType}`);
-        }
-
-        const simulationConfig = this.createSimulationConfig(name, controls, modalConfig);
-
-        if (!this.validateSimulationConfig(simulationConfig)) {
-            throw new Error(`Invalid simulation config for ${simType}`);
-        }
-
-        return simulationConfig;
-    }
-
-    // Regenerate configurations from templates (useful for dynamic updates)
-    static regenerateConfigs() {
-        this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
-    }
+  // Regenerate configurations from templates (useful for dynamic updates)
+  static regenerateConfigs() {
+    this.simulationConfigs = ControlTemplateManager.getAllSimulationConfigs();
+  }
 }
 
 // Event Handling Framework (R1 Implementation)
 class EventFramework {
-    constructor() {
-        this.listeners = new Map();
-        this.debounceTimers = new Map();
-        this.throttleTimers = new Map();
-        this.elementCache = new Map();
+  constructor() {
+    this.listeners = new Map();
+    this.debounceTimers = new Map();
+    this.throttleTimers = new Map();
+    this.elementCache = new Map();
+  }
+
+  // Unified event registration with automatic cleanup
+  register(element, event, handler, options = {}) {
+    const key = this.createListenerKey(element, event);
+
+    // Remove existing listener if present
+    this.remove(element, event);
+
+    // Store listener for cleanup
+    this.listeners.set(key, { element, event, handler, options });
+
+    // Add event listener
+    element.addEventListener(event, handler, options);
+
+    return key;
+  }
+
+  // Remove specific event listener
+  remove(element, event) {
+    const key = this.createListenerKey(element, event);
+    const listener = this.listeners.get(key);
+
+    if (listener) {
+      listener.element.removeEventListener(
+        listener.event,
+        listener.handler,
+        listener.options
+      );
+      this.listeners.delete(key);
     }
+  }
 
-    // Unified event registration with automatic cleanup
-    register(element, event, handler, options = {}) {
-        const key = this.createListenerKey(element, event);
+  // Remove all listeners for an element
+  removeAll(element) {
+    const elementKey = element.id || element.tagName;
 
-        // Remove existing listener if present
-        this.remove(element, event);
-
-        // Store listener for cleanup
-        this.listeners.set(key, { element, event, handler, options });
-
-        // Add event listener
-        element.addEventListener(event, handler, options);
-
-        return key;
+    for (const [key, listener] of this.listeners.entries()) {
+      if (listener.element === element) {
+        listener.element.removeEventListener(
+          listener.event,
+          listener.handler,
+          listener.options
+        );
+        this.listeners.delete(key);
+      }
     }
+  }
 
-    // Remove specific event listener
-    remove(element, event) {
-        const key = this.createListenerKey(element, event);
-        const listener = this.listeners.get(key);
+  // Cleanup all listeners
+  cleanup() {
+    for (const [key, listener] of this.listeners.entries()) {
+      listener.element.removeEventListener(
+        listener.event,
+        listener.handler,
+        listener.options
+      );
+    }
+    this.listeners.clear();
+    this.debounceTimers.clear();
+    this.throttleTimers.clear();
+    this.elementCache.clear();
+  }
 
-        if (listener) {
-            listener.element.removeEventListener(listener.event, listener.handler, listener.options);
-            this.listeners.delete(key);
+  // Debounce utility (delegates to PerformanceUtils, using instance store for scoping)
+  debounce(func, wait, key = null) {
+    return PerformanceUtils.debounce(func, wait, key, this.debounceTimers);
+  }
+
+  // Throttle utility (delegates to PerformanceUtils, using instance store for scoping)
+  throttle(func, limit, key = null) {
+    return PerformanceUtils.throttle(func, limit, key, this.throttleTimers);
+  }
+
+  // Element cache with automatic cleanup
+  getElement(selector) {
+    if (!this.elementCache.has(selector)) {
+      const element = document.querySelector(selector);
+      if (element) {
+        this.elementCache.set(selector, element);
+      } else {
+        // Don't cache null/undefined values to allow for dynamic element creation
+        return null;
+      }
+    }
+    return this.elementCache.get(selector);
+  }
+
+  // Create unique key for listener tracking
+  createListenerKey(element, event) {
+    const elementId = element.id || element.tagName || "anonymous";
+    return `${elementId}-${event}`;
+  }
+
+  // Batch event registration for multiple elements
+  registerBatch(registrations) {
+    const keys = [];
+    for (const { element, event, handler, options } of registrations) {
+      const key = this.register(element, event, handler, options);
+      keys.push(key);
+    }
+    return keys;
+  }
+
+  // Declarative event registration from config objects
+  // configs: Array<{ selector: string, on: { [event: string]: { handler: Function, options?: AddEventListenerOptions, debounce?: number, throttle?: number } } }>
+  registerDeclarative(configs = []) {
+    const keys = [];
+    configs.forEach((cfg) => {
+      const element =
+        typeof cfg.selector === "string"
+          ? this.getElement(cfg.selector)
+          : cfg.selector;
+      if (!element || !cfg.on) return;
+      Object.entries(cfg.on).forEach(([event, meta]) => {
+        if (!meta || typeof meta.handler !== "function") return;
+        let wrapped = meta.handler;
+        if (typeof meta.debounce === "number") {
+          wrapped = this.debounce(
+            wrapped,
+            meta.debounce,
+            `${element.id || element.tagName}-${event}-debounced`
+          );
+        } else if (typeof meta.throttle === "number") {
+          wrapped = this.throttle(
+            wrapped,
+            meta.throttle,
+            `${element.id || element.tagName}-${event}-throttled`
+          );
         }
-    }
+        const key = this.register(element, event, wrapped, meta.options || {});
+        keys.push(key);
+      });
+    });
+    return keys;
+  }
 
-    // Remove all listeners for an element
-    removeAll(element) {
-        const elementKey = element.id || element.tagName;
+  // Delegated event registration on a container with selector matching
+  // container: Element | selector string
+  registerDelegated(container, event, selector, handler, options = {}) {
+    const containerEl =
+      typeof container === "string" ? this.getElement(container) : container;
+    if (!containerEl || typeof handler !== "function") return null;
+    const delegated = (e) => {
+      const target =
+        e.target &&
+        (e.target.matches?.(selector)
+          ? e.target
+          : e.target.closest?.(selector));
+      if (target) {
+        handler.call(target, e);
+      }
+    };
+    return this.register(containerEl, event, delegated, options);
+  }
 
-        for (const [key, listener] of this.listeners.entries()) {
-            if (listener.element === element) {
-                listener.element.removeEventListener(listener.event, listener.handler, listener.options);
-                this.listeners.delete(key);
-            }
-        }
-    }
-
-    // Cleanup all listeners
-    cleanup() {
-        for (const [key, listener] of this.listeners.entries()) {
-            listener.element.removeEventListener(listener.event, listener.handler, listener.options);
-        }
-        this.listeners.clear();
-        this.debounceTimers.clear();
-        this.throttleTimers.clear();
-        this.elementCache.clear();
-    }
-
-    // Debounce utility (delegates to PerformanceUtils, using instance store for scoping)
-    debounce(func, wait, key = null) {
-        return PerformanceUtils.debounce(func, wait, key, this.debounceTimers);
-    }
-
-    // Throttle utility (delegates to PerformanceUtils, using instance store for scoping)
-    throttle(func, limit, key = null) {
-        return PerformanceUtils.throttle(func, limit, key, this.throttleTimers);
-    }
-
-    // Element cache with automatic cleanup
-    getElement(selector) {
-        if (!this.elementCache.has(selector)) {
-            const element = document.querySelector(selector);
-            if (element) {
-                this.elementCache.set(selector, element);
-            } else {
-                // Don't cache null/undefined values to allow for dynamic element creation
-                return null;
-            }
-        }
-        return this.elementCache.get(selector);
-    }
-
-    // Create unique key for listener tracking
-    createListenerKey(element, event) {
-        const elementId = element.id || element.tagName || 'anonymous';
-        return `${elementId}-${event}`;
-    }
-
-    // Batch event registration for multiple elements
-    registerBatch(registrations) {
-        const keys = [];
-        for (const { element, event, handler, options } of registrations) {
-            const key = this.register(element, event, handler, options);
-            keys.push(key);
-        }
-        return keys;
-    }
-
-    // Declarative event registration from config objects
-    // configs: Array<{ selector: string, on: { [event: string]: { handler: Function, options?: AddEventListenerOptions, debounce?: number, throttle?: number } } }>
-    registerDeclarative(configs = []) {
-        const keys = [];
-        configs.forEach(cfg => {
-            const element = typeof cfg.selector === 'string' ? this.getElement(cfg.selector) : cfg.selector;
-            if (!element || !cfg.on) return;
-            Object.entries(cfg.on).forEach(([event, meta]) => {
-                if (!meta || typeof meta.handler !== 'function') return;
-                let wrapped = meta.handler;
-                if (typeof meta.debounce === 'number') {
-                    wrapped = this.debounce(wrapped, meta.debounce, `${(element.id || element.tagName)}-${event}-debounced`);
-                } else if (typeof meta.throttle === 'number') {
-                    wrapped = this.throttle(wrapped, meta.throttle, `${(element.id || element.tagName)}-${event}-throttled`);
-                }
-                const key = this.register(element, event, wrapped, meta.options || {});
-                keys.push(key);
-            });
-        });
-        return keys;
-    }
-
-    // Delegated event registration on a container with selector matching
-    // container: Element | selector string
-    registerDelegated(container, event, selector, handler, options = {}) {
-        const containerEl = typeof container === 'string' ? this.getElement(container) : container;
-        if (!containerEl || typeof handler !== 'function') return null;
-        const delegated = (e) => {
-            const target = e.target && (e.target.matches?.(selector) ? e.target : e.target.closest?.(selector));
-            if (target) {
-                handler.call(target, e);
-            }
-        };
-        return this.register(containerEl, event, delegated, options);
-    }
-
-    // Register all simulation handlers (compatibility method)
-    registerAllHandlers() {
-        // This method is called by AlgorithmicPatternGenerator but the actual
-        // simulation-specific handlers are now registered in ControlManager
-        // This maintains backward compatibility
-        console.log('EventFramework: registerAllHandlers called - simulation handlers managed by ControlManager');
-    }
+  // Register all simulation handlers (compatibility method)
+  registerAllHandlers() {
+    // This method is called by AlgorithmicPatternGenerator but the actual
+    // simulation-specific handlers are now registered in ControlManager
+    // This maintains backward compatibility
+    console.log(
+      "EventFramework: registerAllHandlers called - simulation handlers managed by ControlManager"
+    );
+  }
 }
 
 // Unified Control Manager
 class ControlManager {
-    constructor(eventFramework) {
-        this.activeControls = null;
-        this.eventFramework = eventFramework;
-        this.eventHandlerFactory = new EventHandlerFactory(eventFramework);
-        this.visibilityManager = new ControlVisibilityManager();
-        this.visibilityManager.init();
-    }
+  constructor(eventFramework) {
+    this.activeControls = null;
+    this.eventFramework = eventFramework;
+    this.eventHandlerFactory = new EventHandlerFactory(eventFramework);
+    this.visibilityManager = new ControlVisibilityManager();
+    this.visibilityManager.init();
+  }
 
-    // Show controls for a specific simulation type
-    showControls(simType) {
-        // Use the new CSS-based visibility manager
-        this.visibilityManager.showControls(simType);
-        this.activeControls = simType;
-
-        // Show/hide action buttons based on simulation type
-        this.showActionButtons(simType);
-    }
-
-    // Hide all simulation controls
-    hideAllControls() {
-        // Use the new CSS-based visibility manager
-        this.visibilityManager.hideAllControls();
-        this.activeControls = null;
-    }
+  // Show controls for a specific simulation type
+  showControls(simType) {
+    // Use the new CSS-based visibility manager
+    this.visibilityManager.showControls(simType);
+    this.activeControls = simType;
 
     // Show/hide action buttons based on simulation type
-    showActionButtons(simType) {
-        // Hide all action buttons first (except dynamic-fill-btn which manages its own visibility)
-        const actionButtons = [
-            'add-ant-btn',
-            'learn-btn'
-        ];
+    this.showActionButtons(simType);
+  }
 
-        actionButtons.forEach(buttonId => {
-            const button = document.getElementById(buttonId);
+  // Hide all simulation controls
+  hideAllControls() {
+    // Use the new CSS-based visibility manager
+    this.visibilityManager.hideAllControls();
+    this.activeControls = null;
+  }
+
+  // Show/hide action buttons based on simulation type
+  showActionButtons(simType) {
+    // Hide all action buttons first (except dynamic-fill-btn which manages its own visibility)
+    const actionButtons = ["add-ant-btn", "learn-btn"];
+
+    actionButtons.forEach((buttonId) => {
+      const button = document.getElementById(buttonId);
+      if (button) {
+        button.style.display = "none";
+      }
+    });
+
+    // Show buttons for current simulation
+    const config = ConfigurationManager.getConfig(simType);
+    if (config && config.controls) {
+      Object.entries(config.controls).forEach(
+        ([controlName, controlConfig]) => {
+          if (controlConfig.type === "button" && controlConfig.id) {
+            const button = document.getElementById(controlConfig.id);
             if (button) {
-                button.style.display = 'none';
+              button.style.display = "inline-block";
             }
-        });
-
-        // Show buttons for current simulation
-        const config = ConfigurationManager.getConfig(simType);
-        if (config && config.controls) {
-            Object.entries(config.controls).forEach(([controlName, controlConfig]) => {
-                if (controlConfig.type === 'button' && controlConfig.id) {
-                    const button = document.getElementById(controlConfig.id);
-                    if (button) {
-                        button.style.display = 'inline-block';
-                    }
-                }
-            });
+          }
         }
+      );
     }
+  }
 
-    // Update control values
-    updateControlValues(simType, values) {
-        const config = ConfigurationManager.getConfig(simType);
-        if (!config || !config.controls) return;
+  // Update control values
+  updateControlValues(simType, values) {
+    const config = ConfigurationManager.getConfig(simType);
+    if (!config || !config.controls) return;
 
-        Object.entries(values).forEach(([controlName, value]) => {
-            const controlConfig = config.controls[controlName];
-            if (controlConfig && controlConfig.type === 'slider') {
-                const slider = document.getElementById(controlConfig.id);
-                const valueElement = document.getElementById(controlConfig.valueElementId);
+    Object.entries(values).forEach(([controlName, value]) => {
+      const controlConfig = config.controls[controlName];
+      if (controlConfig && controlConfig.type === "slider") {
+        const slider = document.getElementById(controlConfig.id);
+        const valueElement = document.getElementById(
+          controlConfig.valueElementId
+        );
 
-                if (slider) {
-                    slider.value = value;
-                }
-                if (valueElement && controlConfig.format) {
-                    valueElement.textContent = controlConfig.format(value);
-                }
-            }
-        });
-    }
-
-    // Register handlers for a specific simulation type using EventHandlerFactory
-    registerSimulationHandlers(simType, app) {
-        const handlers = this.eventHandlerFactory.createSimulationHandlers(simType, app);
-        this.eventHandlerFactory.setupControls(simType, handlers);
-    }
-
-    // Register all simulation handlers using EventHandlerFactory
-    registerAllHandlers(app) {
-        this.eventHandlerFactory.registerAllSimulationHandlers(app);
-    }
-
-    // Cleanup simulation handlers
-    cleanup() {
-        this.eventHandlerFactory.cleanup();
-        if (this.visibilityManager) {
-            this.visibilityManager.cleanup();
+        if (slider) {
+          slider.value = value;
         }
+        if (valueElement && controlConfig.format) {
+          valueElement.textContent = controlConfig.format(value);
+        }
+      }
+    });
+  }
+
+  // Register handlers for a specific simulation type using EventHandlerFactory
+  registerSimulationHandlers(simType, app) {
+    const handlers = this.eventHandlerFactory.createSimulationHandlers(
+      simType,
+      app
+    );
+    this.eventHandlerFactory.setupControls(simType, handlers);
+  }
+
+  // Register all simulation handlers using EventHandlerFactory
+  registerAllHandlers(app) {
+    this.eventHandlerFactory.registerAllSimulationHandlers(app);
+  }
+
+  // Cleanup simulation handlers
+  cleanup() {
+    this.eventHandlerFactory.cleanup();
+    if (this.visibilityManager) {
+      this.visibilityManager.cleanup();
     }
+  }
 }
 
 // Unified Keyboard Handler
 class KeyboardHandler {
-    constructor(app) {
-        this.app = app;
-        this.shortcuts = new Map();
-        this.setupShortcuts();
-    }
+  constructor(app) {
+    this.app = app;
+    this.shortcuts = new Map();
+    this.setupShortcuts();
+  }
 
-    setupShortcuts() {
-        this.shortcuts.set(' ', () => this.app.toggleSimulation());
-        this.shortcuts.set('r', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                this.app.resetSimulation();
-            } else {
-                this.app.resetBrightness();
-            }
-        });
-        this.shortcuts.set('c', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                this.app.clearSimulation();
-            }
-        });
-        this.shortcuts.set('i', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                this.app.toggleImmersiveMode();
-            }
-        });
-        this.shortcuts.set('Escape', () => this.app.handleEscape());
-        this.shortcuts.set(',', () => this.app.adjustSpeed(this.app.currentType, -1));
-        this.shortcuts.set('.', () => this.app.adjustSpeed(this.app.currentType, 1));
-        this.shortcuts.set('a', () => this.app.handleAddAnt(this.app.currentType, true));
-        this.shortcuts.set('[', () => this.app.adjustBrightness(-0.1));
-        this.shortcuts.set(']', () => this.app.adjustBrightness(0.1));
-    }
+  setupShortcuts() {
+    this.shortcuts.set(" ", () => this.app.toggleSimulation());
+    this.shortcuts.set("r", (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        this.app.resetSimulation();
+      } else {
+        this.app.resetBrightness();
+      }
+    });
+    this.shortcuts.set("c", (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        this.app.clearSimulation();
+      }
+    });
+    this.shortcuts.set("i", (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        this.app.toggleImmersiveMode();
+      }
+    });
+    this.shortcuts.set("Escape", () => this.app.handleEscape());
+    this.shortcuts.set(",", () =>
+      this.app.adjustSpeed(this.app.currentType, -1)
+    );
+    this.shortcuts.set(".", () =>
+      this.app.adjustSpeed(this.app.currentType, 1)
+    );
+    this.shortcuts.set("a", () =>
+      this.app.handleAddAnt(this.app.currentType, true)
+    );
+    this.shortcuts.set("[", () => this.app.adjustBrightness(-0.1));
+    this.shortcuts.set("]", () => this.app.adjustBrightness(0.1));
+  }
 
-    handleKeydown(e) {
-        const handler = this.shortcuts.get(e.key);
-        if (handler) {
-            e.preventDefault();
-            handler(e);
-        }
+  handleKeydown(e) {
+    const handler = this.shortcuts.get(e.key);
+    if (handler) {
+      e.preventDefault();
+      handler(e);
     }
+  }
 }
 
 // Modal Manager for handling all modals with performance optimization
 class ModalManager {
-    constructor(eventFramework = null) {
-        this.activeModal = null;
-        this.modals = new Map();
-        this.elementCache = PerformanceOptimizer.createElementCache();
-        this.renderQueue = new Set();
-        this.isRendering = false;
-        this.modalTemplateManager = new ModalTemplateManager();
-        this.dynamicModalId = 'dynamic-modal';
-        this.currentSimType = null;
-        this.scrollPositions = new Map(); // Track scroll positions for each simulation type
-        this.eventFramework = eventFramework || null;
-        this.init();
+  constructor(eventFramework = null) {
+    this.activeModal = null;
+    this.modals = new Map();
+    this.elementCache = PerformanceOptimizer.createElementCache();
+    this.renderQueue = new Set();
+    this.isRendering = false;
+    this.modalTemplateManager = new ModalTemplateManager();
+    this.dynamicModalId = "dynamic-modal";
+    this.currentSimType = null;
+    this.scrollPositions = new Map(); // Track scroll positions for each simulation type
+    this.eventFramework = eventFramework || null;
+    this.init();
+  }
+
+  init() {
+    // Set up global modal event listeners with throttling
+    const throttledKeydown = PerformanceOptimizer.throttle((e) => {
+      if (e.key === "Escape" && this.activeModal) {
+        this.hide(this.activeModal);
+      }
+    }, 100);
+
+    const throttledClick = PerformanceOptimizer.throttle((e) => {
+      if (this.activeModal && e.target.classList.contains("modal")) {
+        // Save scroll position before hiding for dynamic modal
+        if (this.activeModal === this.dynamicModalId && this.currentSimType) {
+          this.saveScrollPosition(this.currentSimType);
+        }
+        this.hide(this.activeModal);
+      }
+    }, 100);
+
+    if (this.eventFramework) {
+      this.eventFramework.register(document, "keydown", throttledKeydown);
+      this.eventFramework.register(document, "click", throttledClick);
+    } else {
+      document.addEventListener("keydown", throttledKeydown);
+      document.addEventListener("click", throttledClick);
+    }
+  }
+
+  register(modalId, config = {}) {
+    const modal = this.elementCache.get(`#${modalId}`);
+    if (!modal) {
+      console.warn(`Modal with ID '${modalId}' not found`);
+      return;
     }
 
-    init() {
-        // Set up global modal event listeners with throttling
-        const throttledKeydown = PerformanceOptimizer.throttle((e) => {
-            if (e.key === 'Escape' && this.activeModal) {
-                this.hide(this.activeModal);
-            }
-        }, 100);
+    const modalConfig = {
+      id: modalId,
+      element: modal,
+      closeBtn: modal.querySelector(".modal-close"),
+      isVisible: false,
+      ...config,
+    };
 
-        const throttledClick = PerformanceOptimizer.throttle((e) => {
-            if (this.activeModal && e.target.classList.contains('modal')) {
-                // Save scroll position before hiding for dynamic modal
-                if (this.activeModal === this.dynamicModalId && this.currentSimType) {
-                    this.saveScrollPosition(this.currentSimType);
-                }
-                this.hide(this.activeModal);
-            }
-        }, 100);
+    // Set up close button event listener
+    if (modalConfig.closeBtn) {
+      const onClose = () => {
+        // Save scroll position before hiding for dynamic modal
+        if (modalId === this.dynamicModalId && this.currentSimType) {
+          this.saveScrollPosition(this.currentSimType);
+        }
+        this.hide(modalId);
+      };
+      if (this.eventFramework) {
+        this.eventFramework.register(modalConfig.closeBtn, "click", onClose);
+      } else {
+        modalConfig.closeBtn.addEventListener("click", onClose);
+      }
+    }
 
-        if (this.eventFramework) {
-            this.eventFramework.register(document, 'keydown', throttledKeydown);
-            this.eventFramework.register(document, 'click', throttledClick);
+    this.modals.set(modalId, modalConfig);
+    return modalConfig;
+  }
+
+  // Register dynamic modal for a specific simulation type
+  registerDynamicModal(simType) {
+    if (!this.modalTemplateManager.hasTemplate(simType)) {
+      console.warn(`No template found for simulation type: ${simType}`);
+      return false;
+    }
+
+    // Register the dynamic modal if not already registered
+    if (!this.modals.has(this.dynamicModalId)) {
+      this.register(this.dynamicModalId);
+    }
+
+    return true;
+  }
+
+  show(modalId, simType = null) {
+    const modalConfig = this.modals.get(modalId);
+    if (!modalConfig) {
+      console.warn(`Modal '${modalId}' not registered`);
+      return;
+    }
+
+    // If showing the dynamic modal, handle content injection
+    if (modalId === this.dynamicModalId && simType) {
+      // Save scroll position of previous modal if it was the dynamic modal
+      if (this.activeModal === this.dynamicModalId && this.currentSimType) {
+        this.saveScrollPosition(this.currentSimType);
+      }
+
+      // Update current simulation type
+      this.currentSimType = simType;
+
+      // Inject dynamic content
+      this.injectDynamicContent(simType);
+    }
+
+    // Queue modal for showing
+    this.queueModalRender(modalConfig, true);
+    this.activeModal = modalId;
+
+    // Trigger custom show callback
+    if (modalConfig.onShow) {
+      modalConfig.onShow();
+    }
+  }
+
+  // Inject dynamic content for the current simulation type
+  injectDynamicContent(simType) {
+    const modalElement = this.modals.get(this.dynamicModalId)?.element;
+    if (!modalElement) {
+      console.warn("Dynamic modal not found");
+      return;
+    }
+
+    const success = this.modalTemplateManager.injectModalContent(
+      simType,
+      modalElement
+    );
+    if (!success) {
+      console.warn(`Failed to inject content for simulation type: ${simType}`);
+      return;
+    }
+  }
+
+  // Save scroll position for a specific simulation type
+  saveScrollPosition(simType) {
+    const modalElement = this.modals.get(this.dynamicModalId)?.element;
+    if (!modalElement) {
+      console.warn("Modal element not found for scroll position save");
+      return;
+    }
+
+    const modalContent = modalElement.querySelector(".modal-content");
+    if (modalContent) {
+      const currentScrollTop = modalContent.scrollTop;
+      this.scrollPositions.set(simType, currentScrollTop);
+    } else {
+      console.warn("Modal content element not found for scroll position save");
+    }
+  }
+
+  // Restore scroll position for a specific simulation type
+  restoreScrollPosition(simType) {
+    const modalElement = this.modals.get(this.dynamicModalId)?.element;
+    if (!modalElement) {
+      console.warn("Modal element not found for scroll position restore");
+      return;
+    }
+
+    const modalContent = modalElement.querySelector(".modal-content");
+    if (modalContent) {
+      const savedPosition = this.scrollPositions.get(simType);
+      if (savedPosition !== undefined) {
+        modalContent.scrollTop = savedPosition;
+      } else {
+        // If no saved position, scroll to top
+        modalContent.scrollTop = 0;
+      }
+    } else {
+      console.warn(
+        "Modal content element not found for scroll position restore"
+      );
+    }
+  }
+
+  hide(modalId) {
+    const modalConfig = this.modals.get(modalId);
+    if (!modalConfig) {
+      console.warn(`Modal '${modalId}' not registered`);
+      return;
+    }
+
+    // Queue modal for hiding
+    this.queueModalRender(modalConfig, false);
+
+    if (this.activeModal === modalId) {
+      this.activeModal = null;
+    }
+
+    // Trigger custom hide callback
+    if (modalConfig.onHide) {
+      modalConfig.onHide();
+    }
+  }
+
+  // Queue modal rendering to prevent layout thrashing
+  queueModalRender(modalConfig, show) {
+    this.renderQueue.add({ modalConfig, show });
+
+    if (!this.isRendering) {
+      this.processRenderQueue();
+    }
+  }
+
+  // Process render queue efficiently
+  processRenderQueue() {
+    this.isRendering = true;
+
+    // Use requestAnimationFrame for smooth rendering
+    requestAnimationFrame(() => {
+      this.renderQueue.forEach(({ modalConfig, show }) => {
+        if (show) {
+          modalConfig.element.classList.add("show");
+          modalConfig.isVisible = true;
         } else {
-            document.addEventListener('keydown', throttledKeydown);
-            document.addEventListener('click', throttledClick);
+          modalConfig.element.classList.remove("show");
+          modalConfig.isVisible = false;
         }
-    }
+      });
 
-    register(modalId, config = {}) {
-        const modal = this.elementCache.get(`#${modalId}`);
-        if (!modal) {
-            console.warn(`Modal with ID '${modalId}' not found`);
-            return;
-        }
+      this.renderQueue.clear();
+      this.isRendering = false;
 
-        const modalConfig = {
-            id: modalId,
-            element: modal,
-            closeBtn: modal.querySelector('.modal-close'),
-            isVisible: false,
-            ...config
-        };
-
-        // Set up close button event listener
-        if (modalConfig.closeBtn) {
-            const onClose = () => {
-                // Save scroll position before hiding for dynamic modal
-                if (modalId === this.dynamicModalId && this.currentSimType) {
-                    this.saveScrollPosition(this.currentSimType);
-                }
-                this.hide(modalId);
-            };
-            if (this.eventFramework) {
-                this.eventFramework.register(modalConfig.closeBtn, 'click', onClose);
-            } else {
-                modalConfig.closeBtn.addEventListener('click', onClose);
-            }
-        }
-
-        this.modals.set(modalId, modalConfig);
-        return modalConfig;
-    }
-
-    // Register dynamic modal for a specific simulation type
-    registerDynamicModal(simType) {
-        if (!this.modalTemplateManager.hasTemplate(simType)) {
-            console.warn(`No template found for simulation type: ${simType}`);
-            return false;
-        }
-
-        // Register the dynamic modal if not already registered
-        if (!this.modals.has(this.dynamicModalId)) {
-            this.register(this.dynamicModalId);
-        }
-
-        return true;
-    }
-
-    show(modalId, simType = null) {
-        const modalConfig = this.modals.get(modalId);
-        if (!modalConfig) {
-            console.warn(`Modal '${modalId}' not registered`);
-            return;
-        }
-
-        // If showing the dynamic modal, handle content injection
-        if (modalId === this.dynamicModalId && simType) {
-            // Save scroll position of previous modal if it was the dynamic modal
-            if (this.activeModal === this.dynamicModalId && this.currentSimType) {
-                this.saveScrollPosition(this.currentSimType);
-            }
-
-            // Update current simulation type
-            this.currentSimType = simType;
-
-            // Inject dynamic content
-            this.injectDynamicContent(simType);
-        }
-
-        // Queue modal for showing
-        this.queueModalRender(modalConfig, true);
-        this.activeModal = modalId;
-
-        // Trigger custom show callback
-        if (modalConfig.onShow) {
-            modalConfig.onShow();
-        }
-    }
-
-    // Inject dynamic content for the current simulation type
-    injectDynamicContent(simType) {
-        const modalElement = this.modals.get(this.dynamicModalId)?.element;
-        if (!modalElement) {
-            console.warn('Dynamic modal not found');
-            return;
-        }
-
-        const success = this.modalTemplateManager.injectModalContent(simType, modalElement);
-        if (!success) {
-            console.warn(`Failed to inject content for simulation type: ${simType}`);
-            return;
-        }
-    }
-
-    // Save scroll position for a specific simulation type
-    saveScrollPosition(simType) {
-        const modalElement = this.modals.get(this.dynamicModalId)?.element;
-        if (!modalElement) {
-            console.warn('Modal element not found for scroll position save');
-            return;
-        }
-
-        const modalContent = modalElement.querySelector('.modal-content');
-        if (modalContent) {
-            const currentScrollTop = modalContent.scrollTop;
-            this.scrollPositions.set(simType, currentScrollTop);
-        } else {
-            console.warn('Modal content element not found for scroll position save');
-        }
-    }
-
-    // Restore scroll position for a specific simulation type
-    restoreScrollPosition(simType) {
-        const modalElement = this.modals.get(this.dynamicModalId)?.element;
-        if (!modalElement) {
-            console.warn('Modal element not found for scroll position restore');
-            return;
-        }
-
-        const modalContent = modalElement.querySelector('.modal-content');
-        if (modalContent) {
-            const savedPosition = this.scrollPositions.get(simType);
-            if (savedPosition !== undefined) {
-                modalContent.scrollTop = savedPosition;
-            } else {
-                // If no saved position, scroll to top
-                modalContent.scrollTop = 0;
-            }
-        } else {
-            console.warn('Modal content element not found for scroll position restore');
-        }
-    }
-
-    hide(modalId) {
-        const modalConfig = this.modals.get(modalId);
-        if (!modalConfig) {
-            console.warn(`Modal '${modalId}' not registered`);
-            return;
-        }
-
-        // Queue modal for hiding
-        this.queueModalRender(modalConfig, false);
-
-        if (this.activeModal === modalId) {
-            this.activeModal = null;
-        }
-
-        // Trigger custom hide callback
-        if (modalConfig.onHide) {
-            modalConfig.onHide();
-        }
-    }
-
-    // Queue modal rendering to prevent layout thrashing
-    queueModalRender(modalConfig, show) {
-        this.renderQueue.add({ modalConfig, show });
-
-        if (!this.isRendering) {
-            this.processRenderQueue();
-        }
-    }
-
-    // Process render queue efficiently
-    processRenderQueue() {
-        this.isRendering = true;
-
-        // Use requestAnimationFrame for smooth rendering
+      // Handle scroll position after modal is rendered
+      if (this.activeModal === this.dynamicModalId && this.currentSimType) {
+        // Use another requestAnimationFrame to ensure the modal is fully visible
         requestAnimationFrame(() => {
-            this.renderQueue.forEach(({ modalConfig, show }) => {
-                if (show) {
-                    modalConfig.element.classList.add('show');
-                    modalConfig.isVisible = true;
-                } else {
-                    modalConfig.element.classList.remove('show');
-                    modalConfig.isVisible = false;
-                }
-            });
-
-            this.renderQueue.clear();
-            this.isRendering = false;
-
-            // Handle scroll position after modal is rendered
-            if (this.activeModal === this.dynamicModalId && this.currentSimType) {
-                // Use another requestAnimationFrame to ensure the modal is fully visible
-                requestAnimationFrame(() => {
-                    this.restoreScrollPosition(this.currentSimType);
-                });
-            }
+          this.restoreScrollPosition(this.currentSimType);
         });
-    }
+      }
+    });
+  }
 
-    hideAll() {
-        this.modals.forEach((config, id) => {
-            this.hide(id);
-        });
-    }
+  hideAll() {
+    this.modals.forEach((config, id) => {
+      this.hide(id);
+    });
+  }
 
-    isVisible(modalId) {
-        const modalConfig = this.modals.get(modalId);
-        return modalConfig ? modalConfig.isVisible : false;
-    }
+  isVisible(modalId) {
+    const modalConfig = this.modals.get(modalId);
+    return modalConfig ? modalConfig.isVisible : false;
+  }
 
-    // Cleanup method for memory management
-    cleanup() {
-        this.modals.clear();
-        this.renderQueue.clear();
-        this.elementCache.clear();
-        this.scrollPositions.clear();
-        this.activeModal = null;
-    }
+  // Cleanup method for memory management
+  cleanup() {
+    this.modals.clear();
+    this.renderQueue.clear();
+    this.elementCache.clear();
+    this.scrollPositions.clear();
+    this.activeModal = null;
+  }
 }
 
 // Main application class with performance optimization
 class AlgorithmicPatternGenerator {
-    constructor() {
-        this.canvas = document.getElementById('canvas');
-        this.ctx = this.canvas.getContext('2d');
-        this.currentSimulation = null;
-        this.currentType = 'conway';
-        this.isImmersive = false;
-        this.brightness = 1.0; // Default brightness
+  constructor() {
+    this.canvas = document.getElementById("canvas");
+    this.ctx = this.canvas.getContext("2d");
+    this.currentSimulation = null;
+    this.currentType = "conway";
+    this.isImmersive = false;
+    this.brightness = 1.0; // Default brightness
 
-        // Mouse position tracking for Add Ant feature
-        this.mouseX = null;
-        this.mouseY = null;
+    // Mouse position tracking for Add Ant feature
+    this.mouseX = null;
+    this.mouseY = null;
 
-        // Performance optimization properties
-        this.elementCache = PerformanceOptimizer.createElementCache();
-        this.updateQueue = new Set();
-        this.isUpdating = false;
-        this.lastUIUpdate = 0;
-        this.uiUpdateThrottle = 100; // ms between UI updates
+    // Performance optimization properties
+    this.elementCache = PerformanceOptimizer.createElementCache();
+    this.updateQueue = new Set();
+    this.isUpdating = false;
+    this.lastUIUpdate = 0;
+    this.uiUpdateThrottle = 100; // ms between UI updates
 
-        // Initialize managers
-        this.eventFramework = new EventFramework();
-        this.modalManager = new ModalManager(this.eventFramework);
-        this.eventHandlerFactory = new EventHandlerFactory(this.eventFramework);
-        this.controlManager = new ControlManager(this.eventFramework);
-        this.keyboardHandler = new KeyboardHandler(this);
-        this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
-        this.dynamicFillButton = new DynamicFillButton(this.eventFramework);
+    // Initialize managers
+    this.eventFramework = new EventFramework();
+    this.modalManager = new ModalManager(this.eventFramework);
+    this.eventHandlerFactory = new EventHandlerFactory(this.eventFramework);
+    this.controlManager = new ControlManager(this.eventFramework);
+    this.keyboardHandler = new KeyboardHandler(this);
+    this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
+    this.dynamicFillButton = new DynamicFillButton(this.eventFramework);
 
-        this.init();
-    }
+    this.init();
+  }
 
-    init() {
-        this.setupEventListeners();
-        this.setupModals();
-        this.controlManager.registerAllHandlers(this);
+  init() {
+    this.setupEventListeners();
+    this.setupModals();
+    this.controlManager.registerAllHandlers(this);
 
-        // Initialize dynamic components
-        this.dynamicSpeedSlider.init();
-        this.dynamicFillButton.init();
+    // Initialize dynamic components
+    this.dynamicSpeedSlider.init();
+    this.dynamicFillButton.init();
 
-        this.createSimulation(this.currentType);
-        this.controlManager.showControls(this.currentType);
-        this.updateUI();
+    this.createSimulation(this.currentType);
+    this.controlManager.showControls(this.currentType);
+    this.updateUI();
 
-        // Handle window resize with throttling
-        const throttledResize = PerformanceOptimizer.throttle(() => {
-            if (this.currentSimulation) {
-                this.currentSimulation.resizePreserveState();
-                this.currentSimulation.draw();
-            }
-        }, 250);
-
-        window.addEventListener('resize', throttledResize);
-
-        // Start title fade animation after 5 seconds
-        this.startTitleFade();
-    }
-
-    setupModals() {
-        // Register the dynamic modal with the modal manager
-        this.modalManager.register(this.modalManager.dynamicModalId, {
-            onShow: () => {
-                console.log(`Dynamic modal opened for ${this.modalManager.currentSimType || 'unknown'} simulation`);
-            },
-            onHide: () => {
-                console.log(`Dynamic modal closed`);
-            }
-        });
-    }
-
-    setupEventListeners() {
-        // Simulation selector
-        const simulationSelect = this.eventFramework.getElement('#simulation-select');
-        if (simulationSelect) {
-            this.eventFramework.register(simulationSelect, 'change', (e) => {
-                this.switchSimulation(e.target.value);
-            });
-        }
-
-        // Control buttons with element caching
-        const startPauseBtn = this.eventFramework.getElement('#start-pause-btn');
-        const resetBtn = this.eventFramework.getElement('#reset-btn');
-        const immersiveBtn = this.eventFramework.getElement('#immersive-btn');
-
-        if (startPauseBtn) {
-            this.eventFramework.register(startPauseBtn, 'click', () => this.toggleSimulation());
-        }
-        if (resetBtn) {
-            this.eventFramework.register(resetBtn, 'click', () => this.resetSimulation());
-        }
-        if (immersiveBtn) {
-            this.eventFramework.register(immersiveBtn, 'click', () => this.toggleImmersiveMode());
-        }
-
-        // Setup brightness controls
-        this.setupBrightnessControls();
-
-        // Setup likelihood slider
-        this.setupLikelihoodSlider();
-
-        // Mouse move tracking for Add Ant feature
-        this.eventFramework.register(this.canvas, 'mousemove', (e) => {
-            const rect = this.canvas.getBoundingClientRect();
-            this.mouseX = e.clientX - rect.left;
-            this.mouseY = e.clientY - rect.top;
-        });
-
-        // Keyboard shortcuts
-        this.eventFramework.register(document, 'keydown', (e) => {
-            this.keyboardHandler.handleKeydown(e);
-        });
-    }
-
-    setupBrightnessControls() {
-        // Use EventHandlerFactory for brightness controls
-        const brightnessConfig = {
-            id: 'brightness-slider',
-            valueElementId: 'brightness-value',
-            format: (value) => `${Math.round(parseFloat(value) * 100)}%`
-        };
-
-        const handlers = {
-            brightnessChange: (value) => this.setBrightness(value)
-        };
-
-        this.eventHandlerFactory.setupSlider(brightnessConfig, handlers);
-
-        // Initialize brightness display
-        this.updateBrightnessDisplay();
-    }
-
-    setupLikelihoodSlider() {
-        // Use EventHandlerFactory for likelihood controls
-        const likelihoodConfig = {
-            id: 'likelihood-slider',
-            valueElementId: 'likelihood-value',
-            format: (value) => `${parseInt(value)}%`
-        };
-
-        const handlers = {
-            likelihoodChange: (value) => this.setLikelihood(value)
-        };
-
-        this.eventHandlerFactory.setupSlider(likelihoodConfig, handlers);
-    }
-
-    createSimulation(type) {
-        if (this.currentSimulation) {
-            this.currentSimulation.pause();
-        }
-
-        this.currentType = type;
-        this.currentSimulation = SimulationFactory.createSimulation(type, this.canvas, this.ctx);
-        this.currentSimulation.init();
-
-        // Set brightness on the new simulation
-        if (this.currentSimulation.setBrightness) {
-            this.currentSimulation.setBrightness(this.brightness);
-        }
-
-        // Switch the dynamic speed slider to the new simulation
-        this.dynamicSpeedSlider.switchToSimulation(type, this);
-        this.dynamicFillButton.switchToSimulation(type, this);
-
-        // Draw the simulation immediately so active cells are visible
+    // Handle window resize with throttling
+    const throttledResize = PerformanceOptimizer.throttle(() => {
+      if (this.currentSimulation) {
+        this.currentSimulation.resizePreserveState();
         this.currentSimulation.draw();
+      }
+    }, 250);
 
-        this.updateUI();
+    window.addEventListener("resize", throttledResize);
+
+    // Start title fade animation after 5 seconds
+    this.startTitleFade();
+  }
+
+  setupModals() {
+    // Register the dynamic modal with the modal manager
+    this.modalManager.register(this.modalManager.dynamicModalId, {
+      onShow: () => {
+        console.log(
+          `Dynamic modal opened for ${
+            this.modalManager.currentSimType || "unknown"
+          } simulation`
+        );
+      },
+      onHide: () => {
+        console.log(`Dynamic modal closed`);
+      },
+    });
+  }
+
+  setupEventListeners() {
+    // Simulation selector
+    const simulationSelect =
+      this.eventFramework.getElement("#simulation-select");
+    if (simulationSelect) {
+      this.eventFramework.register(simulationSelect, "change", (e) => {
+        this.switchSimulation(e.target.value);
+      });
     }
 
-    switchSimulation(type) {
-        this.createSimulation(type);
-        this.controlManager.showControls(type);
+    // Control buttons with element caching
+    const startPauseBtn = this.eventFramework.getElement("#start-pause-btn");
+    const resetBtn = this.eventFramework.getElement("#reset-btn");
+    const immersiveBtn = this.eventFramework.getElement("#immersive-btn");
+
+    if (startPauseBtn) {
+      this.eventFramework.register(startPauseBtn, "click", () =>
+        this.toggleSimulation()
+      );
+    }
+    if (resetBtn) {
+      this.eventFramework.register(resetBtn, "click", () =>
+        this.resetSimulation()
+      );
+    }
+    if (immersiveBtn) {
+      this.eventFramework.register(immersiveBtn, "click", () =>
+        this.toggleImmersiveMode()
+      );
     }
 
-    startSimulation() {
-        if (this.currentSimulation) {
-            this.currentSimulation.start();
-            this.updateUI();
-        }
+    // Setup brightness controls
+    this.setupBrightnessControls();
+
+    // Setup likelihood slider
+    this.setupLikelihoodSlider();
+
+    // Mouse move tracking for Add Ant feature
+    this.eventFramework.register(this.canvas, "mousemove", (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      this.mouseX = e.clientX - rect.left;
+      this.mouseY = e.clientY - rect.top;
+    });
+
+    // Keyboard shortcuts
+    this.eventFramework.register(document, "keydown", (e) => {
+      this.keyboardHandler.handleKeydown(e);
+    });
+  }
+
+  setupBrightnessControls() {
+    // Use EventHandlerFactory for brightness controls
+    const brightnessConfig = {
+      id: "brightness-slider",
+      valueElementId: "brightness-value",
+      format: (value) => `${Math.round(parseFloat(value) * 100)}%`,
+    };
+
+    const handlers = {
+      brightnessChange: (value) => this.setBrightness(value),
+    };
+
+    this.eventHandlerFactory.setupSlider(brightnessConfig, handlers);
+
+    // Initialize brightness display
+    this.updateBrightnessDisplay();
+  }
+
+  setupLikelihoodSlider() {
+    // Use EventHandlerFactory for likelihood controls
+    const likelihoodConfig = {
+      id: "likelihood-slider",
+      valueElementId: "likelihood-value",
+      format: (value) => `${parseInt(value)}%`,
+    };
+
+    const handlers = {
+      likelihoodChange: (value) => this.setLikelihood(value),
+    };
+
+    this.eventHandlerFactory.setupSlider(likelihoodConfig, handlers);
+  }
+
+  createSimulation(type) {
+    if (this.currentSimulation) {
+      this.currentSimulation.pause();
     }
 
-    pauseSimulation() {
-        if (this.currentSimulation) {
-            this.currentSimulation.pause();
-            this.updateUI();
-        }
+    this.currentType = type;
+    this.currentSimulation = SimulationFactory.createSimulation(
+      type,
+      this.canvas,
+      this.ctx
+    );
+    this.currentSimulation.init();
+
+    // Set brightness on the new simulation
+    if (this.currentSimulation.setBrightness) {
+      this.currentSimulation.setBrightness(this.brightness);
     }
 
-    toggleSimulation() {
-        if (this.currentSimulation?.isRunning) {
-            this.pauseSimulation();
-        } else {
-            this.startSimulation();
-        }
+    // Switch the dynamic speed slider to the new simulation
+    this.dynamicSpeedSlider.switchToSimulation(type, this);
+    this.dynamicFillButton.switchToSimulation(type, this);
+
+    // Draw the simulation immediately so active cells are visible
+    this.currentSimulation.draw();
+
+    this.updateUI();
+  }
+
+  switchSimulation(type) {
+    this.createSimulation(type);
+    this.controlManager.showControls(type);
+  }
+
+  startSimulation() {
+    if (this.currentSimulation) {
+      this.currentSimulation.start();
+      this.updateUI();
+    }
+  }
+
+  pauseSimulation() {
+    if (this.currentSimulation) {
+      this.currentSimulation.pause();
+      this.updateUI();
+    }
+  }
+
+  toggleSimulation() {
+    if (this.currentSimulation?.isRunning) {
+      this.pauseSimulation();
+    } else {
+      this.startSimulation();
+    }
+  }
+
+  resetSimulation() {
+    if (this.currentSimulation) {
+      this.currentSimulation.reset();
+      this.updateUI();
+    }
+  }
+
+  toggleImmersiveMode() {
+    this.isImmersive = !this.isImmersive;
+    const appElement = this.elementCache.get("#app");
+    if (appElement) {
+      appElement.classList.toggle("immersive", this.isImmersive);
     }
 
-    resetSimulation() {
-        if (this.currentSimulation) {
-            this.currentSimulation.reset();
-            this.updateUI();
-        }
+    const btn = this.elementCache.get("#immersive-btn");
+    if (this.isImmersive) {
+      if (btn) btn.textContent = "Exit Immersive";
+      this.showImmersiveHint();
+    } else {
+      if (btn) btn.textContent = i18n.t("immersive-btn");
+      this.hideImmersiveHint();
     }
 
+    // Resize canvas when toggling immersive mode with delay
+    setTimeout(() => {
+      if (this.currentSimulation) {
+        this.currentSimulation.resizePreserveState();
+        this.currentSimulation.draw();
+      }
+    }, 300);
+  }
 
+  showImmersiveHint() {
+    const hint = this.elementCache.get("#immersive-hint");
+    if (hint) {
+      hint.classList.add("show");
 
-    toggleImmersiveMode() {
-        this.isImmersive = !this.isImmersive;
-        const appElement = this.elementCache.get('#app');
-        if (appElement) {
-            appElement.classList.toggle('immersive', this.isImmersive);
-        }
+      // Hide hint after 3 seconds
+      setTimeout(() => {
+        this.hideImmersiveHint();
+      }, 3000);
+    }
+  }
 
-        const btn = this.elementCache.get('#immersive-btn');
-        if (this.isImmersive) {
-            if (btn) btn.textContent = 'Exit Immersive';
-            this.showImmersiveHint();
-        } else {
-            if (btn) btn.textContent = i18n.t('immersive-btn');
-            this.hideImmersiveHint();
-        }
+  hideImmersiveHint() {
+    const hint = this.elementCache.get("#immersive-hint");
+    if (hint) {
+      hint.classList.remove("show");
+    }
+  }
 
-        // Resize canvas when toggling immersive mode with delay
-        setTimeout(() => {
-            if (this.currentSimulation) {
-                this.currentSimulation.resizePreserveState();
-                this.currentSimulation.draw();
-            }
-        }, 300);
+  startTitleFade() {
+    // Start fade animation after 5 seconds
+    setTimeout(() => {
+      const title = this.elementCache.get("#title");
+      if (title) {
+        title.classList.add("fade-out");
+      }
+    }, 5000);
+  }
+
+  handleCanvasClick(e) {
+    if (!this.currentSimulation) return;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Allow cell toggling for all simulations
+    if (this.currentSimulation.toggleCell) {
+      this.currentSimulation.toggleCell(x, y);
+      this.updateUI();
+    }
+  }
+
+  handleEscape() {
+    if (this.isImmersive) {
+      this.toggleImmersiveMode();
+    } else {
+      // Close any open modal using modal manager
+      this.modalManager.hideAll();
+    }
+  }
+
+  // Throttled UI update for better performance
+  updateUI() {
+    const now = Date.now();
+    if (now - this.lastUIUpdate < this.uiUpdateThrottle) {
+      this.updateQueue.add("ui");
+      if (!this.isUpdating) {
+        this.processUpdateQueue();
+      }
+      return;
     }
 
-    showImmersiveHint() {
-        const hint = this.elementCache.get('#immersive-hint');
-        if (hint) {
-            hint.classList.add('show');
+    this.performUIUpdate();
+    this.lastUIUpdate = now;
+  }
 
-            // Hide hint after 3 seconds
-            setTimeout(() => {
-                this.hideImmersiveHint();
-            }, 3000);
-        }
+  performUIUpdate() {
+    if (!this.currentSimulation) return;
+
+    const stats = this.currentSimulation.getStats();
+    const isRunning = this.currentSimulation.isRunning;
+
+    // Update button states
+    const startPauseBtn = this.elementCache.get("#start-pause-btn");
+
+    if (startPauseBtn) {
+      startPauseBtn.textContent = isRunning ? "Pause" : "Start";
+      startPauseBtn.disabled = false;
     }
 
-    hideImmersiveHint() {
-        const hint = this.elementCache.get('#immersive-hint');
-        if (hint) {
-            hint.classList.remove('show');
-        }
-    }
+    // Update stats
+    const generationCount = this.elementCache.get("#generation-count");
+    const cellCount = this.elementCache.get("#cell-count");
+    const fps = this.elementCache.get("#fps");
 
-    startTitleFade() {
-        // Start fade animation after 5 seconds
-        setTimeout(() => {
-            const title = this.elementCache.get('#title');
-            if (title) {
-                title.classList.add('fade-out');
-            }
-        }, 5000);
-    }
+    if (generationCount) generationCount.textContent = stats.generation;
+    if (cellCount) cellCount.textContent = stats.cellCount;
+    if (fps) fps.textContent = stats.fps;
 
-    handleCanvasClick(e) {
-        if (!this.currentSimulation) return;
+    // Update simulation selector
+    const simulationSelect = this.elementCache.get("#simulation-select");
+    if (simulationSelect) simulationSelect.value = this.currentType;
 
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    // Show/hide simulation-specific controls
+    this.controlManager.showControls(this.currentType);
+  }
 
-        // Allow cell toggling for all simulations
-        if (this.currentSimulation.toggleCell) {
-            this.currentSimulation.toggleCell(x, y);
-            this.updateUI();
-        }
-    }
+  processUpdateQueue() {
+    this.isUpdating = true;
 
-    handleEscape() {
-        if (this.isImmersive) {
-            this.toggleImmersiveMode();
-        } else {
-            // Close any open modal using modal manager
-            this.modalManager.hideAll();
-        }
-    }
-
-    // Throttled UI update for better performance
-    updateUI() {
-        const now = Date.now();
-        if (now - this.lastUIUpdate < this.uiUpdateThrottle) {
-            this.updateQueue.add('ui');
-            if (!this.isUpdating) {
-                this.processUpdateQueue();
-            }
-            return;
-        }
-
+    requestAnimationFrame(() => {
+      if (this.updateQueue.has("ui")) {
         this.performUIUpdate();
-        this.lastUIUpdate = now;
+        this.updateQueue.delete("ui");
+      }
+
+      this.isUpdating = false;
+
+      // Process any remaining updates
+      if (this.updateQueue.size > 0) {
+        this.processUpdateQueue();
+      }
+    });
+  }
+
+  // Generic speed change handler
+  handleSpeedChange(simType, value) {
+    if (this.currentType !== simType || !this.currentSimulation) return;
+
+    // Parse value as integer for all simulations (steps per second)
+    const parsedValue = parseInt(value);
+
+    // Set speed on simulation
+    this.currentSimulation.setSpeed(parsedValue);
+
+    // Display updates are handled by the DynamicSpeedSlider
+  }
+
+  // Generic speed adjustment handler
+  adjustSpeed(simType, direction) {
+    // Use the dynamic speed slider for speed adjustments
+    this.dynamicSpeedSlider.adjustSpeed(direction);
+  }
+
+  // Generic random pattern handler
+  handleRandomPattern(simType) {
+    if (this.currentType !== simType || !this.currentSimulation) return;
+
+    // Get likelihood value from slider
+    const likelihoodSlider =
+      this.eventFramework.getElement("#likelihood-slider");
+    const likelihood = likelihoodSlider
+      ? parseInt(likelihoodSlider.value) / 100
+      : 0.3;
+
+    if (this.currentSimulation.randomize) {
+      this.currentSimulation.randomize(likelihood);
+      this.updateUI();
+    }
+  }
+
+  // Generic modal handlers using modal manager
+  showLearnModal(simType) {
+    // Always use the current simulation type for the Learn modal
+    const currentSimType = this.currentType;
+
+    // Register dynamic modal for this simulation type
+    this.modalManager.registerDynamicModal(currentSimType);
+
+    // Show the dynamic modal with the current simulation type
+    this.modalManager.show(this.modalManager.dynamicModalId, currentSimType);
+  }
+
+  hideLearnModal(simType) {
+    this.modalManager.hide(this.modalManager.dynamicModalId);
+  }
+
+  // Generic add ant handler
+  handleAddAnt(simType, useMousePosition = false) {
+    if (this.currentType !== simType || !this.currentSimulation) return;
+
+    if (this.currentSimulation.addAnt) {
+      if (useMousePosition) {
+        // Pass mouse coordinates for keyboard-triggered ant addition
+        this.currentSimulation.addAnt(this.mouseX, this.mouseY);
+      } else {
+        // Use random placement for button-triggered ant addition
+        this.currentSimulation.addAnt(null, null);
+      }
+    }
+  }
+
+  // Generic termite count change handler
+  handleTermiteCountChange(count) {
+    if (this.currentType !== "termite" || !this.currentSimulation) return;
+
+    if (this.currentSimulation.setTermiteCount) {
+      this.currentSimulation.setTermiteCount(count);
     }
 
-    performUIUpdate() {
-        if (!this.currentSimulation) return;
-
-        const stats = this.currentSimulation.getStats();
-        const isRunning = this.currentSimulation.isRunning;
-
-        // Update button states
-        const startPauseBtn = this.elementCache.get('#start-pause-btn');
-
-        if (startPauseBtn) {
-            startPauseBtn.textContent = isRunning ? 'Pause' : 'Start';
-            startPauseBtn.disabled = false;
+    // Update the display value
+    const config = ConfigurationManager.getConfig("termite");
+    if (config) {
+      const termiteControl = config.controls.termiteCount;
+      if (termiteControl) {
+        const valueElement = this.elementCache.get(
+          `#${termiteControl.valueElementId}`
+        );
+        if (valueElement && termiteControl.format) {
+          valueElement.textContent = termiteControl.format(count);
         }
-
-        // Update stats
-        const generationCount = this.elementCache.get('#generation-count');
-        const cellCount = this.elementCache.get('#cell-count');
-        const fps = this.elementCache.get('#fps');
-
-        if (generationCount) generationCount.textContent = stats.generation;
-        if (cellCount) cellCount.textContent = stats.cellCount;
-        if (fps) fps.textContent = stats.fps;
-
-        // Update simulation selector
-        const simulationSelect = this.elementCache.get('#simulation-select');
-        if (simulationSelect) simulationSelect.value = this.currentType;
-
-        // Show/hide simulation-specific controls
-        this.controlManager.showControls(this.currentType);
+      }
     }
 
-    processUpdateQueue() {
-        this.isUpdating = true;
-
-        requestAnimationFrame(() => {
-            if (this.updateQueue.has('ui')) {
-                this.performUIUpdate();
-                this.updateQueue.delete('ui');
-            }
-
-            this.isUpdating = false;
-
-            // Process any remaining updates
-            if (this.updateQueue.size > 0) {
-                this.processUpdateQueue();
-            }
-        });
+    // Force a redraw to show termite count changes immediately, even when paused
+    if (this.currentSimulation.draw) {
+      this.currentSimulation.draw();
     }
+  }
 
-    // Generic speed change handler
-    handleSpeedChange(simType, value) {
-        if (this.currentType !== simType || !this.currentSimulation) return;
+  // Brightness control methods with performance optimization
+  setBrightness(value) {
+    this.brightness = Math.max(0.1, Math.min(2.0, value));
+    this.updateBrightnessDisplay();
 
-        // Parse value as integer for all simulations (steps per second)
-        const parsedValue = parseInt(value);
-
-        // Set speed on simulation
-        this.currentSimulation.setSpeed(parsedValue);
-
-        // Display updates are handled by the DynamicSpeedSlider
+    // Update current simulation if it exists
+    if (this.currentSimulation && this.currentSimulation.setBrightness) {
+      this.currentSimulation.setBrightness(this.brightness);
+      // Force a redraw to show brightness changes immediately, even when paused
+      this.currentSimulation.draw();
     }
+  }
 
-    // Generic speed adjustment handler
-    adjustSpeed(simType, direction) {
-        // Use the dynamic speed slider for speed adjustments
-        this.dynamicSpeedSlider.adjustSpeed(direction);
+  setLikelihood(value) {
+    this.likelihood = Math.max(0, Math.min(100, value));
+
+    // Apply likelihood to current simulation if it supports it
+    if (this.currentSimulation && this.currentSimulation.setLikelihood) {
+      this.currentSimulation.setLikelihood(this.likelihood);
     }
+  }
 
-    // Generic random pattern handler
-    handleRandomPattern(simType) {
-        if (this.currentType !== simType || !this.currentSimulation) return;
+  resetBrightness() {
+    this.setBrightness(1.0);
 
-        // Get likelihood value from slider
-        const likelihoodSlider = this.eventFramework.getElement('#likelihood-slider');
-        const likelihood = likelihoodSlider ? parseInt(likelihoodSlider.value) / 100 : 0.3;
-
-        if (this.currentSimulation.randomize) {
-            this.currentSimulation.randomize(likelihood);
-            this.updateUI();
-        }
+    // Update slider position
+    const brightnessSlider = this.elementCache.get("#brightness-slider");
+    if (brightnessSlider) {
+      brightnessSlider.value = 1.0;
     }
+  }
 
-    // Generic modal handlers using modal manager
-    showLearnModal(simType) {
-        // Always use the current simulation type for the Learn modal
-        const currentSimType = this.currentType;
-
-        // Register dynamic modal for this simulation type
-        this.modalManager.registerDynamicModal(currentSimType);
-
-        // Show the dynamic modal with the current simulation type
-        this.modalManager.show(this.modalManager.dynamicModalId, currentSimType);
+  adjustBrightness(delta) {
+    const brightnessSlider = this.elementCache.get("#brightness-slider");
+    if (brightnessSlider) {
+      const currentValue = parseFloat(brightnessSlider.value);
+      const newValue = Math.max(0.1, Math.min(2.0, currentValue + delta));
+      brightnessSlider.value = newValue;
+      this.setBrightness(newValue);
     }
+  }
 
-    hideLearnModal(simType) {
-        this.modalManager.hide(this.modalManager.dynamicModalId);
+  updateBrightnessDisplay() {
+    const brightnessValue = this.elementCache.get("#brightness-value");
+    if (brightnessValue) {
+      const percentage = Math.round(this.brightness * 100);
+      brightnessValue.textContent = `${percentage}%`;
     }
+  }
 
-    // Generic add ant handler
-    handleAddAnt(simType, useMousePosition = false) {
-        if (this.currentType !== simType || !this.currentSimulation) return;
+  // Update stats continuously with throttling
+  startStatsUpdate() {
+    const throttledUpdate = PerformanceOptimizer.throttle(() => {
+      this.updateUI();
+    }, 100);
 
-        if (this.currentSimulation.addAnt) {
-            if (useMousePosition) {
-                // Pass mouse coordinates for keyboard-triggered ant addition
-                this.currentSimulation.addAnt(this.mouseX, this.mouseY);
-            } else {
-                // Use random placement for button-triggered ant addition
-                this.currentSimulation.addAnt(null, null);
-            }
-        }
+    setInterval(throttledUpdate, 100);
+  }
+
+  // Cleanup method for memory management
+  cleanup() {
+    this.eventFramework.cleanup();
+    this.eventHandlerFactory.cleanup();
+    this.controlManager.cleanup();
+    this.modalManager.cleanup();
+    this.dynamicSpeedSlider.cleanup();
+    this.dynamicFillButton.cleanup();
+    this.elementCache.clear();
+    this.updateQueue.clear();
+
+    if (this.currentSimulation) {
+      this.currentSimulation.pause();
+      this.currentSimulation.cleanupDragToggling();
     }
-
-    // Generic termite count change handler
-    handleTermiteCountChange(count) {
-        if (this.currentType !== 'termite' || !this.currentSimulation) return;
-
-        if (this.currentSimulation.setTermiteCount) {
-            this.currentSimulation.setTermiteCount(count);
-        }
-
-        // Update the display value
-        const config = ConfigurationManager.getConfig('termite');
-        if (config) {
-            const termiteControl = config.controls.termiteCount;
-            if (termiteControl) {
-                const valueElement = this.elementCache.get(`#${termiteControl.valueElementId}`);
-                if (valueElement && termiteControl.format) {
-                    valueElement.textContent = termiteControl.format(count);
-                }
-            }
-        }
-
-        // Force a redraw to show termite count changes immediately, even when paused
-        if (this.currentSimulation.draw) {
-            this.currentSimulation.draw();
-        }
-    }
-
-    // Brightness control methods with performance optimization
-    setBrightness(value) {
-        this.brightness = Math.max(0.1, Math.min(2.0, value));
-        this.updateBrightnessDisplay();
-
-        // Update current simulation if it exists
-        if (this.currentSimulation && this.currentSimulation.setBrightness) {
-            this.currentSimulation.setBrightness(this.brightness);
-            // Force a redraw to show brightness changes immediately, even when paused
-            this.currentSimulation.draw();
-        }
-    }
-
-    setLikelihood(value) {
-        this.likelihood = Math.max(0, Math.min(100, value));
-
-        // Apply likelihood to current simulation if it supports it
-        if (this.currentSimulation && this.currentSimulation.setLikelihood) {
-            this.currentSimulation.setLikelihood(this.likelihood);
-        }
-    }
-
-    resetBrightness() {
-        this.setBrightness(1.0);
-
-        // Update slider position
-        const brightnessSlider = this.elementCache.get('#brightness-slider');
-        if (brightnessSlider) {
-            brightnessSlider.value = 1.0;
-        }
-    }
-
-    adjustBrightness(delta) {
-        const brightnessSlider = this.elementCache.get('#brightness-slider');
-        if (brightnessSlider) {
-            const currentValue = parseFloat(brightnessSlider.value);
-            const newValue = Math.max(0.1, Math.min(2.0, currentValue + delta));
-            brightnessSlider.value = newValue;
-            this.setBrightness(newValue);
-        }
-    }
-
-    updateBrightnessDisplay() {
-        const brightnessValue = this.elementCache.get('#brightness-value');
-        if (brightnessValue) {
-            const percentage = Math.round(this.brightness * 100);
-            brightnessValue.textContent = `${percentage}%`;
-        }
-    }
-
-    // Update stats continuously with throttling
-    startStatsUpdate() {
-        const throttledUpdate = PerformanceOptimizer.throttle(() => {
-            this.updateUI();
-        }, 100);
-
-        setInterval(throttledUpdate, 100);
-    }
-
-    // Cleanup method for memory management
-    cleanup() {
-        this.eventFramework.cleanup();
-        this.eventHandlerFactory.cleanup();
-        this.controlManager.cleanup();
-        this.modalManager.cleanup();
-        this.dynamicSpeedSlider.cleanup();
-        this.dynamicFillButton.cleanup();
-        this.elementCache.clear();
-        this.updateQueue.clear();
-
-        if (this.currentSimulation) {
-            this.currentSimulation.pause();
-            this.currentSimulation.cleanupDragToggling();
-        }
-    }
+  }
 }
 
 // Initialize the application when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if we're in a test environment to prevent auto-initialisation
-    const isTestEnvironment = window.location.pathname.includes('test-suite.html') ||
-                             document.getElementById('test-canvas') !== null;
+document.addEventListener("DOMContentLoaded", () => {
+  // Check if we're in a test environment to prevent auto-initialisation
+  const isTestEnvironment =
+    window.location.pathname.includes("test-suite.html") ||
+    document.getElementById("test-canvas") !== null;
 
-    if (!isTestEnvironment) {
-        const app = new AlgorithmicPatternGenerator();
-        app.startStatsUpdate();
+  if (!isTestEnvironment) {
+    const app = new AlgorithmicPatternGenerator();
+    app.startStatsUpdate();
 
-        // Make app globally accessible for debugging
-        window.app = app;
+    // Make app globally accessible for debugging
+    window.app = app;
 
-        // Performance monitoring
-        PerformanceOptimizer.startMonitoring();
-    }
+    // Performance monitoring
+    PerformanceOptimizer.startMonitoring();
+  }
 });
 
 // Performance monitoring utility
 class PerformanceMonitor {
-    constructor() {
-        this.metrics = {
-            fps: [],
-            memory: [],
-            renderTime: [],
-            updateTime: []
-        };
-        this.isMonitoring = false;
-        this.maxSamples = 100;
-    }
+  constructor() {
+    this.metrics = {
+      fps: [],
+      memory: [],
+      renderTime: [],
+      updateTime: [],
+    };
+    this.isMonitoring = false;
+    this.maxSamples = 100;
+  }
 
-    start() {
-        if (this.isMonitoring) return;
+  start() {
+    if (this.isMonitoring) return;
 
-        this.isMonitoring = true;
-        this.monitorFPS();
-        this.monitorMemory();
+    this.isMonitoring = true;
+    this.monitorFPS();
+    this.monitorMemory();
 
-        console.log('Performance monitoring started');
-    }
+    console.log("Performance monitoring started");
+  }
 
-    stop() {
-        this.isMonitoring = false;
-        console.log('Performance monitoring stopped');
-    }
+  stop() {
+    this.isMonitoring = false;
+    console.log("Performance monitoring stopped");
+  }
 
-    monitorFPS() {
-        if (!this.isMonitoring) return;
+  monitorFPS() {
+    if (!this.isMonitoring) return;
 
-        let frameCount = 0;
-        let lastTime = performance.now();
+    let frameCount = 0;
+    let lastTime = performance.now();
 
-        const measureFPS = () => {
-            frameCount++;
-            const currentTime = performance.now();
+    const measureFPS = () => {
+      frameCount++;
+      const currentTime = performance.now();
 
-            if (currentTime - lastTime >= 1000) {
-                const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
-                this.addMetric('fps', fps);
+      if (currentTime - lastTime >= 1000) {
+        const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+        this.addMetric("fps", fps);
 
-                frameCount = 0;
-                lastTime = currentTime;
-            }
+        frameCount = 0;
+        lastTime = currentTime;
+      }
 
-            if (this.isMonitoring) {
-                requestAnimationFrame(measureFPS);
-            }
-        };
-
+      if (this.isMonitoring) {
         requestAnimationFrame(measureFPS);
+      }
+    };
+
+    requestAnimationFrame(measureFPS);
+  }
+
+  monitorMemory() {
+    if (!this.isMonitoring) return;
+
+    const measureMemory = () => {
+      if (performance.memory) {
+        const usedMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
+        this.addMetric("memory", usedMB);
+      }
+
+      if (this.isMonitoring) {
+        setTimeout(measureMemory, 2000); // Check every 2 seconds
+      }
+    };
+
+    measureMemory();
+  }
+
+  addMetric(type, value) {
+    if (!this.metrics[type]) return;
+
+    this.metrics[type].push({
+      value,
+      timestamp: Date.now(),
+    });
+
+    // Keep only recent samples
+    if (this.metrics[type].length > this.maxSamples) {
+      this.metrics[type].shift();
     }
+  }
 
-    monitorMemory() {
-        if (!this.isMonitoring) return;
+  getAverageMetric(type) {
+    if (!this.metrics[type] || this.metrics[type].length === 0) return 0;
 
-        const measureMemory = () => {
-            if (performance.memory) {
-                const usedMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
-                this.addMetric('memory', usedMB);
-            }
+    const values = this.metrics[type].map((m) => m.value);
+    return values.reduce((sum, val) => sum + val, 0) / values.length;
+  }
 
-            if (this.isMonitoring) {
-                setTimeout(measureMemory, 2000); // Check every 2 seconds
-            }
-        };
+  getMetrics() {
+    return {
+      averageFPS: this.getAverageMetric("fps"),
+      averageMemory: this.getAverageMetric("memory"),
+      samples: this.metrics,
+    };
+  }
 
-        measureMemory();
-    }
-
-    addMetric(type, value) {
-        if (!this.metrics[type]) return;
-
-        this.metrics[type].push({
-            value,
-            timestamp: Date.now()
-        });
-
-        // Keep only recent samples
-        if (this.metrics[type].length > this.maxSamples) {
-            this.metrics[type].shift();
-        }
-    }
-
-    getAverageMetric(type) {
-        if (!this.metrics[type] || this.metrics[type].length === 0) return 0;
-
-        const values = this.metrics[type].map(m => m.value);
-        return values.reduce((sum, val) => sum + val, 0) / values.length;
-    }
-
-    getMetrics() {
-        return {
-            averageFPS: this.getAverageMetric('fps'),
-            averageMemory: this.getAverageMetric('memory'),
-            samples: this.metrics
-        };
-    }
-
-    logMetrics() {
-        const metrics = this.getMetrics();
-        console.log('Performance Metrics:', {
-            'Average FPS': Math.round(metrics.averageFPS),
-            'Average Memory (MB)': Math.round(metrics.averageMemory),
-            'Sample Count': Object.keys(metrics.samples).map(key => ({
-                [key]: metrics.samples[key].length
-            }))
-        });
-    }
+  logMetrics() {
+    const metrics = this.getMetrics();
+    console.log("Performance Metrics:", {
+      "Average FPS": Math.round(metrics.averageFPS),
+      "Average Memory (MB)": Math.round(metrics.averageMemory),
+      "Sample Count": Object.keys(metrics.samples).map((key) => ({
+        [key]: metrics.samples[key].length,
+      })),
+    });
+  }
 }
 
 // Extend PerformanceOptimizer with monitoring
 PerformanceOptimizer.monitor = new PerformanceMonitor();
 
 PerformanceOptimizer.startMonitoring = () => {
-    PerformanceOptimizer.monitor.start();
+  PerformanceOptimizer.monitor.start();
 
-    // Log metrics every 10 seconds
-    setInterval(() => {
-        PerformanceOptimizer.monitor.logMetrics();
-    }, 10000);
+  // Log metrics every 10 seconds
+  setInterval(() => {
+    PerformanceOptimizer.monitor.logMetrics();
+  }, 10000);
 };
 
 PerformanceOptimizer.stopMonitoring = () => {
-    PerformanceOptimizer.monitor.stop();
+  PerformanceOptimizer.monitor.stop();
 };
