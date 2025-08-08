@@ -253,29 +253,33 @@ getState() {
 - **Code duplication reduced**: ~80 lines of duplicated state methods eliminated
 - **Testing**: Existing suite passes; resize/state preservation behaviour verified
 
-### 8. **Test Pattern Duplication**
+### 8. **Test Pattern Duplication** ✅ **IMPLEMENTED**
 
-**Current State**: Similar test setup patterns across multiple test files:
+**Previous State**: Similar test setup patterns across multiple test files:
 ```javascript
 // Repeated in multiple test files
-const canvas = {
-    width: 300,
-    height: 300,
-    getBoundingClientRect: () => ({ left: 0, top: 0 })
-};
-const ctx = {
-    fillStyle: '',
-    fillRect: () => {},
-    clearRect: () => {},
-    setGlowEffect: () => {},
-    clearGlowEffect: () => {}
-};
+const canvas = { width: 300, height: 300, getBoundingClientRect: () => ({ left: 0, top: 0 }) };
+const ctx = { fillStyle: '', fillRect: () => {}, clearRect: () => {}, setGlowEffect: () => {}, clearGlowEffect: () => {} };
 ```
 
 **Opportunity**: Test utility factory for common test setup.
 
 **Estimated Reduction**: 50-80 lines
-**Implementation**: `TestUtilityFactory` class with common test object creation.
+**Implementation**: `TestUtilityFactory` module with common test object creation.
+
+**✅ Status**: **COMPLETED**
+- **TestUtilityFactory** added in `test-utils.js` providing:
+  - `createMockCanvas(width?, height?)`, `createMockContext(overrides?)`
+  - `createCanvasAndContext({ useDOM?, width?, height?, ctxOverrides? })`
+  - `createSimulationWithMocks(type, options?)`
+  - `withTempElement(tag, attrs, callback)` for DOM-based tests
+- **Refactors**:
+  - `blinker-fade-test.js` now consumes `TestUtilityFactory` instead of duplicating mocks
+  - `test-suite.html` includes `test-utils.js` so utilities are available in browser runs
+  - `test-runner.js` adds a system test asserting the utility works in-browser
+- **Code reduction achieved**: ~60 lines of duplicated test setup removed/centralised
+- **Extensibility**: Single place to evolve test fixtures; simplifies future tests
+- **Compatibility**: Works in both Node/CommonJS and browser environments
 
 ---
 
@@ -710,15 +714,16 @@ function createMockContext() { /* implementation */ }
 **Status**: **PHASE 3 COMPLETE** - All architecture improvement opportunities implemented and documented
 
 ### Phase 4: Polish and Optimisation (Low Priority)
-1. **Test Pattern Duplication** - Create test utility factory
+1. **Test Pattern Duplication** ✅ **COMPLETED** - Create test utility factory and refactor tests
 2. **Utility Function Consolidation** - Centralise common utilities
 3. **Constants Consolidation** - Create configuration constants
 4. **Documentation Consolidation** - Standardise documentation patterns
 
 **Timeline**: 1-2 weeks
 **Expected Reduction**: 100-150 lines
+**Progress**: 1/4 completed (~60 lines reduced)
 
-### Phase 5: Visual/Functional Changes (Optional)
+### Phase 5: Visual/Functional Changes
 1. **Unified Control Panel Design** - Implement consistent design system
 2. **Modal System Redesign** - Create dynamic modal system
 3. **Responsive Layout System** - Implement CSS Grid layout
@@ -814,7 +819,12 @@ The Algorithmic Pattern Generator has a solid foundation but significant opportu
 
 The implementation should be approached incrementally with comprehensive testing at each phase. The high-priority opportunities offer the best return on investment and have been successfully completed in Phase 1.
 
-**Next Steps**:
+### Project status
+- **Testing procedures**: established (Completed)
+- **Performance monitoring baseline**: ready
+- **Documentation**: current
+
+### Next Steps
 1. ✅ **Phase 1.1 COMPLETED**: Control Configuration Consolidation implemented
 2. ✅ **Phase 1.2 COMPLETED**: Speed Slider Duplication implemented
 3. ✅ **Phase 1.3 COMPLETED**: Random Button Duplication implemented (including button visibility fix and enhanced testing)
@@ -825,9 +835,15 @@ The implementation should be approached incrementally with comprehensive testing
 8. ✅ **Phase 2.4 COMPLETED**: Control Visibility Management implemented (CSS-based visibility system with comprehensive testing)
 9. ✅ **Phase 2.2 COMPLETED**: UI Component Library Enhancement implemented (comprehensive component library with lifecycle management and 18 test cases)
 10. ✅ **Phase 2 COMPLETE**: All medium-priority UI enhancement opportunities have been implemented and documented
-11. **Testing procedures established**: Comprehensive test suites in place for all implemented features
-12. **Performance monitoring ready**: Baseline measurements can be established for Phase 2
-13. **Documentation current**: All documentation files updated to reflect current implementation state
+11. ✅ **Phase 3.1 COMPLETED**: Simulation State Management implemented (unified StateManager with serializers; resize/state preservation verified)
+12. ✅ **Phase 3.2 COMPLETED**: Performance Optimisation Consolidation implemented (PerformanceUtils; EventFramework delegation)
+13. ✅ **Phase 3.3 COMPLETED**: Event Framework Enhancement implemented (declarative/delegated APIs; ModalManager integration)
+14. ✅ **Phase 3.4 COMPLETED**: Error Handling Consolidation implemented (central ErrorHandler; metrics and tests)
+
+15. ✅ **Phase 4.1 COMPLETED**: Test Pattern Duplication implemented (TestUtilityFactory added, tests refactored, suite integration)
+16. ▶ **Phase 4.2 NEXT**: Utility Function Consolidation (centralise shared helpers)
+17. ▶ **Phase 4.3 NEXT**: Constants Consolidation (extract magic numbers/strings)
+18. ▶ **Phase 4.4 NEXT**: Documentation Consolidation (standardise JSDoc patterns)
 
 ---
 

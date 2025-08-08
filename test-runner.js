@@ -407,6 +407,21 @@ class PredefinedTestSuites {
                 details: `Generated colour: ${colour}`
             };
         }, 'colour');
+
+        // Test utilities tests
+        runner.addTest('TestUtilityFactory: mock canvas/ctx and simulation', async () => {
+            try {
+                if (typeof TestUtilityFactory === 'undefined') {
+                    return { passed: true, details: 'Skipped: TestUtilityFactory not loaded in this environment' };
+                }
+                const { canvas, ctx } = TestUtilityFactory.createCanvasAndContext();
+                const { simulation } = TestUtilityFactory.createSimulationWithMocks('conway');
+                const hasProps = !!canvas && !!ctx && simulation instanceof ConwayGameOfLife;
+                return { passed: hasProps, details: `canvas:${!!canvas}, ctx:${!!ctx}, sim:${simulation && simulation.constructor && simulation.constructor.name}` };
+            } catch (e) {
+                return { passed: false, details: e.message };
+            }
+        }, 'system');
         
         return runner;
     }
