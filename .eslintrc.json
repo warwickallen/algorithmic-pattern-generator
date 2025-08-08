@@ -1,0 +1,38 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "extends": ["eslint:recommended"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "script"
+  },
+  "globals": {
+    "AppConstants": "readonly",
+    "ColorUtils": "readonly",
+    "TestUtilityFactory": "readonly",
+    "AlgorithmicPatternGenerator": "readonly",
+    "ConwayGameOfLife": "readonly",
+    "TermiteAlgorithm": "readonly",
+    "LangtonsAnt": "readonly",
+    "SimulationFactory": "readonly",
+    "PerformanceUtils": "readonly",
+    "PerformanceOptimizer": "readonly",
+    "ControlVisibilityManager": "readonly",
+    "errorHandler": "readonly",
+    "DynamicColourScheme": "readonly",
+    "RenderingUtils": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": [
+      "warn",
+      { "vars": "all", "args": "after-used", "ignoreRestSiblings": true }
+    ],
+    "no-undef": "off"
+  }
+}
+
+

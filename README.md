@@ -32,7 +32,8 @@ A sophisticated web application featuring three classic algorithmic simulations:
  - **EventFramework (enhanced)** - Declarative and delegated event registration with centralised cleanup
  - **ErrorHandler (new)** - Centralised error handling with simulation-specific strategies and metrics
   - **ColorUtils (new)** - Centralised colour parsing, HSL→RGB conversion, and colour interpolation used across rendering
- - **AppConstants (new)** - Centralised constants for speeds, cell sizes, fading, layout margins, and UI slider ranges
+  - **AppConstants (new)** - Centralised constants for speeds, cell sizes, fading, layout margins, and UI slider ranges
+  - **Shared Typedefs (new)** - `types.js` provides central JSDoc typedefs used across modules
 
 ## Quick Start
 
@@ -232,6 +233,12 @@ const { canvas, ctx } = TestUtilityFactory.createCanvasAndContext();
 const { simulation } = TestUtilityFactory.createSimulationWithMocks('conway');
 simulation.init();
 ```
+
+### JSDoc & Types
+
+- Common types are defined centrally in `types.js` to maximise reuse and consistency across files.
+- Key typedefs: `SimulationId`, `Point`, `Grid`, `RGB`, `ColourString`, `StateManager`, `EventHandler`, `Simulation`, `TestResult`, `TestFunction`.
+- Add new shared shapes in `types.js` rather than duplicating inline typedef blocks.
 
 ### Test Categories
 The test suite covers:
