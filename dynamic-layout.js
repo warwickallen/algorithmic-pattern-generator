@@ -5,11 +5,11 @@
 
 class DynamicLayoutManager {
     constructor() {
-        this.margin = 8; // Minimum space between elements (reduced from 20px)
-        this.topMargin = 20; // Top margin from viewport edge
-        this.leftMargin = 20; // Left margin from viewport edge
+        this.margin = (typeof AppConstants !== 'undefined' ? AppConstants.Layout.MARGIN : 8); // Minimum space between elements
+        this.topMargin = (typeof AppConstants !== 'undefined' ? AppConstants.Layout.TOP_MARGIN : 20); // Top margin from viewport edge
+        this.leftMargin = (typeof AppConstants !== 'undefined' ? AppConstants.Layout.LEFT_MARGIN : 20); // Left margin from viewport edge
         this.positionedElements = []; // Track positioned elements
-        this.isMobile = window.innerWidth <= 768;
+        this.isMobile = window.innerWidth <= (typeof AppConstants !== 'undefined' ? AppConstants.Layout.MOBILE_BREAKPOINT_WIDTH : 768);
 
         // Elements to position in order (following element-layout.yaml)
         this.elementsToPosition = [
@@ -33,12 +33,12 @@ class DynamicLayoutManager {
 
         // Handle window resize
         window.addEventListener('resize', (typeof PerformanceUtils !== 'undefined' ? PerformanceUtils.throttle(() => {
-            this.isMobile = window.innerWidth <= 768;
+            this.isMobile = window.innerWidth <= (typeof AppConstants !== 'undefined' ? AppConstants.Layout.MOBILE_BREAKPOINT_WIDTH : 768);
             this.positionElements();
-        }, 250) : this.debounce(() => {
-            this.isMobile = window.innerWidth <= 768;
+        }, (typeof AppConstants !== 'undefined' ? AppConstants.Layout.RESIZE_THROTTLE_MS : 250)) : this.debounce(() => {
+            this.isMobile = window.innerWidth <= (typeof AppConstants !== 'undefined' ? AppConstants.Layout.MOBILE_BREAKPOINT_WIDTH : 768);
             this.positionElements();
-        }, 250)));
+        }, (typeof AppConstants !== 'undefined' ? AppConstants.Layout.RESIZE_THROTTLE_MS : 250))));
 
         // Handle content changes that might affect element sizes
         this.observeContentChanges();
@@ -133,7 +133,7 @@ class DynamicLayoutManager {
         let maxX = currentX;
         for (const element of this.positionedElements) {
             // More precise row detection - check if elements are on the same row
-            if (Math.abs(element.y - currentY) < 10) { // Same row tolerance
+            if (Math.abs(element.y - currentY) < (typeof AppConstants !== 'undefined' ? AppConstants.Layout.SAME_ROW_TOLERANCE : 10)) { // Same row tolerance
                 maxX = Math.max(maxX, element.x + element.width);
             }
         }
@@ -211,9 +211,9 @@ class DynamicLayoutManager {
         // Use MutationObserver to watch for changes in the control groups
         const observer = new MutationObserver((typeof PerformanceUtils !== 'undefined' ? PerformanceUtils.debounce(() => {
             this.positionElements();
-        }, 100) : this.debounce(() => {
+        }, (typeof AppConstants !== 'undefined' ? AppConstants.Layout.MUTATION_DEBOUNCE_MS : 100)) : this.debounce(() => {
             this.positionElements();
-        }, 100)));
+        }, (typeof AppConstants !== 'undefined' ? AppConstants.Layout.MUTATION_DEBOUNCE_MS : 100))));
 
         // Observe all dynamic position elements
         this.elementsToPosition.forEach(elementId => {

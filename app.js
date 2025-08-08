@@ -48,11 +48,12 @@ class UIComponentLibrary {
 
     // Initialize default configurations for all component types
     initDefaultConfigs() {
+        const speedDefaults = (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED : { min: 0, max: 100, step: 1, value: 50 });
         this.defaultConfigs.set('slider', {
-            min: 0,
-            max: 100,
-            step: 1,
-            value: 50,
+            min: speedDefaults.min,
+            max: speedDefaults.max,
+            step: speedDefaults.step,
+            value: speedDefaults.value,
             format: (val) => val.toString(),
             className: 'slider'
         });
@@ -2154,10 +2155,10 @@ class ControlTemplateManager {
     static baseTemplates = {
         dynamicSpeedSlider: {
             type: 'dynamicSlider',
-            min: 1,
-            max: 60,
-            step: 1,
-            value: 30,
+            min: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED.min : 1),
+            max: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED.max : 60),
+            step: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED.step : 1),
+            value: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.SPEED.value : 30),
             label: 'Speed',
             format: (value) => `${value} steps/s`,
             id: 'dynamic-speed-slider',
@@ -2177,10 +2178,10 @@ class ControlTemplateManager {
         },
         termiteCountSlider: {
             type: 'slider',
-            min: 10,
-            max: 100,
-            step: 1,
-            value: 50,
+            min: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.TERMITES.min : 10),
+            max: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.TERMITES.max : 100),
+            step: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.TERMITES.step : 1),
+            value: (typeof AppConstants !== 'undefined' ? AppConstants.UISliders.TERMITES.value : 50),
             label: 'Termites',
             format: (value) => value.toString()
         }

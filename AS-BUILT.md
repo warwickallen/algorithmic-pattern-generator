@@ -13,7 +13,6 @@ The Algorithmic Pattern Generator is a sophisticated web application that combin
 - **Testing**: Comprehensive test suite with visual and programmatic testing
 - **Performance**: Optimised rendering with debouncing, throttling, and hardware acceleration
 - **Control Visibility**: CSS-based declarative control visibility management
-- **Control Visibility**: CSS-based declarative control visibility management
 
 ### File Structure
 ```
@@ -24,6 +23,7 @@ algorithmic-pattern-generator/
 ├── styles.css              # Responsive styling and immersive mode
 ├── i18n.js                 # Internationalisation system
 ├── dynamic-layout.js       # Dynamic layout management
+├── constants.js            # Centralised application constants (AppConstants)
 ├── test-runner.js          # Programmatic test runner
 ├── test-suite.html         # Comprehensive visual test suite
 ├── LICENSE                 # MIT License
@@ -1132,6 +1132,19 @@ testSuite.addTest('ControlVisibilityManager Conway Simulation', async () => {
 ## Configuration Files
 
 ### 1. Dynamic Colour Scheme (`dynamic-colour-scheme.yaml`)
+### 3. Centralised Constants (`constants.js`)
+Global constants used across the application, exposed as `AppConstants` in the browser and as a CommonJS export for tests.
+
+Key groups:
+- SimulationDefaults: speed bounds/default, cell size, fading behaviour, random coverage
+- TermiteDefaults: default count, movement speed, random turn probability
+- Layout: margins, tolerances, throttling/debouncing intervals, mobile breakpoint
+- UISliders: default ranges for speed, likelihood, termites, brightness
+
+Consumers:
+- `simulations.js` (speed clamp, fade params, cell size, termite behaviour)
+- `dynamic-layout.js` (margins, breakpoints, timings)
+- `app.js` (UI component defaults and control templates)
 YAML configuration for colour system:
 
 ```yaml

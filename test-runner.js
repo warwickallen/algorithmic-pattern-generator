@@ -323,6 +323,21 @@ class PredefinedTestSuites {
             };
         }, 'ui');
 
+        // Constants smoke tests
+        runner.addTest('AppConstants exposed', async () => {
+            const ok = typeof AppConstants !== 'undefined' && !!AppConstants.SimulationDefaults && !!AppConstants.UISliders;
+            return { passed: ok, details: ok ? 'AppConstants available' : 'AppConstants missing' };
+        }, 'system');
+
+        runner.addTest('Speed clamping uses constants', async () => {
+            const canvas = dependencies.canvas || document.createElement('canvas');
+            const ctx = dependencies.ctx || canvas.getContext('2d');
+            const sim = new ConwayGameOfLife(canvas, ctx);
+            sim.setSpeed(10_000);
+            const max = (typeof AppConstants !== 'undefined' ? AppConstants.SimulationDefaults.SPEED_MAX : 60);
+            return { passed: sim.speed === max, details: `speed=${sim.speed}, max=${max}` };
+        }, 'system');
+
         runner.addTest('Initial Controls Visibility', async () => {
             // This test requires DOM elements to exist
             if (typeof document === 'undefined') {

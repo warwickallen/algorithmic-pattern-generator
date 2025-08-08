@@ -586,7 +586,7 @@ interpolateColor(color1, color2, factor) { /* implementation */ }
   - Added three tests in `test-runner.js` under category `colour` validating `ColorUtils`
 - **Extensibility**: Central place to add future colour utilities (e.g., rgb↔hex, lighten/darken)
 
-### 22. **Constants Consolidation**
+### 22. **Constants Consolidation** ✅ **IMPLEMENTED**
 
 **Current State**: Magic numbers and strings scattered:
 ```javascript
@@ -597,6 +597,21 @@ this.margin = 8;
 ```
 
 **Estimated Reduction**: 15-25 lines
+
+**✅ Status**: **COMPLETED**
+- **AppConstants** module added in `constants.js` centralising defaults:
+  - Simulation: `SPEED_MIN/MAX/DEFAULT`, `CELL_SIZE_DEFAULT`, `FADE_OUT_CYCLES_DEFAULT`, `FADE_DECREMENT_DEFAULT`, `COVERAGE_DEFAULT`
+  - Termite: `MAX_TERMITES_DEFAULT`, `MOVE_SPEED`, `RANDOM_TURN_PROBABILITY`
+  - Layout: `MARGIN`, `TOP_MARGIN`, `LEFT_MARGIN`, `SAME_ROW_TOLERANCE`, `RESIZE_THROTTLE_MS`, `MUTATION_DEBOUNCE_MS`, `MOBILE_BREAKPOINT_WIDTH`
+  - UI sliders: `SPEED`, `LIKELIHOOD`, `TERMITES`, `BRIGHTNESS`
+- **Refactors**:
+  - `simulations.js` uses `AppConstants` for speeds, cell size, fade params, coverage, termite movement
+  - `dynamic-layout.js` uses layout constants and timeouts
+  - `app.js` default UI configs and templates use slider constants
+  - `index.html` annotated sliders with `data-constants` for traceability
+- **Compatibility**: Graceful fallbacks when `AppConstants` is undefined (tests/legacy contexts)
+- **Code reduction achieved**: ~20 lines of scattered literals removed or centralised
+- **Testing**: Added tests in `test-runner.js` asserting `AppConstants` availability and speed clamping against constants
 
 ### 23. **Logging Consolidation**
 
@@ -729,12 +744,12 @@ function createMockContext() { /* implementation */ }
 ### Phase 4: Polish and Optimisation (Low Priority)
 1. **Test Pattern Duplication** ✅ **COMPLETED** - Create test utility factory and refactor tests
 2. **Utility Function Consolidation** ✅ **COMPLETED** - Centralise common utilities (added `ColorUtils` and refactored usages)
-3. **Constants Consolidation** - Create configuration constants
+3. **Constants Consolidation** ✅ **COMPLETED** - Create configuration constants (`AppConstants` module; refactors across app)
 4. **Documentation Consolidation** - Standardise documentation patterns
 
 **Timeline**: 1-2 weeks
 **Expected Reduction**: 100-150 lines
-**Progress**: 2/4 completed (~95 lines reduced)
+**Progress**: 3/4 completed (~115 lines reduced)
 
 ### Phase 5: Visual/Functional Changes
 1. **Unified Control Panel Design** - Implement consistent design system
@@ -855,7 +870,7 @@ The implementation should be approached incrementally with comprehensive testing
 
 15. ✅ **Phase 4.1 COMPLETED**: Test Pattern Duplication implemented (TestUtilityFactory added, tests refactored, suite integration)
 16. ✅ **Phase 4.2 COMPLETED**: Utility Function Consolidation implemented (`ColorUtils` centralised; simulations shifted to shared utilities; tests added)
-17. ▶ **Phase 4.3 NEXT**: Constants Consolidation (extract magic numbers/strings)
+17. ✅ **Phase 4.3 COMPLETED**: Constants Consolidation implemented (AppConstants; refactors; tests and docs updated)
 18. ▶ **Phase 4.4 NEXT**: Documentation Consolidation (standardise JSDoc patterns)
 
 ---

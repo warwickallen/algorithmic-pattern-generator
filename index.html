@@ -7,6 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="styles.css">
+    <script src="constants.js"></script>
     <script src="dynamic-layout.js"></script>
 </head>
 <body>
@@ -36,7 +37,7 @@
             <div class="speed-control flex-center gap-lg">
                 <div class="control-group control-group--static">
                     <label for="dynamic-speed-slider">Speed:</label>
-                    <input type="range" id="dynamic-speed-slider" min="1" max="60" value="30" class="slider">
+                    <input type="range" id="dynamic-speed-slider" min="1" max="60" value="30" class="slider" data-constants="AppConstants.UISliders.SPEED">
                     <span id="dynamic-speed-value">30 steps/s</span>
                 </div>
             </div>
@@ -65,7 +66,7 @@
             <div class="likelihood-control flex-center gap-lg">
                 <div class="control-group control-group--static">
                     <label for="likelihood-slider">Coverage:</label>
-                    <input type="range" id="likelihood-slider" min="0" max="100" value="30" class="slider">
+                    <input type="range" id="likelihood-slider" min="0" max="100" value="30" class="slider" data-constants="AppConstants.UISliders.LIKELIHOOD">
                     <span id="likelihood-value">30%</span>
                 </div>
             </div>
@@ -79,7 +80,7 @@
         <div id="termites-container" class="control-group dynamic-position glass-light hover-lift" data-simulation="termite" style="display: none;">
             <div class="control-group control-group--static">
                 <label for="termites-slider">Termites:</label>
-                <input type="range" id="termites-slider" min="1" max="100" value="50" class="slider">
+                <input type="range" id="termites-slider" min="1" max="100" value="50" class="slider" data-constants="AppConstants.UISliders.TERMITES">
                 <span id="termites-value">50</span>
             </div>
         </div>
@@ -92,7 +93,7 @@
             <div class="brightness-control flex-center gap-lg">
                 <div class="control-group control-group--static">
                     <label for="brightness-slider">Brightness:</label>
-                    <input type="range" id="brightness-slider" min="0.1" max="2.0" step="0.1" value="1.0" class="slider">
+                    <input type="range" id="brightness-slider" min="0.1" max="2.0" step="0.1" value="1.0" class="slider" data-constants="AppConstants.UISliders.BRIGHTNESS">
                     <span id="brightness-value">100%</span>
                 </div>
             </div>
