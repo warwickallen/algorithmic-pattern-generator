@@ -313,7 +313,7 @@ static createButton(id, label, className) { /* basic implementation */ }
 - **Extensibility features** for adding new component types and configurations
 - **Documentation updated**: All documentation files updated to reflect enhanced UIComponentLibrary implementation
 
-### 10. **Performance Optimisation Consolidation**
+### 10. **Performance Optimisation Consolidation** ✅ **IMPLEMENTED**
 
 **Current State**: Performance utilities scattered across files:
 ```javascript
@@ -328,6 +328,15 @@ debounce(func, wait, key = null) { /* similar implementation */ }
 
 **Estimated Reduction**: 40-60 lines
 **Implementation**: Unified `PerformanceUtils` class.
+
+**✅ Status**: **COMPLETED**
+- **PerformanceUtils** class added with centralised `debounce(func, wait, key?, store?)` and `throttle(func, limit, key?, store?)`
+- **Scoped storage**: Supports shared/global timer stores and instance-scoped stores
+- **EventFramework integration**: Delegates its debounce/throttle to `PerformanceUtils` using instance stores
+- **Backward compatibility**: Existing `PerformanceOptimizer` retained as a thin facade delegating to `PerformanceUtils`
+- **DynamicLayout integration**: Uses `PerformanceUtils` for resize and mutation observer callbacks (with graceful fallback)
+- **Code reduction achieved**: ~40 lines of duplicated debounce/throttle logic consolidated
+- **Testing**: Existing tests referencing `PerformanceOptimizer` remain valid; UI/performance tests continue to pass
 
 ### 11. **Configuration Validation Consolidation**
 

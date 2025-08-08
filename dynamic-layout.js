@@ -32,10 +32,13 @@ class DynamicLayoutManager {
         }
         
         // Handle window resize
-        window.addEventListener('resize', this.debounce(() => {
+        window.addEventListener('resize', (typeof PerformanceUtils !== 'undefined' ? PerformanceUtils.throttle(() => {
             this.isMobile = window.innerWidth <= 768;
             this.positionElements();
-        }, 250));
+        }, 250) : this.debounce(() => {
+            this.isMobile = window.innerWidth <= 768;
+            this.positionElements();
+        }, 250)));
         
         // Handle content changes that might affect element sizes
         this.observeContentChanges();
@@ -206,9 +209,11 @@ class DynamicLayoutManager {
     
     observeContentChanges() {
         // Use MutationObserver to watch for changes in the control groups
-        const observer = new MutationObserver(this.debounce(() => {
+        const observer = new MutationObserver((typeof PerformanceUtils !== 'undefined' ? PerformanceUtils.debounce(() => {
             this.positionElements();
-        }, 100));
+        }, 100) : this.debounce(() => {
+            this.positionElements();
+        }, 100)));
         
         // Observe all dynamic position elements
         this.elementsToPosition.forEach(elementId => {

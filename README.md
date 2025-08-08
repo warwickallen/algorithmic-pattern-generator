@@ -27,6 +27,7 @@ A sophisticated web application featuring three classic algorithmic simulations:
 - **ModalTemplateManager** - Template-based modal content management with dynamic content injection and scroll position management
 - **UIComponentLibrary** - Comprehensive UI component library with 8 component types, lifecycle management, and factory methods
 - **CSS Utility Framework** - Design token system with utility classes for glass effects, layout, and performance optimization
+ - **PerformanceUtils** - Centralised debounce/throttle utilities used across the app
 
 ## Quick Start
 
@@ -141,10 +142,11 @@ The application uses a modular architecture with clear separation of concerns:
 2. **BaseSimulation** - Abstract base class for all simulations
 3. **UIComponentLibrary** - Comprehensive UI component library with lifecycle management, state management, and event handling
 4. **EventFramework** - Centralised event handling with performance optimisations and memory leak prevention
-5. **ControlTemplateManager** - Template-based control configuration system
-6. **ConfigurationManager** - Centralised configuration for all simulations
-7. **Performance Monitor** - Real-time performance tracking
-8. **ControlVisibilityManager** - CSS-based control visibility management
+5. **PerformanceUtils** - Centralised debounce/throttle utilities (with `PerformanceOptimizer` kept for compatibility)
+6. **ControlTemplateManager** - Template-based control configuration system
+7. **ConfigurationManager** - Centralised configuration for all simulations
+8. **Performance Monitor** - Real-time performance tracking
+9. **ControlVisibilityManager** - CSS-based control visibility management
 
 ### Design Patterns
 - **Factory Pattern** - Simulation creation via SimulationFactory

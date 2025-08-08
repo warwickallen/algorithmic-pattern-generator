@@ -699,7 +699,7 @@ Comprehensive rendering system:
 
 **Components:**
 - **Color Manager**: HSL/RGB conversion and brightness control
-- **Performance Optimizer**: Debouncing, throttling, and timing
+- **Performance Utilities**: Centralised debouncing and throttling via `PerformanceUtils` (with `PerformanceOptimizer` kept as a thin compatibility layer)
 - **Grid Renderer**: Efficient grid drawing with custom cell renderers
 
 #### Base Simulation Class
