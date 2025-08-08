@@ -172,7 +172,7 @@ function testTimingIssue() {
     // Call updateFadeStates manually to see what happens
     console.log('\n=== Calling updateFadeStates ===');
     simulation.updateFadeStates(simulation.grids.current);
-    
+
     console.log('After updateFadeStates:');
     for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
@@ -187,10 +187,10 @@ function testTimingIssue() {
     // Now increment generation and see what happens
     console.log('\n=== After generation increment ===');
     simulation.generation++;
-    
+
     // Call updateFadeStates again
     simulation.updateFadeStates(simulation.grids.current);
-    
+
     console.log('After second updateFadeStates:');
     for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
@@ -206,10 +206,10 @@ function testTimingIssue() {
 // Function to enable debug mode and test the fix
 function testFixedBlinker() {
     console.log('Testing fixed blinker with debug mode...');
-    
+
     // Enable debug mode
     window.DEBUG_FADE = true;
-    
+
     const { canvas, ctx } = (typeof TestUtilityFactory !== 'undefined')
         ? TestUtilityFactory.createCanvasAndContext()
         : { canvas: { width: 300, height: 300, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, ctx: { fillStyle: '', fillRect: () => {}, clearRect: () => {}, setGlowEffect: () => {}, clearGlowEffect: () => {} } };
@@ -292,7 +292,7 @@ function testFixedBlinker() {
             console.log(rowStr);
         }
     }
-    
+
     // Disable debug mode
     window.DEBUG_FADE = false;
 }
@@ -307,19 +307,19 @@ function testReengineeredFading() {
     simulation.init();
     simulation.setFadeOutCycles(5);
     simulation.setFadeDecrement(0.2); // Set fade decrement to 0.2
-    
+
     // Set up blinker pattern
     simulation.grids.current[0][1] = true;
     simulation.grids.current[1][1] = true;
     simulation.grids.current[2][1] = true;
-    
+
     console.log('Initial grid:');
     for (let row = 0; row < 3; row++) {
         let rowStr = '';
         for (let col = 0; col < 3; col++) { rowStr += simulation.grids.current[row][col] ? '1 ' : '0 '; }
         console.log(rowStr);
     }
-    
+
     for (let gen = 0; gen < 6; gen++) {
         console.log(`\n=== Generation ${gen} ===`);
         console.log('Grid state:');
@@ -328,7 +328,7 @@ function testReengineeredFading() {
             for (let col = 0; col < 3; col++) { rowStr += simulation.grids.current[row][col] ? '1 ' : '0 '; }
             console.log(rowStr);
         }
-        
+
         console.log('Cell brightness values:');
         for (let row = 0; row < 3; row++) {
             let rowStr = '';
@@ -338,9 +338,9 @@ function testReengineeredFading() {
             }
             console.log(rowStr);
         }
-        
+
         simulation.update();
-        
+
         console.log('Brightness values after update:');
         for (let row = 0; row < 3; row++) {
             let rowStr = '';
@@ -360,4 +360,4 @@ if (typeof window !== 'undefined') {
     window.testTimingIssue = testTimingIssue;
     window.testFixedBlinker = testFixedBlinker;
     window.testReengineeredFading = testReengineeredFading;
-} 
+}

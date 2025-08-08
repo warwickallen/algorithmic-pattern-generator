@@ -81,7 +81,7 @@ The visual test suite (`test-suite.html`) provides an intuitive interface for te
 
 1. **Select Test Groups**: Use the checkboxes to choose which test categories to run:
    - Simulation Core Tests
-   - UI Component Tests  
+   - UI Component Tests
    - Interaction Tests
    - Performance Tests
    - Visual Effects Tests
@@ -94,7 +94,7 @@ The visual test suite (`test-suite.html`) provides an intuitive interface for te
 
 2. **Select/Deselect All**: Use the top checkbox to quickly select or deselect all test groups at once. The checkbox shows:
    - **Checked**: All test groups are selected
-   - **Unchecked**: No test groups are selected  
+   - **Unchecked**: No test groups are selected
    - **Indeterminate (orange with dash)**: Some test groups are selected
 
 3. **Run Selected Tests**: Click the "Run Selected Tests" button to execute only the chosen test categories
@@ -793,7 +793,7 @@ Verify no regressions have been introduced:
 
 ```javascript
 // Check for performance regressions
-const hasRegressions = Object.values(performanceComparison).some(metric => 
+const hasRegressions = Object.values(performanceComparison).some(metric =>
     metric.change > 0.1 // 10% threshold
 );
 
@@ -817,7 +817,7 @@ testRunner.addTest('New Feature Test', async () => {
     simulation.init();
     const result = simulation instanceof ConwayGameOfLife;
     const expectedValue = 'expected';
-    
+
     return {
         passed: result === true,
         details: `Conway initialised`,
@@ -831,14 +831,14 @@ testRunner.addTest('New Feature Test', async () => {
 ```javascript
 testRunner.addTest('New Performance Test', async () => {
     const start = performance.now();
-    
+
     // Perform operation
     someOperation();
-    
+
     const end = performance.now();
     const duration = end - start;
     const threshold = 100; // 100ms threshold
-    
+
     return {
         passed: duration < threshold,
         details: `Operation took ${duration.toFixed(2)}ms (threshold: ${threshold}ms)`,
@@ -854,13 +854,13 @@ testRunner.addTest('New Performance Test', async () => {
 testRunner.addTest('New UI Component Test', async () => {
     // Create component
     const component = new UIComponent();
-    
+
     // Test functionality
     const result = component.someMethod();
-    
+
     // Cleanup
     component.cleanup();
-    
+
     return {
         passed: result === expectedValue,
         details: `Component test result: ${result}`,
@@ -978,31 +978,31 @@ async function runCITests() {
     // Create test environment
     const canvas = createCanvas(100, 100);
     const ctx = canvas.getContext('2d');
-    
+
     // Create test runner
     const runner = PredefinedTestSuites.createComprehensiveSuite({ canvas, ctx });
-    
+
     // Run all tests
     const results = await runner.runAllTests();
-    
+
     // Check for failures
     if (results.summary.failed > 0 || results.summary.errors > 0) {
         console.error('Tests failed!');
         console.log('Failed tests:', results.failed);
         process.exit(1);
     }
-    
+
     // Check for performance regressions
     const performanceThreshold = 0.2; // 20% threshold
     const hasPerformanceRegression = Object.values(results.performance).some(
         metric => metric > performanceThreshold
     );
-    
+
     if (hasPerformanceRegression) {
         console.warn('Performance regression detected!');
         process.exit(1);
     }
-    
+
     console.log('All tests passed!');
     console.log('Performance metrics:', results.performance);
 }
@@ -1039,4 +1039,4 @@ The test suite is designed to be comprehensive and help you maintain code qualit
 - **Test documentation updates** as features evolve
 - **Cross-browser testing** for compatibility validation
 
-The test suite is your primary tool for ensuring the algorithmic pattern generator continues to work correctly and perform optimally throughout its development lifecycle. 
+The test suite is your primary tool for ensuring the algorithmic pattern generator continues to work correctly and perform optimally throughout its development lifecycle.

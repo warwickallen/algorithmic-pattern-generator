@@ -222,4 +222,4 @@ This document was prepared with reference to the codebase at commit 91a6d8c (i.e
 - Existing `BaseSimulation` class
 - Current trail system implementation
 - Dynamic colour scheme system
-- Performance optimisation utilities 
+- Performance optimisation utilities

@@ -1,6 +1,6 @@
 /**
  * Test Runner for Algorithmic Pattern Generator
- * 
+ *
  * This script provides automated testing capabilities for ensuring
  * refactoring doesn't introduce regressions.
  */
@@ -17,7 +17,7 @@ class TestRunner {
         };
         this.tests = [];
     }
-    
+
     /**
      * Add a test to the runner
      * @param {string} name - Test name
@@ -34,7 +34,7 @@ class TestRunner {
             duration: 0
         });
     }
-    
+
     /**
      * Run a single test
      * @param {Object} test - Test object
@@ -42,37 +42,37 @@ class TestRunner {
      */
     async runTest(test) {
         const startTime = performance.now();
-        
+
         try {
             const result = await test.testFunction();
             const endTime = performance.now();
-            
+
             test.result = result.passed ? 'pass' : 'fail';
             test.details = result.details || '';
             test.duration = endTime - startTime;
-            
+
             if (result.passed) {
                 this.testResults.passed++;
             } else {
                 this.testResults.failed++;
             }
-            
+
             return {
                 name: test.name,
                 result: test.result,
                 details: test.details,
                 duration: test.duration
             };
-            
+
         } catch (error) {
             const endTime = performance.now();
-            
+
             test.result = 'error';
             test.details = `Error: ${error.message}`;
             test.duration = endTime - startTime;
-            
+
             this.testResults.errors++;
-            
+
             return {
                 name: test.name,
                 result: 'error',
@@ -83,7 +83,7 @@ class TestRunner {
             this.testResults.total++;
         }
     }
-    
+
     /**
      * Run all tests
      * @returns {Promise<Object>} Summary of all test results
@@ -97,35 +97,35 @@ class TestRunner {
             startTime: performance.now(),
             endTime: null
         };
-        
+
         console.log('🚀 Starting test suite...');
         console.log(`📋 Running ${this.tests.length} tests`);
         console.log('─'.repeat(50));
-        
+
         const results = [];
-        
+
         for (const test of this.tests) {
             const result = await this.runTest(test);
             results.push(result);
-            
+
             // Log result
             const status = result.result === 'pass' ? '✅' : result.result === 'fail' ? '❌' : '💥';
             console.log(`${status} ${result.name} (${result.duration.toFixed(2)}ms)`);
-            
+
             if (result.details) {
                 console.log(`   ${result.details}`);
             }
         }
-        
+
         this.testResults.endTime = performance.now();
-        
+
         this.printSummary();
         return {
             summary: this.testResults,
             results: results
         };
     }
-    
+
     /**
      * Run tests by category
      * @param {string} category - Category to run
@@ -133,40 +133,40 @@ class TestRunner {
      */
     async runTestsByCategory(category) {
         const categoryTests = this.tests.filter(test => test.category === category);
-        
+
         console.log(`🚀 Starting ${category} tests...`);
         console.log(`📋 Running ${categoryTests.length} tests in category: ${category}`);
         console.log('─'.repeat(50));
-        
+
         const results = [];
-        
+
         for (const test of categoryTests) {
             const result = await this.runTest(test);
             results.push(result);
-            
+
             const status = result.result === 'pass' ? '✅' : result.result === 'fail' ? '❌' : '💥';
             console.log(`${status} ${result.name} (${result.duration.toFixed(2)}ms)`);
-            
+
             if (result.details) {
                 console.log(`   ${result.details}`);
             }
         }
-        
+
         this.printSummary();
         return {
             category,
             results: results
         };
     }
-    
+
     /**
      * Print test summary
      */
     printSummary() {
         const duration = this.testResults.endTime - this.testResults.startTime;
-        const successRate = this.testResults.total > 0 ? 
+        const successRate = this.testResults.total > 0 ?
             (this.testResults.passed / this.testResults.total * 100).toFixed(1) : 0;
-        
+
         console.log('─'.repeat(50));
         console.log('📊 TEST SUMMARY');
         console.log('─'.repeat(50));
@@ -177,21 +177,21 @@ class TestRunner {
         console.log(`📈 Success Rate: ${successRate}%`);
         console.log(`⏱️  Duration: ${duration.toFixed(2)}ms`);
         console.log('─'.repeat(50));
-        
+
         if (this.testResults.failed > 0 || this.testResults.errors > 0) {
             console.log('⚠️  Some tests failed! Please review the results above.');
         } else {
             console.log('🎉 All tests passed!');
         }
     }
-    
+
     /**
      * Get test statistics by category
      * @returns {Object} Statistics grouped by category
      */
     getCategoryStats() {
         const stats = {};
-        
+
         this.tests.forEach(test => {
             if (!stats[test.category]) {
                 stats[test.category] = {
@@ -201,9 +201,9 @@ class TestRunner {
                     errors: 0
                 };
             }
-            
+
             stats[test.category].total++;
-            
+
             if (test.result === 'pass') {
                 stats[test.category].passed++;
             } else if (test.result === 'fail') {
@@ -212,10 +212,10 @@ class TestRunner {
                 stats[test.category].errors++;
             }
         });
-        
+
         return stats;
     }
-    
+
     /**
      * Export test results to JSON
      * @returns {Object} Test results in JSON format
@@ -245,7 +245,7 @@ class PredefinedTestSuites {
      */
     static createComprehensiveSuite(dependencies = {}) {
         const runner = new TestRunner();
-        
+
         // Core simulation tests
         runner.addTest('Conway Game of Life Creation', async () => {
             const simulation = SimulationFactory.createSimulation('conway', dependencies.canvas, dependencies.ctx);
@@ -254,7 +254,7 @@ class PredefinedTestSuites {
                 details: `Created ${simulation.constructor.name}`
             };
         }, 'core');
-        
+
         runner.addTest('Termite Algorithm Creation', async () => {
             const simulation = SimulationFactory.createSimulation('termite', dependencies.canvas, dependencies.ctx);
             return {
@@ -262,7 +262,7 @@ class PredefinedTestSuites {
                 details: `Created ${simulation.constructor.name}`
             };
         }, 'core');
-        
+
         runner.addTest('Langton\'s Ant Creation', async () => {
             const simulation = SimulationFactory.createSimulation('langton', dependencies.canvas, dependencies.ctx);
             return {
@@ -270,50 +270,50 @@ class PredefinedTestSuites {
                 details: `Created ${simulation.constructor.name}`
             };
         }, 'core');
-        
+
         runner.addTest('Termite Slider Functionality', async () => {
             const simulation = SimulationFactory.createSimulation('termite', dependencies.canvas, dependencies.ctx);
             simulation.init();
-            
+
             const initialCount = simulation.termites.length;
             const newCount = 25;
             simulation.setTermiteCount(newCount);
             const afterChangeCount = simulation.termites.length;
-            
+
             return {
                 passed: afterChangeCount === newCount && afterChangeCount !== initialCount,
                 details: `Termite count changed from ${initialCount} to ${afterChangeCount} (expected ${newCount})`
             };
         }, 'core');
-        
+
         // Performance tests
         runner.addTest('Grid Creation Performance', async () => {
             const start = performance.now();
             const simulation = new ConwayGameOfLife(dependencies.canvas, dependencies.ctx);
             simulation.init();
             const end = performance.now();
-            
+
             return {
                 passed: (end - start) < 100,
                 details: `Grid creation took ${(end - start).toFixed(2)}ms`
             };
         }, 'performance');
-        
+
         runner.addTest('Update Performance', async () => {
             const simulation = new ConwayGameOfLife(dependencies.canvas, dependencies.ctx);
             simulation.init();
             simulation.randomizeGrid(simulation.grids.current, 0.3);
-            
+
             const start = performance.now();
             simulation.update();
             const end = performance.now();
-            
+
             return {
                 passed: (end - start) < 20,
                 details: `Update took ${(end - start).toFixed(2)}ms`
             };
         }, 'performance');
-        
+
         // UI component tests
         runner.addTest('Configuration Manager', async () => {
             const configs = ConfigurationManager.getAllConfigs();
@@ -322,7 +322,7 @@ class PredefinedTestSuites {
                 details: `Found ${Object.keys(configs).length} simulation configs`
             };
         }, 'ui');
-        
+
         runner.addTest('Initial Controls Visibility', async () => {
             // This test requires DOM elements to exist
             if (typeof document === 'undefined') {
@@ -331,19 +331,19 @@ class PredefinedTestSuites {
                     details: 'Skipped in non-DOM environment'
                 };
             }
-            
+
             const app = new AlgorithmicPatternGenerator();
             app.init();
-            
+
             const conwayControls = document.getElementById('conway-controls');
             const isVisible = conwayControls && conwayControls.style.display === 'flex';
-            
+
             return {
                 passed: isVisible,
                 details: `Controls visibility after init: ${isVisible}`
             };
         }, 'ui');
-        
+
         runner.addTest('Termite Slider Integration', async () => {
             // This test requires DOM elements to exist
             if (typeof document === 'undefined') {
@@ -352,56 +352,56 @@ class PredefinedTestSuites {
                     details: 'Skipped in non-DOM environment'
                 };
             }
-            
+
             // Create test canvas and simulation
             const canvas = document.createElement('canvas');
             canvas.width = 400;
             canvas.height = 300;
             const ctx = canvas.getContext('2d');
-            
+
             const simulation = SimulationFactory.createSimulation('termite', canvas, ctx);
             simulation.init();
-            
+
             // Get initial termite count
             const initialCount = simulation.termites.length;
-            
+
             // Test the setTermiteCount method directly
             simulation.setTermiteCount(25);
-            
+
             // Check if termite count changed
             const afterChangeCount = simulation.termites.length;
-            
+
             return {
                 passed: afterChangeCount === 25 && afterChangeCount !== initialCount,
                 details: `Termite count changed from ${initialCount} to ${afterChangeCount} (expected 25)`
             };
         }, 'ui');
-        
+
         runner.addTest('Performance Optimizer', async () => {
             const debounced = PerformanceOptimizer.debounce(() => {}, 100);
             const throttled = PerformanceOptimizer.throttle(() => {}, 100);
-            
+
             return {
                 passed: typeof debounced === 'function' && typeof throttled === 'function',
                 details: 'Debounce and throttle functions created successfully'
             };
         }, 'ui');
-        
+
         // Colour scheme tests
         runner.addTest('Dynamic Colour Scheme', async () => {
             const colourScheme = new DynamicColourScheme();
             const hue = colourScheme.getCornerHue('topLeft', 0);
-            
+
             return {
                 passed: hue === 45,
                 details: `Top left corner hue: ${hue}°`
             };
         }, 'colour');
-        
+
         runner.addTest('Colour Interpolation', async () => {
             const colourScheme = new DynamicColourScheme();
             const colour = colourScheme.getColourAtPosition(0, 0, 100, 100, 80, 50, 0);
-            
+
             return {
                 passed: colour.startsWith('rgb('),
                 details: `Generated colour: ${colour}`
@@ -422,10 +422,10 @@ class PredefinedTestSuites {
                 return { passed: false, details: e.message };
             }
         }, 'system');
-        
+
         return runner;
     }
-    
+
     /**
      * Create a minimal test suite for quick validation
      * @param {Object} dependencies - Required dependencies
@@ -433,7 +433,7 @@ class PredefinedTestSuites {
      */
     static createMinimalSuite(dependencies = {}) {
         const runner = new TestRunner();
-        
+
         runner.addTest('Basic Simulation Creation', async () => {
             const simulation = SimulationFactory.createSimulation('conway', dependencies.canvas, dependencies.ctx);
             return {
@@ -441,7 +441,7 @@ class PredefinedTestSuites {
                 details: 'Basic simulation creation works'
             };
         }, 'basic');
-        
+
         runner.addTest('Configuration Access', async () => {
             const configs = ConfigurationManager.getAllConfigs();
             return {
@@ -449,7 +449,7 @@ class PredefinedTestSuites {
                 details: `Found ${Object.keys(configs).length} configurations`
             };
         }, 'basic');
-        
+
         return runner;
     }
 }
@@ -469,7 +469,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         canvas.width = 100;
         canvas.height = 100;
         const ctx = canvas.getContext('2d');
-        
+
         const runner = PredefinedTestSuites.createMinimalSuite({ canvas, ctx });
         // Add ErrorHandler smoke tests
         runner.addTest('ErrorHandler: default strategy handles event errors', async () => {
@@ -511,7 +511,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 return { passed: false, details: e.message };
             }
         }, 'system');
-        
+
         console.log('🧪 Test runner loaded. Run runner.runAllTests() to execute tests.');
         console.log('Available commands:');
         console.log('  - runner.runAllTests()');
@@ -519,8 +519,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         console.log('  - runner.runTestsByCategory("performance")');
         console.log('  - runner.runTestsByCategory("ui")');
         console.log('  - runner.runTestsByCategory("colour")');
-        
+
         // Make runner globally available
         window.testRunner = runner;
     });
-} 
+}
