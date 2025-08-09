@@ -1,0 +1,9 @@
+# Versioning and Backwards Compatibility
+
+- If the project's `VERSION` file (`/VERSION`) begins with `0.0.`, **backwards compatibility is of no concern**. Breaking changes may be introduced without deprecation during this early development phase.
+
+description: Defines repository versioning policy and when backwards compatibility applies
+globs:
+alwaysApply: true
+
+---
