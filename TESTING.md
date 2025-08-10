@@ -255,20 +255,22 @@ The concrete implementation lives in the test suite as "Dynamic Fill Coverage St
 To validate that each cell has an equal chance of being activated (uniform distribution), the test suite includes a chi-square goodness of fit test:
 
 - **Test Name**: "Fill Button Equal Cell Activation Probability (Chi-Square Test)"
-- **Methodology**: Performs 50 Fill operations and tracks activation count for each individual cell
+- **Methodology**: Performs 200 Fill operations and tracks activation count for each individual cell
 - **Statistical Analysis**: Uses chi-square test with normal approximation for large degrees of freedom
 - **Pass Criteria**: Z-score must be within ±1.96 (95% confidence interval)
 - **Bug Detection**: Can identify subtle biases in randomization algorithms that achieve correct overall coverage but don't give each cell equal probability
 
 **Expected Results:**
-- Each cell should be activated approximately 15 times out of 50 trials (30% probability)
+
+- Each cell should be activated approximately 60 times out of 200 trials (30% probability)
 - Chi-square statistic should follow expected distribution
 - Z-score should be within statistical bounds
 
 **Failure Indicators:**
+
 - High chi-square statistic (>9000) indicates non-uniform distribution
 - Z-score outside ±1.96 indicates systematic bias
-- Wide activation range (e.g., [3-28] instead of [12-18]) suggests unequal probabilities
+- Wide activation range (e.g., [40-80] instead of [50-70]) suggests unequal probabilities
 
 This test successfully identified a subtle bug where the Fill button achieved correct overall coverage but had biased cell selection, demonstrating the importance of testing distribution uniformity alongside aggregate statistics.
 

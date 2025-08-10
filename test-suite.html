@@ -3850,9 +3850,9 @@
             // Wait a moment for initialization to complete
             await new Promise((resolve) => setTimeout(resolve, 100));
 
-            // Set test parameters
+            // Set test parameters for higher statistical power
             const P = 0.3; // 30% probability
-            const numTrials = 50; // Number of Fill operations to perform
+            const numTrials = 200; // Increased from 50 to 200 for better sensitivity
             const significanceLevel = 0.05; // 5% significance level for chi-square test
             slider.value = String(Math.round(P * 100));
 
@@ -3932,7 +3932,7 @@
             }
 
             // Calculate expected frequency for each cell
-            const expectedFrequency = numTrials * P;
+            const expectedFrequency = numTrials * P; // Now 200 * 0.3 = 60 expected per cell
 
             // Perform chi-square goodness of fit test
             let chiSquareStatistic = 0;
@@ -3973,6 +3973,28 @@
             const expectedAvgPerCell = expectedFrequency;
             const minActivations = Math.min(...cellActivationCounts);
             const maxActivations = Math.max(...cellActivationCounts);
+            
+            // Additional diagnostics for bias detection
+            const activationVariance = cellActivationCounts.reduce((sum, count) => 
+              sum + Math.pow(count - expectedFrequency, 2), 0) / totalCells;
+            const expectedVariance = numTrials * P * (1 - P); // Binomial variance
+            const varianceRatio = activationVariance / expectedVariance;
+            
+            // Check for spatial patterns (row and column biases)
+            const rowCounts = new Array(sim.rows).fill(0);
+            const colCounts = new Array(sim.cols).fill(0);
+            
+            for (let i = 0; i < totalCells; i++) {
+              const row = Math.floor(i / sim.cols);
+              const col = i % sim.cols;
+              rowCounts[row] += cellActivationCounts[i];
+              colCounts[col] += cellActivationCounts[i];
+            }
+            
+            const expectedRowTotal = (totalActivations / sim.rows);
+            const expectedColTotal = (totalActivations / sim.cols);
+            const maxRowDeviation = Math.max(...rowCounts.map(count => Math.abs(count - expectedRowTotal)));
+            const maxColDeviation = Math.max(...colCounts.map(count => Math.abs(count - expectedColTotal)));
 
             // Cleanup app and any temporary elements
             app.cleanup && app.cleanup();
@@ -3990,7 +4012,15 @@
                 4
               )} (expected=${expectedAvgPerCell.toFixed(
                 4
-              )}), Range=[${minActivations}-${maxActivations}], TotalActivations=${totalActivations}`,
+              )}), Range=[${minActivations}-${maxActivations}], Variance=${activationVariance.toFixed(
+                2
+              )} (expected=${expectedVariance.toFixed(
+                2
+              )}, ratio=${varianceRatio.toFixed(
+                2
+              )}), MaxRowDev=${maxRowDeviation.toFixed(
+                1
+              )}, MaxColDev=${maxColDeviation.toFixed(1)}, TotalActivations=${totalActivations}`,
             };
           } catch (e) {
             return { passed: false, details: `Error: ${e.message}` };
