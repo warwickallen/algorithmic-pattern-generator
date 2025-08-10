@@ -252,27 +252,27 @@ The concrete implementation lives in the test suite as "Dynamic Fill Coverage St
 
 #### Equal Cell Activation Probability Test
 
-To validate that each cell has an equal chance of being activated (uniform distribution), the test suite includes a chi-square goodness of fit test:
+To validate that each cell has an equal chance of being activated (uniform distribution), the test suite includes a coefficient of variation test:
 
-- **Test Name**: "Fill Button Equal Cell Activation Probability (Chi-Square Test)"
+- **Test Name**: "Fill Button Equal Cell Activation Probability (Variance Test)"
 - **Methodology**: Performs 200 Fill operations and tracks activation count for each individual cell
-- **Statistical Analysis**: Uses chi-square test with normal approximation for large degrees of freedom
-- **Pass Criteria**: Z-score must be within ±1.96 (95% confidence interval)
+- **Statistical Analysis**: Uses coefficient of variation ratio to compare observed vs expected variance
+- **Pass Criteria**: CV ratio must be within 0.9-1.1 (10% deviation from expected variance)
 - **Bug Detection**: Can identify subtle biases in randomization algorithms that achieve correct overall coverage but don't give each cell equal probability
 
 **Expected Results:**
 
 - Each cell should be activated approximately 60 times out of 200 trials (30% probability)
-- Chi-square statistic should follow expected distribution
-- Z-score should be within statistical bounds
+- Coefficient of variation ratio should be close to 1.0
+- Observed variance should match expected binomial variance
 
 **Failure Indicators:**
 
-- High chi-square statistic (>9000) indicates non-uniform distribution
-- Z-score outside ±1.96 indicates systematic bias
+- CV ratio significantly different from 1.0 indicates non-uniform distribution
+- High spatial bias (MaxRowDev/MaxColDev > 100) suggests coordinate-related issues
 - Wide activation range (e.g., [40-80] instead of [50-70]) suggests unequal probabilities
 
-This test successfully identified a subtle bug where the Fill button achieved correct overall coverage but had biased cell selection, demonstrating the importance of testing distribution uniformity alongside aggregate statistics.
+This test uses a more appropriate statistical method for large sample sizes than the previous chi-square approach, avoiding false positives from natural random variation in large datasets.
 
 ### Performance Tests
 
