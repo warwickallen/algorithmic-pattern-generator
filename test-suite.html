@@ -3814,7 +3814,7 @@
         "dynamic-fill-button"
       );
 
-      // Statistical test for equal chance of cell activation  
+      // Statistical test for equal chance of cell activation
       testSuite.addTest(
         "Fill Button Equal Cell Activation Probability (Variance Test)",
         async () => {
@@ -3953,16 +3953,20 @@
             // For very large sample sizes, use a different approach
             // Instead of chi-square goodness of fit, use coefficient of variation test
             const expectedVariance = numTrials * P * (1 - P); // Binomial variance
-            const observedVariance = cellActivationCounts.reduce((sum, count) => 
-              sum + Math.pow(count - expectedFrequency, 2), 0) / totalCells;
-            
+            const observedVariance =
+              cellActivationCounts.reduce(
+                (sum, count) => sum + Math.pow(count - expectedFrequency, 2),
+                0
+              ) / totalCells;
+
             // Calculate coefficient of variation ratio
             const expectedCV = Math.sqrt(expectedVariance) / expectedFrequency;
-            const observedCV = Math.sqrt(observedVariance) / (totalActivations / totalCells);
+            const observedCV =
+              Math.sqrt(observedVariance) / (totalActivations / totalCells);
             const cvRatio = observedCV / expectedCV;
-            
+
             // For uniform random distribution, CV ratio should be close to 1.0
-            // Allow 10% deviation for natural random variation  
+            // Allow 10% deviation for natural random variation
             const cvDeviation = Math.abs(cvRatio - 1.0);
             const zScore = cvDeviation * 10; // Scale for comparison with old z-score format
             const criticalZ = 1.96;
@@ -3973,28 +3977,34 @@
             const expectedAvgPerCell = expectedFrequency;
             const minActivations = Math.min(...cellActivationCounts);
             const maxActivations = Math.max(...cellActivationCounts);
-            
+
             // Additional diagnostics for bias detection
-            const activationVariance = cellActivationCounts.reduce((sum, count) => 
-              sum + Math.pow(count - expectedFrequency, 2), 0) / totalCells;
-            const expectedVariance = numTrials * P * (1 - P); // Binomial variance
+            const activationVariance =
+              cellActivationCounts.reduce(
+                (sum, count) => sum + Math.pow(count - expectedFrequency, 2),
+                0
+              ) / totalCells;
             const varianceRatio = activationVariance / expectedVariance;
-            
+
             // Check for spatial patterns (row and column biases)
             const rowCounts = new Array(sim.rows).fill(0);
             const colCounts = new Array(sim.cols).fill(0);
-            
+
             for (let i = 0; i < totalCells; i++) {
               const row = Math.floor(i / sim.cols);
               const col = i % sim.cols;
               rowCounts[row] += cellActivationCounts[i];
               colCounts[col] += cellActivationCounts[i];
             }
-            
-            const expectedRowTotal = (totalActivations / sim.rows);
-            const expectedColTotal = (totalActivations / sim.cols);
-            const maxRowDeviation = Math.max(...rowCounts.map(count => Math.abs(count - expectedRowTotal)));
-            const maxColDeviation = Math.max(...colCounts.map(count => Math.abs(count - expectedColTotal)));
+
+            const expectedRowTotal = totalActivations / sim.rows;
+            const expectedColTotal = totalActivations / sim.cols;
+            const maxRowDeviation = Math.max(
+              ...rowCounts.map((count) => Math.abs(count - expectedRowTotal))
+            );
+            const maxColDeviation = Math.max(
+              ...colCounts.map((count) => Math.abs(count - expectedColTotal))
+            );
 
             // Cleanup app and any temporary elements
             app.cleanup && app.cleanup();
@@ -4020,7 +4030,9 @@
                 2
               )}), MaxRowDev=${maxRowDeviation.toFixed(
                 1
-              )}, MaxColDev=${maxColDeviation.toFixed(1)}, TotalActivations=${totalActivations}`,
+              )}, MaxColDev=${maxColDeviation.toFixed(
+                1
+              )}, TotalActivations=${totalActivations}`,
             };
           } catch (e) {
             return { passed: false, details: `Error: ${e.message}` };
