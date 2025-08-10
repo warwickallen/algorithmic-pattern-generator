@@ -939,8 +939,6 @@ class BaseSimulation {
     this.cols = Math.max(1, Math.floor(this.canvas.width / this.cellSize));
     this.rows = Math.max(1, Math.floor(this.canvas.height / this.cellSize));
 
-
-
     // Clear caches on resize
     this.clearCaches();
 
@@ -2310,18 +2308,22 @@ class TermiteAlgorithm extends BaseSimulation {
     }
 
     // Use the base class randomizeGrid method (no coordinate conversion!)
-    this.randomizeGrid(virtualGrid, likelihood);
+    const activatedCells = this.randomizeGrid(virtualGrid, likelihood);
 
     // Convert the virtual grid results to woodChips using grid coordinates
+    let convertedChips = 0;
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
         if (virtualGrid[row][col]) {
           const x = col * this.cellSize;
           const y = row * this.cellSize;
           this.woodChips.add(`${x},${y}`);
+          convertedChips++;
         }
       }
     }
+    // Update cell count to match wood chips
+    this.cellCount = this.woodChips.size;
 
     // Reset termites to not carrying anything
     this.termites.forEach((termite) => (termite.carrying = false));
