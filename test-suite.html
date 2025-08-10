@@ -3700,6 +3700,120 @@
         "dynamic-fill-button"
       );
 
+      // Statistical bounds test for Fill coverage with retries
+      testSuite.addTest(
+        "Dynamic Fill Coverage Statistical Bounds (±2σ, r=2)",
+        async () => {
+          try {
+            // Ensure likelihood slider exists so handleRandomPattern reads from it
+            let slider = document.getElementById("likelihood-slider");
+            let sliderValueEl = document.getElementById("likelihood-value");
+            const createdEls = [];
+            if (!slider) {
+              slider = document.createElement("input");
+              slider.type = "range";
+              slider.id = "likelihood-slider";
+              slider.min = "0";
+              slider.max = "100";
+              slider.value = "30"; // default 30%
+              document.body.appendChild(slider);
+              createdEls.push(slider);
+            }
+            if (!sliderValueEl) {
+              sliderValueEl = document.createElement("span");
+              sliderValueEl.id = "likelihood-value";
+              sliderValueEl.textContent = `${slider.value}%`;
+              document.body.appendChild(sliderValueEl);
+              createdEls.push(sliderValueEl);
+            }
+
+            // Create app (defaults to Conway) and ensure Fill button is wired
+            const app = new AlgorithmicPatternGenerator();
+            // Set test parameters
+            const P = 0.3; // 30%
+            const k = 2; // ±2σ bounds
+            const r = 2; // retries
+            slider.value = String(Math.round(P * 100));
+
+            // Helper to run a single attempt
+            function attemptOnce() {
+              const fillBtn = document.getElementById("dynamic-fill-btn");
+              if (!fillBtn) throw new Error("Fill button not found");
+              fillBtn.click();
+
+              const sim = app.currentSimulation;
+              if (!sim) throw new Error("No active simulation");
+
+              const rows = sim.rows;
+              const cols = sim.cols;
+              const N = rows * cols;
+              const observed = sim.cellCount;
+
+              const expectedMean = N * P;
+              const stdDev = Math.sqrt(N * P * (1 - P));
+              const lower = expectedMean - k * stdDev;
+              const upper = expectedMean + k * stdDev;
+
+              const pass = observed >= lower && observed <= upper;
+              return { pass, observed, N, expectedMean, stdDev, lower, upper };
+            }
+
+            const observations = [];
+            let result = null;
+            for (let attempt = 0; attempt <= r; attempt++) {
+              const res = attemptOnce();
+              observations.push(res.observed);
+              if (res.pass) {
+                result = res;
+                break;
+              }
+            }
+
+            // Cleanup app and any temporary elements
+            app.cleanup && app.cleanup();
+            createdEls.forEach(
+              (el) => el.parentNode && el.parentNode.removeChild(el)
+            );
+
+            if (result) {
+              const attemptCount = observations.length;
+              return {
+                passed: true,
+                details: `N=${
+                  result.N
+                }, P=${P}, observed(in ${attemptCount} attempt${
+                  attemptCount === 1 ? "" : "s"
+                })=${observations.join(",")}, bounds=[${Math.round(
+                  result.lower
+                )}..${Math.round(result.upper)}]`,
+              };
+            }
+
+            // If we reach here, all attempts failed
+            // Provide details based on last computed parameters (from final attemptOnce)
+            const last = observations[observations.length - 1];
+            // We can recompute N and bounds with a fresh attempt for details only
+            const { N, expectedMean, stdDev, lower, upper } = attemptOnce();
+            const attemptCount = observations.length;
+            return {
+              passed: false,
+              details: `Out of bounds after ${attemptCount} attempt${
+                attemptCount === 1 ? "" : "s"
+              }. N=${N}, P=${P}, observed(in ${attemptCount} attempt${
+                attemptCount === 1 ? "" : "s"
+              })=${observations.join(",")}, expected≈${Math.round(
+                expectedMean
+              )}, bounds=[${Math.round(lower)}..${Math.round(
+                upper
+              )}], σ=${stdDev.toFixed(2)}`,
+            };
+          } catch (e) {
+            return { passed: false, details: e.message };
+          }
+        },
+        "dynamic-fill-button"
+      );
+
       testSuite.addTest(
         "Keyboard Handler",
         async () => {

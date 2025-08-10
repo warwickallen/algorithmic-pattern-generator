@@ -227,6 +227,25 @@ Tests the user interface components and interactions:
   - Tests proper test environment handling for app instance creation
   - Validates button visibility state management and conflict resolution
 
+### Statistical Coverage Validation for Fill Button
+
+The Dynamic Fill button uses per-cell Bernoulli sampling with likelihood \(P\). To validate that the observed number of activated cells is statistically plausible, the test suite includes a bounds test with retries that checks whether the observed count lies within \(\pm k\sigma\) of the expected mean, where:
+
+- N: Number of bits/cells
+- P: Probability of each bit being true
+- k: Number of standard deviations (\(\sigma\)) for individual test bounds
+- r: Number of retries (total attempts = \(r + 1\))
+- \(\Phi(k)\): the cumulative distribution function of the standard normal distribution
+
+overall_confidence = \(1 - [1 - (2 \times \Phi(k) - 1)]^{(r + 1)}\)
+
+Therefore:
+
+- \(\pm 2\sigma\) with 1 retry achieves 99.79% confidence
+- \(\pm 2\sigma\) with 2 retries achieves 99.990% confidence
+
+The concrete implementation lives in the test suite as "Dynamic Fill Coverage Statistical Bounds (±2σ, r=2)" and uses the app's current grid size for \(N\) and the slider likelihood for \(P\).
+
 ### Performance Tests
 
 Tests performance characteristics and benchmarks:
