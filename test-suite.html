@@ -228,14 +228,33 @@
         background: transparent !important;
         box-shadow: none !important;
       }
-      /* Allow long filenames to wrap within the tree panel */
+      /* Allow long filenames to wrap within the tree panel and fix layout */
       .jstree-default .jstree-node {
-        white-space: normal !important;
+        white-space: normal !important; /* allow wrapping */
+        min-height: 0 !important; /* let height grow with wrapped text */
+        line-height: 1.2 !important; /* reduce gaps between rows */
+        clear: both; /* ensure each node starts on a new line */
       }
       .jstree-default .jstree-anchor {
-        white-space: normal !important;
-        overflow-wrap: anywhere;
+        white-space: normal !important; /* allow wrapping */
+        overflow-wrap: anywhere; /* break long tokens */
         word-break: break-word;
+        display: inline-block; /* allow height expansion */
+        vertical-align: top; /* align with toggle/checkbox icons */
+        height: auto !important;
+        line-height: 1.2 !important;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        max-width: calc(100% - 28px); /* leave space for toggler at very deep levels */
+      }
+      .jstree-default .jstree-ocl,
+      .jstree-default .jstree-themeicon,
+      .jstree-default .jstree-checkbox,
+      .jstree-default .jstree-icon {
+        vertical-align: top; /* align icons to the top of multiline labels */
+        height: auto !important;
+        line-height: 1.2 !important;
+        margin-top: 2px; /* reduce perceived gap above filenames */
       }
       /* Show per-file test counts after filenames */
       .jstree-default .jstree-anchor[data-count]:after {
