@@ -56,11 +56,11 @@
       .layout {
         display: grid;
         grid-template-columns: 360px 1fr;
-        grid-template-rows: auto 1fr;
+        grid-template-rows: auto auto;
         grid-template-areas:
           "header header"
           "left right";
-        height: 100vh;
+        min-height: 100vh;
         gap: 12px;
         padding: 12px;
         box-sizing: border-box;
@@ -94,7 +94,7 @@
       .right {
         grid-area: right;
         display: grid;
-        grid-template-rows: auto 1fr;
+        grid-template-rows: auto auto;
         gap: 12px;
       }
       .btn {
@@ -130,6 +130,11 @@
         border: 1px solid var(--panel-border);
         font-size: 12px;
       }
+      /* Slightly smaller font for version badge */
+      #badge-version {
+        font-size: 11px;
+        opacity: 0.9;
+      }
       .summary .pass {
         color: var(--pass);
         border-color: rgba(46, 204, 113, 0.3);
@@ -143,7 +148,7 @@
         border-color: rgba(230, 126, 34, 0.3);
       }
       .results {
-        overflow: auto;
+        overflow: visible;
       }
       .result-item {
         padding: 8px 10px;
@@ -175,8 +180,8 @@
         margin-bottom: 8px;
       }
       #tree {
-        max-height: 55vh;
-        overflow: auto;
+        max-height: none;
+        overflow: visible;
         border: 1px solid var(--panel-border);
         border-radius: 8px;
         padding: 6px;
@@ -204,7 +209,9 @@
           <button id="btn-clear" class="btn">Clear results</button>
           <button id="btn-copy-logs" class="btn">Copy logs</button>
           <button id="btn-export-logs" class="btn">Export logs</button>
-          <span class="badge" id="badge-version" title="Tested version">ver: n/a</span>
+          <span class="badge" id="badge-version" title="Tested version"
+            >ver: n/a</span
+          >
         </div>
       </header>
 
@@ -319,7 +326,8 @@
 
         // Display version from manifest if available
         try {
-          const ver = (window.TEST_MANIFEST && window.TEST_MANIFEST.version) || null;
+          const ver =
+            (window.TEST_MANIFEST && window.TEST_MANIFEST.version) || null;
           if (ver) {
             const el = document.getElementById("badge-version");
             if (el) el.textContent = `ver: ${ver}`;
@@ -394,7 +402,47 @@
             navigator.clipboard.writeText
           ) {
             await navigator.clipboard.writeText(text);
-            alert("Logs copied to clipboard");
+            // Discrete toast (auto hides)
+            (function(){
+              const containerId = 'toast-container';
+              let container = document.getElementById(containerId);
+              if (!container) {
+                container = document.createElement('div');
+                container.id = containerId;
+                container.style.position = 'fixed';
+                container.style.right = '16px';
+                container.style.bottom = '16px';
+                container.style.display = 'flex';
+                container.style.flexDirection = 'column';
+                container.style.gap = '8px';
+                container.style.zIndex = '9999';
+                document.body.appendChild(container);
+              }
+              const el = document.createElement('div');
+              el.style.background = '#1a1b1e';
+              el.style.color = '#f5f5f7';
+              el.style.border = '1px solid rgba(255,255,255,0.12)';
+              el.style.borderLeft = '3px solid #2ecc71';
+              el.style.borderRadius = '8px';
+              el.style.padding = '8px 12px';
+              el.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+              el.style.display = 'flex';
+              el.style.alignItems = 'center';
+              el.style.gap = '10px';
+              el.style.fontSize = '12px';
+              const textEl = document.createElement('span');
+              textEl.textContent = 'Logs copied to clipboard';
+              const close = document.createElement('span');
+              close.textContent = '✕';
+              close.title = 'Dismiss';
+              close.style.cursor = 'pointer';
+              close.style.color = '#c0c0c7';
+              close.onclick = () => { if (el && el.parentNode) el.parentNode.removeChild(el); };
+              el.appendChild(textEl);
+              el.appendChild(close);
+              container.appendChild(el);
+              setTimeout(()=>{ if (el && el.parentNode) el.parentNode.removeChild(el); }, 3000);
+            })();
             return;
           }
         } catch (e) {
@@ -407,9 +455,48 @@
         ta.select();
         try {
           document.execCommand("copy");
-          alert("Logs copied to clipboard");
+          (function(){
+            const containerId = 'toast-container';
+            let container = document.getElementById(containerId);
+            if (!container) {
+              container = document.createElement('div');
+              container.id = containerId;
+              container.style.position = 'fixed';
+              container.style.right = '16px';
+              container.style.bottom = '16px';
+              container.style.display = 'flex';
+              container.style.flexDirection = 'column';
+              container.style.gap = '8px';
+              container.style.zIndex = '9999';
+              document.body.appendChild(container);
+            }
+            const el = document.createElement('div');
+            el.style.background = '#1a1b1e';
+            el.style.color = '#f5f5f7';
+            el.style.border = '1px solid rgba(255,255,255,0.12)';
+            el.style.borderLeft = '3px solid #2ecc71';
+            el.style.borderRadius = '8px';
+            el.style.padding = '8px 12px';
+            el.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.gap = '10px';
+            el.style.fontSize = '12px';
+            const textEl = document.createElement('span');
+            textEl.textContent = 'Logs copied to clipboard';
+            const close = document.createElement('span');
+            close.textContent = '✕';
+            close.title = 'Dismiss';
+            close.style.cursor = 'pointer';
+            close.style.color = '#c0c0c7';
+            close.onclick = () => { if (el && el.parentNode) el.parentNode.removeChild(el); };
+            el.appendChild(textEl);
+            el.appendChild(close);
+            container.appendChild(el);
+            setTimeout(()=>{ if (el && el.parentNode) el.parentNode.removeChild(el); }, 3000);
+          })();
         } catch (e) {
-          alert("Failed to copy logs: " + (e && e.message ? e.message : e));
+          // silent
         } finally {
           document.body.removeChild(ta);
         }
