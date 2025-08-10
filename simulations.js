@@ -1387,6 +1387,18 @@ class BaseSimulation {
     }
   }
 
+  // Cryptographically secure random number generator to avoid Math.random() bias
+  getSecureRandom() {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint32Array(1);
+      crypto.getRandomValues(array);
+      return array[0] / (0xffffffff + 1); // Convert to 0-1 range
+    } else {
+      // Fallback to Math.random() if crypto is not available
+      return Math.random();
+    }
+  }
+
   // Common random grid generation utility
   randomizeGrid(
     grid,
@@ -1394,25 +1406,13 @@ class BaseSimulation {
       ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
       : 0.3
   ) {
-    // Create array of all cell positions
-    const cellPositions = [];
+    // Use simple row-major order but with cryptographically secure randomness
     for (let row = 0; row < grid.length; row++) {
-      for (let col = 0; col < grid[row].length; col++) {
-        cellPositions.push({ row, col });
+      const rowData = grid[row];
+      for (let col = 0; col < rowData.length; col++) {
+        rowData[col] = this.getSecureRandom() < density;
       }
     }
-    
-    // Shuffle the cell positions to break any potential patterns in Math.random()
-    for (let i = cellPositions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cellPositions[i], cellPositions[j]] = [cellPositions[j], cellPositions[i]];
-    }
-    
-    // Apply randomization in shuffled order
-    for (const { row, col } of cellPositions) {
-      grid[row][col] = Math.random() < density;
-    }
-    
     return this.countLiveCells(grid);
   }
 
@@ -2282,26 +2282,14 @@ class TermiteAlgorithm extends BaseSimulation {
     }
     this.woodChips.clear();
 
-    // Create array of all cell positions
-    const cellPositions = [];
+    // Use simple row-major order but with cryptographically secure randomness
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
-        cellPositions.push({ row, col });
-      }
-    }
-    
-    // Shuffle the cell positions to break any potential patterns in Math.random()
-    for (let i = cellPositions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cellPositions[i], cellPositions[j]] = [cellPositions[j], cellPositions[i]];
-    }
-    
-    // Apply randomization in shuffled order
-    for (const { row, col } of cellPositions) {
-      if (Math.random() < likelihood) {
-        const x = col * this.cellSize;
-        const y = row * this.cellSize;
-        this.woodChips.add(`${x},${y}`);
+        if (this.getSecureRandom() < likelihood) {
+          const x = col * this.cellSize;
+          const y = row * this.cellSize;
+          this.woodChips.add(`${x},${y}`);
+        }
       }
     }
 
@@ -2599,4 +2587,3 @@ class SimulationFactory {
     }
   }
 }
-
