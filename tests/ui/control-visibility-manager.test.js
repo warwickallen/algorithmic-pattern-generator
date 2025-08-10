@@ -14,6 +14,8 @@
       if (!document.getElementById(id)) {
         const el = document.createElement("div");
         el.id = id;
+        // Mark as control groups so ControlVisibilityManager selectors match
+        el.className = "control-group simulation-controls";
         document.body.appendChild(el);
         created.push(el);
       }
@@ -73,20 +75,40 @@
     "ControlVisibilityManager Conway Simulation",
     async () => {
       if (typeof ControlVisibilityManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlVisibilityManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlVisibilityManager not available",
+        };
       }
       const cleanup = ensureControlsFixture();
       const vm = new ControlVisibilityManager();
       vm.init();
       vm.setActiveSimulation("conway");
-      const isConwayVisible = document.getElementById("conway-controls")?.classList.contains("active") || false;
-      const isTermiteHidden = !(document.getElementById("termite-controls")?.classList.contains("active"));
-      const isLangtonHidden = !(document.getElementById("langton-controls")?.classList.contains("active"));
-      const isTermitesHidden = !(document.getElementById("termites-container")?.classList.contains("active"));
+      const isConwayVisible =
+        document
+          .getElementById("conway-controls")
+          ?.classList.contains("active") || false;
+      const isTermiteHidden = !document
+        .getElementById("termite-controls")
+        ?.classList.contains("active");
+      const isLangtonHidden = !document
+        .getElementById("langton-controls")
+        ?.classList.contains("active");
+      const isTermitesHidden = !document
+        .getElementById("termites-container")
+        ?.classList.contains("active");
       const active = vm.getActiveSimulation();
       vm.cleanup();
       cleanup();
-      return { passed: isConwayVisible && isTermiteHidden && isLangtonHidden && isTermitesHidden && active === "conway", details: `conway=${isConwayVisible}, termiteHidden=${isTermiteHidden}, langtonHidden=${isLangtonHidden}, termitesHidden=${isTermitesHidden}, active=${active}` };
+      return {
+        passed:
+          isConwayVisible &&
+          isTermiteHidden &&
+          isLangtonHidden &&
+          isTermitesHidden &&
+          active === "conway",
+        details: `conway=${isConwayVisible}, termiteHidden=${isTermiteHidden}, langtonHidden=${isLangtonHidden}, termitesHidden=${isTermitesHidden}, active=${active}`,
+      };
     },
     "ui"
   );
@@ -95,20 +117,41 @@
     "ControlVisibilityManager Termite Simulation",
     async () => {
       if (typeof ControlVisibilityManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlVisibilityManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlVisibilityManager not available",
+        };
       }
       const cleanup = ensureControlsFixture();
       const vm = new ControlVisibilityManager();
       vm.init();
       vm.setActiveSimulation("termite");
-      const termiteVisible = document.getElementById("termite-controls")?.classList.contains("active") || false;
-      const termitesVisible = document.getElementById("termites-container")?.classList.contains("active") || false;
-      const conwayHidden = !(document.getElementById("conway-controls")?.classList.contains("active"));
-      const langtonHidden = !(document.getElementById("langton-controls")?.classList.contains("active"));
+      const termiteVisible =
+        document
+          .getElementById("termite-controls")
+          ?.classList.contains("active") || false;
+      const termitesVisible =
+        document
+          .getElementById("termites-container")
+          ?.classList.contains("active") || false;
+      const conwayHidden = !document
+        .getElementById("conway-controls")
+        ?.classList.contains("active");
+      const langtonHidden = !document
+        .getElementById("langton-controls")
+        ?.classList.contains("active");
       const active = vm.getActiveSimulation();
       vm.cleanup();
       cleanup();
-      return { passed: termiteVisible && termitesVisible && conwayHidden && langtonHidden && active === "termite", details: `termite=${termiteVisible}, termites=${termitesVisible}, conwayHidden=${conwayHidden}, langtonHidden=${langtonHidden}, active=${active}` };
+      return {
+        passed:
+          termiteVisible &&
+          termitesVisible &&
+          conwayHidden &&
+          langtonHidden &&
+          active === "termite",
+        details: `termite=${termiteVisible}, termites=${termitesVisible}, conwayHidden=${conwayHidden}, langtonHidden=${langtonHidden}, active=${active}`,
+      };
     },
     "ui"
   );
@@ -117,20 +160,40 @@
     "ControlVisibilityManager Langton Simulation",
     async () => {
       if (typeof ControlVisibilityManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlVisibilityManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlVisibilityManager not available",
+        };
       }
       const cleanup = ensureControlsFixture();
       const vm = new ControlVisibilityManager();
       vm.init();
       vm.setActiveSimulation("langton");
-      const langtonVisible = document.getElementById("langton-controls")?.classList.contains("active") || false;
-      const conwayHidden = !(document.getElementById("conway-controls")?.classList.contains("active"));
-      const termiteHidden = !(document.getElementById("termite-controls")?.classList.contains("active"));
-      const termitesHidden = !(document.getElementById("termites-container")?.classList.contains("active"));
+      const langtonVisible =
+        document
+          .getElementById("langton-controls")
+          ?.classList.contains("active") || false;
+      const conwayHidden = !document
+        .getElementById("conway-controls")
+        ?.classList.contains("active");
+      const termiteHidden = !document
+        .getElementById("termite-controls")
+        ?.classList.contains("active");
+      const termitesHidden = !document
+        .getElementById("termites-container")
+        ?.classList.contains("active");
       const active = vm.getActiveSimulation();
       vm.cleanup();
       cleanup();
-      return { passed: langtonVisible && conwayHidden && termiteHidden && termitesHidden && active === "langton", details: `langton=${langtonVisible}, conwayHidden=${conwayHidden}, termiteHidden=${termiteHidden}, termitesHidden=${termitesHidden}, active=${active}` };
+      return {
+        passed:
+          langtonVisible &&
+          conwayHidden &&
+          termiteHidden &&
+          termitesHidden &&
+          active === "langton",
+        details: `langton=${langtonVisible}, conwayHidden=${conwayHidden}, termiteHidden=${termiteHidden}, termitesHidden=${termitesHidden}, active=${active}`,
+      };
     },
     "ui"
   );
@@ -139,7 +202,10 @@
     "ControlVisibilityManager State Clearing",
     async () => {
       if (typeof ControlVisibilityManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlVisibilityManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlVisibilityManager not available",
+        };
       }
       const cleanup = ensureControlsFixture();
       const vm = new ControlVisibilityManager();
@@ -147,11 +213,21 @@
       vm.setActiveSimulation("conway");
       const conwayActive = vm.getActiveSimulation() === "conway";
       vm.hideAllControls();
-      const allHidden = ["conway-controls","termite-controls","langton-controls","termites-container"].every((id)=>!(document.getElementById(id)?.classList.contains("active")));
+      const allHidden = [
+        "conway-controls",
+        "termite-controls",
+        "langton-controls",
+        "termites-container",
+      ].every(
+        (id) => !document.getElementById(id)?.classList.contains("active")
+      );
       const noActive = vm.getActiveSimulation() === null;
       vm.cleanup();
       cleanup();
-      return { passed: conwayActive && allHidden && noActive, details: `conwayActive=${conwayActive}, allHidden=${allHidden}, noActive=${noActive}` };
+      return {
+        passed: conwayActive && allHidden && noActive,
+        details: `conwayActive=${conwayActive}, allHidden=${allHidden}, noActive=${noActive}`,
+      };
     },
     "ui"
   );
@@ -160,7 +236,10 @@
     "ControlVisibilityManager Backward Compatibility",
     async () => {
       if (typeof ControlVisibilityManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlVisibilityManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlVisibilityManager not available",
+        };
       }
       const cleanup = ensureControlsFixture();
       const vm = new ControlVisibilityManager();
@@ -171,7 +250,10 @@
       const noActive = vm.getActiveSimulation() === null;
       vm.cleanup();
       cleanup();
-      return { passed: conwayActive && noActive, details: `conwayActive=${conwayActive}, noActive=${noActive}` };
+      return {
+        passed: conwayActive && noActive,
+        details: `conwayActive=${conwayActive}, noActive=${noActive}`,
+      };
     },
     "ui"
   );
@@ -180,7 +262,10 @@
     "ControlVisibilityManager Control Visibility Check",
     async () => {
       if (typeof ControlVisibilityManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlVisibilityManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlVisibilityManager not available",
+        };
       }
       const cleanup = ensureControlsFixture();
       const vm = new ControlVisibilityManager();
@@ -191,7 +276,10 @@
       const conwayVisible = vm.isControlVisible("conway-controls");
       vm.cleanup();
       cleanup();
-      return { passed: termiteVisible && termitesVisible && !conwayVisible, details: `termite=${termiteVisible}, termites=${termitesVisible}, conway=${conwayVisible}` };
+      return {
+        passed: termiteVisible && termitesVisible && !conwayVisible,
+        details: `termite=${termiteVisible}, termites=${termitesVisible}, conway=${conwayVisible}`,
+      };
     },
     "ui"
   );
@@ -200,13 +288,19 @@
     "ControlVisibilityManager Extensibility",
     async () => {
       if (typeof ControlVisibilityManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlVisibilityManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlVisibilityManager not available",
+        };
       }
       const cleanup = ensureControlsFixture();
       const vm = new ControlVisibilityManager();
       vm.init();
       vm.addControlGroup("test-sim", ["test-controls"]);
-      vm.addVisibilityStates("test-sim", { "test-controls": "visible", "conway-controls": "hidden" });
+      vm.addVisibilityStates("test-sim", {
+        "test-controls": "visible",
+        "conway-controls": "hidden",
+      });
       // create the new control element so visibility can apply
       if (!document.getElementById("test-controls")) {
         const el = document.createElement("div");
@@ -227,19 +321,26 @@
     "ControlManager Integration with ControlVisibilityManager",
     async () => {
       if (typeof ControlManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlManager not available",
+        };
       }
       const cleanup = ensureControlsFixture();
       const ef = new EventFramework();
       const cm = new ControlManager(ef);
       cm.showControls("conway");
-      const conwayActive = cm.visibilityManager.getActiveSimulation() === "conway";
+      const conwayActive =
+        cm.visibilityManager.getActiveSimulation() === "conway";
       cm.hideAllControls();
       const noActive = cm.visibilityManager.getActiveSimulation() === null;
       cm.cleanup();
       ef.cleanup();
       cleanup();
-      return { passed: conwayActive && noActive, details: `conwayActive=${conwayActive}, noActive=${noActive}` };
+      return {
+        passed: conwayActive && noActive,
+        details: `conwayActive=${conwayActive}, noActive=${noActive}`,
+      };
     },
     "ui"
   );
