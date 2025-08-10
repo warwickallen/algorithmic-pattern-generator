@@ -12,7 +12,7 @@ You need to complete the port of all functionality from `test-suite-old.html` to
 - ✅ A large set of tests have been ported and grouped by category (see below)
 - ✅ Test runner enhanced with skip support and richer exports
 - ✅ Suite UI improvements: copy/export logs, version badge, grouping headings, scrolling/top-alignment tweaks, non-blocking toasts, source file tooltips in results, skipped badge and grey styling
-- ❗ One known failing test remains in the UI category (see “Known Issues”) 
+- ❗ One known failing test remains in the UI category (see “Known Issues”)
 
 ## Required Tasks
 
