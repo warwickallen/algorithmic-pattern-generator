@@ -52,8 +52,8 @@ Key files already ported (non-exhaustive):
 - integration:
   - `integration.tests.js`, `modal-manager.test.js`, `control-management.test.js`
 - ui:
-  - `ui.tests.js`, `shared-components.test.js`, `control-manager-visibility.test.js`, `element-cache.test.js`, `event-listener-manager.test.js`
-  - Modal-related: `modal-template-html.test.js`, `modal-template-injection.test.js`, `dynamic-modal-integration.test.js`, `learn-modal-content.test.js`
+  - `ui.tests.js`, `shared-components.test.js`, `control-manager-visibility.test.js`, `control-visibility-manager.test.js`, `element-cache.test.js`, `event-listener-manager.test.js`, `event-framework-declarative.test.js`
+  - Modal-related: `modal-template-html.test.js`, `modal-template-injection.test.js`, `dynamic-modal-integration.test.js`, `learn-modal-content.test.js`, `unified-modal-system.test.js`, `modal-scroll-position.test.js`
   - Dynamic controls: `dynamic-speed-slider.test.js`, `dynamic-fill-button.test.js`
   - Event system: `event-handler-factory.test.js`
   - UI library: `ui-component-library-2.test.js`
@@ -62,7 +62,7 @@ Key files already ported (non-exhaustive):
 - system:
   - `system.tests.js`, `test-utilities.test.js`
 
-The test manifest (`tests/manifest.js`) is auto-generated and currently includes 36 test files, with 81 total tests.
+The test manifest (`tests/manifest.js`) is auto-generated and currently includes 40 test files, with 87 total tests.
 
 ### 3. Test File Format
 
