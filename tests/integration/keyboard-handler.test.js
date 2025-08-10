@@ -6,7 +6,10 @@
     "Keyboard Handler",
     async () => {
       if (typeof KeyboardHandler === "undefined") {
-        return { passed: true, details: "Skipped: KeyboardHandler not available" };
+        return {
+          passed: true,
+          details: "Skipped: KeyboardHandler not available",
+        };
       }
 
       const mockApp = {
@@ -33,5 +36,3 @@
     "integration"
   );
 })();
-
-

@@ -6,7 +6,10 @@
     "Full Simulation Lifecycle Test",
     async () => {
       if (typeof ConwayGameOfLife === "undefined") {
-        return { passed: true, details: "Skipped: ConwayGameOfLife not available" };
+        return {
+          passed: true,
+          details: "Skipped: ConwayGameOfLife not available",
+        };
       }
       const canvas = document.createElement("canvas");
       canvas.width = 400;
@@ -25,7 +28,11 @@
       const toggleOk = afterToggle !== initialCount;
 
       const gridPos = sim.screenToGrid(x, y);
-      const activeBrightness = sim.getCellFadeFactor(gridPos.row, gridPos.col, true);
+      const activeBrightness = sim.getCellFadeFactor(
+        gridPos.row,
+        gridPos.col,
+        true
+      );
       const fadeOk = activeBrightness === 1;
 
       const beforeGen = sim.generation;
@@ -47,13 +54,26 @@
       sim.setState(saved);
       const stateOk = sim.generation === origGen && sim.cellCount === origCount;
 
-      const allOk = initOk && toggleOk && fadeOk && updateOk && drawOk && speedOk && stateOk;
-      const passed = [initOk, toggleOk, fadeOk, updateOk, drawOk, speedOk, stateOk].filter(Boolean).length;
+      const allOk =
+        initOk &&
+        toggleOk &&
+        fadeOk &&
+        updateOk &&
+        drawOk &&
+        speedOk &&
+        stateOk;
+      const passed = [
+        initOk,
+        toggleOk,
+        fadeOk,
+        updateOk,
+        drawOk,
+        speedOk,
+        stateOk,
+      ].filter(Boolean).length;
       const failed = 7 - passed;
       return { passed: allOk, details: `${passed} passed, ${failed} failed` };
     },
     "integration"
   );
 })();
-
-

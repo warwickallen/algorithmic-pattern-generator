@@ -12,7 +12,7 @@ You need to complete the port of all functionality from `test-suite-old.html` to
 - ✅ A large set of tests have been ported and grouped by category (see below)
 - ✅ Test runner enhanced with skip support and richer exports
 - ✅ Suite UI improvements: copy/export logs, version badge, grouping headings, scrolling/top-alignment tweaks, non-blocking toasts, source file tooltips in results, skipped badge and grey styling
- - ✅ **All tests now pass or are skipped as expected**
+- ✅ **All tests now pass or are skipped as expected**
 - ✅ **Enhanced UI features**: selection summary, per-file counts, category result counts, status filtering, and improved jsTree layout
 
 ## Required Tasks
@@ -62,7 +62,7 @@ Key files already ported (non-exhaustive):
 - system:
   - `system.tests.js`, `test-utilities.test.js`
 
- The test manifest (`tests/manifest.js`) is auto-generated and currently includes 36 test files, with 81 total tests.
+The test manifest (`tests/manifest.js`) is auto-generated and currently includes 36 test files, with 81 total tests.
 
 ### 3. Test File Format
 
@@ -233,17 +233,17 @@ After porting, verify:
   - Added proper cleanup of both canvas and modal mount elements
 - **All tests now pass or are skipped as expected**.
 
- Further items to port (tracked and being migrated incrementally):
+Further items to port (tracked and being migrated incrementally):
 
- - Dynamic Speed Slider: Global value behaviour across simulation switches — added
- - Dynamic Fill Button: Statistical coverage check — added (reduced/loose bounds)
- - Event Handler Factory: Control setup — added; custom handler binding — added; cleanup — added; ControlManager integration — added
- - UI Component Library: Status display — added; modal state management — added; lifecycle hooks and batch operations — added; factory methods — added; component management retrieval tests — added
- - Keyboard handler coverage — added (tests/integration/keyboard-handler.test.js)
- - Fade/visual tests ported — added (tests/visual/fade-visual-tests.test.js)
- - Console warnings + canvas configuration — added (tests/system/console-and-canvas.test.js)
- - Fade progression debug — added (tests/system/fade-progression-debug.test.js)
- - Full lifecycle test — added (tests/integration/full-lifecycle.test.js)
+- Dynamic Speed Slider: Global value behaviour across simulation switches — added
+- Dynamic Fill Button: Statistical coverage check — added (reduced/loose bounds)
+- Event Handler Factory: Control setup — added; custom handler binding — added; cleanup — added; ControlManager integration — added
+- UI Component Library: Status display — added; modal state management — added; lifecycle hooks and batch operations — added; factory methods — added; component management retrieval tests — added
+- Keyboard handler coverage — added (tests/integration/keyboard-handler.test.js)
+- Fade/visual tests ported — added (tests/visual/fade-visual-tests.test.js)
+- Console warnings + canvas configuration — added (tests/system/console-and-canvas.test.js)
+- Fade progression debug — added (tests/system/fade-progression-debug.test.js)
+- Full lifecycle test — added (tests/integration/full-lifecycle.test.js)
 
 ### 10. Suite/UI Enhancements Implemented
 

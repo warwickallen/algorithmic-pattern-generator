@@ -6,7 +6,10 @@
     "Console Warning Detection",
     async () => {
       if (typeof ConwayGameOfLife === "undefined") {
-        return { passed: true, details: "Skipped: ConwayGameOfLife not available" };
+        return {
+          passed: true,
+          details: "Skipped: ConwayGameOfLife not available",
+        };
       }
 
       const originalWarn = console.warn;
@@ -72,5 +75,3 @@
     "system"
   );
 })();
-
-

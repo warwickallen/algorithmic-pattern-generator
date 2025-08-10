@@ -6,7 +6,10 @@
     "Fade Progression Debug",
     async () => {
       if (typeof ConwayGameOfLife === "undefined") {
-        return { passed: true, details: "Skipped: ConwayGameOfLife not available" };
+        return {
+          passed: true,
+          details: "Skipped: ConwayGameOfLife not available",
+        };
       }
       const canvas = document.createElement("canvas");
       canvas.width = 400;
@@ -20,14 +23,29 @@
       const testY = sim.cellSize * 5;
       sim.toggleCell(testX, testY);
       const gridPos = sim.screenToGrid(testX, testY);
-      const activeBrightness = sim.getCellFadeFactor(gridPos.row, gridPos.col, true);
+      const activeBrightness = sim.getCellFadeFactor(
+        gridPos.row,
+        gridPos.col,
+        true
+      );
 
       sim.toggleCell(testX, testY);
-      const inactiveBefore = sim.getCellFadeFactor(gridPos.row, gridPos.col, false);
+      const inactiveBefore = sim.getCellFadeFactor(
+        gridPos.row,
+        gridPos.col,
+        false
+      );
 
-      const dec = typeof sim.getFadeDecrement === "function" ? sim.getFadeDecrement() : 0.2;
+      const dec =
+        typeof sim.getFadeDecrement === "function"
+          ? sim.getFadeDecrement()
+          : 0.2;
       sim.update();
-      const inactiveAfter = sim.getCellFadeFactor(gridPos.row, gridPos.col, false);
+      const inactiveAfter = sim.getCellFadeFactor(
+        gridPos.row,
+        gridPos.col,
+        false
+      );
 
       const systemWorks =
         activeBrightness === 1 &&
@@ -42,5 +60,3 @@
     "system"
   );
 })();
-
-
