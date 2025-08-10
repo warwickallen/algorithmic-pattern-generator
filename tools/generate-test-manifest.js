@@ -38,12 +38,22 @@ function main() {
     console.error("tests/ directory not found. Nothing to do.");
     process.exit(0);
   }
+  // Read project version if available
+  let version = null;
+  try {
+    const versionPath = path.join(projectRoot, "VERSION");
+    if (fs.existsSync(versionPath)) {
+      version = fs.readFileSync(versionPath, "utf8").trim();
+    }
+  } catch (e) {
+    // Best-effort only; ignore errors
+  }
   const files = walk(testsDir)
     .map(toRepoRelative)
     .filter((p) => p !== "tests/manifest.js" && p !== "tests/manifest.json")
     .sort();
 
-  const manifest = { files };
+  const manifest = { version, files };
   const json = JSON.stringify(manifest, null, 2) + "\n";
   fs.writeFileSync(manifestJsonPath, json, "utf8");
 

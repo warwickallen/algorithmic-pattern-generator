@@ -1,4 +1,5 @@
 {
+  "version": "0.0.1-split-tests-2-53dffb3-20250810T135844",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",

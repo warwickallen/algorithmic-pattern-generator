@@ -204,6 +204,7 @@
           <button id="btn-clear" class="btn">Clear results</button>
           <button id="btn-copy-logs" class="btn">Copy logs</button>
           <button id="btn-export-logs" class="btn">Export logs</button>
+          <span class="badge" id="badge-version" title="Tested version">ver: n/a</span>
         </div>
       </header>
 
@@ -315,6 +316,17 @@
           $tree.jstree("open_all");
         document.getElementById("btn-collapse").onclick = () =>
           $tree.jstree("close_all");
+
+        // Display version from manifest if available
+        try {
+          const ver = (window.TEST_MANIFEST && window.TEST_MANIFEST.version) || null;
+          if (ver) {
+            const el = document.getElementById("badge-version");
+            if (el) el.textContent = `ver: ${ver}`;
+          }
+        } catch (e) {
+          // ignore
+        }
       }
 
       function clearResultsUI() {
@@ -360,6 +372,9 @@
       function getResultsJsonString() {
         try {
           const exported = runner.exportResults();
+          if (window.TEST_MANIFEST && window.TEST_MANIFEST.version) {
+            exported.version = window.TEST_MANIFEST.version;
+          }
           return JSON.stringify(exported, null, 2);
         } catch (e) {
           return JSON.stringify(
