@@ -266,6 +266,9 @@
           <div class="tree-actions">
             <button id="btn-expand" class="btn">Expand all</button>
             <button id="btn-collapse" class="btn">Collapse all</button>
+            <span id="selection-summary" class="legend" style="margin-left: 8px;">
+              0 tests selected in 0 test files
+            </span>
           </div>
           <div id="tree"></div>
         </div>
@@ -310,6 +313,7 @@
           if (byId[parent]) byId[parent].children.push(node);
           return node;
         }
+        const counts = (manifest && manifest.counts) || {};
         (manifest.files || []).forEach((p) => {
           const parts = p.split("/");
           let parent = "#";
@@ -318,7 +322,10 @@
             acc = acc ? acc + "/" + parts[i] : parts[i];
             const isFile = i === parts.length - 1;
             const id = acc;
-            ensureNode(id, parts[i], parent);
+            const label = isFile
+              ? `${parts[i]}${counts[p] ? ` (${counts[p]})` : ""}`
+              : parts[i];
+            ensureNode(id, label, parent);
             parent = id;
             if (isFile) {
               byId[id].data = { path: p, isFile: true };
@@ -369,6 +376,26 @@
           $tree.jstree("open_all");
         document.getElementById("btn-collapse").onclick = () =>
           $tree.jstree("close_all");
+
+        // Update selection summary whenever checks change
+        const updateSelectionSummary = () => {
+          const files = getSelectedFilePaths();
+          const fileCount = files.length;
+          let testCount = 0;
+          if (window.TEST_MANIFEST && window.TEST_MANIFEST.counts) {
+            for (const f of files) {
+              testCount += window.TEST_MANIFEST.counts[f] || 0;
+            }
+          }
+          const summaryEl = document.getElementById("selection-summary");
+          if (summaryEl) {
+            summaryEl.textContent = `${testCount} tests selected in ${fileCount} test files`;
+          }
+        };
+
+        $tree.on("changed.jstree", updateSelectionSummary);
+        // Initial summary
+        updateSelectionSummary();
 
         // Display version from manifest if available
         try {

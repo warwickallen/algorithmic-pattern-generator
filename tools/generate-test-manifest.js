@@ -53,7 +53,23 @@ function main() {
     .filter((p) => p !== "tests/manifest.js" && p !== "tests/manifest.json")
     .sort();
 
-  const manifest = { version, files };
+  // Build per-file test counts by scanning for runner.addTest occurrences
+  const counts = {};
+  let totalTests = 0;
+  for (const relPath of files) {
+    try {
+      const absPath = path.join(projectRoot, relPath);
+      const content = fs.readFileSync(absPath, "utf8");
+      const match = content.match(/runner\.addTest\s*\(/g);
+      const count = match ? match.length : 0;
+      counts[relPath] = count;
+      totalTests += count;
+    } catch (e) {
+      counts[relPath] = 0;
+    }
+  }
+
+  const manifest = { version, files, counts, totalTests };
   const json = JSON.stringify(manifest, null, 2) + "\n";
   fs.writeFileSync(manifestJsonPath, json, "utf8");
 
