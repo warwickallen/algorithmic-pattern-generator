@@ -202,6 +202,8 @@
         <div class="actions">
           <button id="btn-run" class="btn primary">Run selected</button>
           <button id="btn-clear" class="btn">Clear results</button>
+          <button id="btn-copy-logs" class="btn">Copy logs</button>
+          <button id="btn-export-logs" class="btn">Export logs</button>
         </div>
       </header>
 
@@ -355,6 +357,63 @@
         });
       }
 
+      function getResultsJsonString() {
+        try {
+          const exported = runner.exportResults();
+          return JSON.stringify(exported, null, 2);
+        } catch (e) {
+          return JSON.stringify(
+            { error: e && e.message, fallback: true },
+            null,
+            2
+          );
+        }
+      }
+
+      async function handleCopyLogs() {
+        const text = getResultsJsonString();
+        try {
+          if (
+            navigator &&
+            navigator.clipboard &&
+            navigator.clipboard.writeText
+          ) {
+            await navigator.clipboard.writeText(text);
+            alert("Logs copied to clipboard");
+            return;
+          }
+        } catch (e) {
+          // fall through to fallback
+        }
+        // Fallback: temporary textarea
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          alert("Logs copied to clipboard");
+        } catch (e) {
+          alert("Failed to copy logs: " + (e && e.message ? e.message : e));
+        } finally {
+          document.body.removeChild(ta);
+        }
+      }
+
+      function handleExportLogs() {
+        const text = getResultsJsonString();
+        const blob = new Blob([text], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const ts = new Date().toISOString().replace(/[:]/g, "-");
+        a.href = url;
+        a.download = `test-results-${ts}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+      }
+
       function getSelectedFilePaths() {
         const $tree = $("#tree");
         const selected = $tree.jstree("get_checked", true); // checked via checkbox
@@ -414,6 +473,12 @@
         clearResultsUI();
         runner.tests = [];
       });
+      document
+        .getElementById("btn-copy-logs")
+        .addEventListener("click", handleCopyLogs);
+      document
+        .getElementById("btn-export-logs")
+        .addEventListener("click", handleExportLogs);
 
       // Initialise tree on DOM ready and re-assert our runner in case other scripts set it
       document.addEventListener("DOMContentLoaded", () => {
