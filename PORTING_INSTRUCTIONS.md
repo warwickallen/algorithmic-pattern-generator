@@ -2,14 +2,17 @@
 
 ## Overview
 
-You need to complete the port of all functionality from `test-suite-old.html` to the new `test-suite.html`. The new test suite has a modern jsTree-based interface but is missing the actual test implementations.
+You need to complete the port of all functionality from `test-suite-old.html` to the new `test-suite.html`. The new test suite has a modern jsTree-based interface and now contains a substantial portion of the ported tests. A few items remain to finish the port and to stabilise a small number of UI tests.
 
 ## Current State
 
 - ✅ New `test-suite.html` with jsTree-based test selection
 - ✅ `tests/` directory structure with manifest system
 - ✅ Pre-commit hooks and npm scripts
-- ❌ **Missing**: All actual test implementations from `test-suite-old.html`
+- ✅ A large set of tests have been ported and grouped by category (see below)
+- ✅ Test runner enhanced with skip support and richer exports
+- ✅ Suite UI improvements: copy/export logs, version badge, grouping headings, scrolling/top-alignment tweaks, non-blocking toasts, source file tooltips in results, skipped badge and grey styling
+- ❗ One known failing test remains in the UI category (see “Known Issues”) 
 
 ## Required Tasks
 
@@ -31,43 +34,31 @@ The old test suite has tests organized into these categories (found in the HTML)
 - `event-handler-factory` - Event handling system
 - `ui-component-library` - UI component library tests
 
-### 2. Create Test Files in Appropriate Categories
+### 2. Create Test Files in Appropriate Categories (Ported so far)
 
 For each test in `test-suite-old.html`, create a corresponding `.js` file in the `tests/` directory structure:
 
-```
-tests/
-├── core/
-│   ├── simulation-creation.test.js
-│   ├── simulation-initialization.test.js
-│   └── ...
-├── features/
-│   ├── simulation-features.test.js
-│   └── ...
-├── ui/
-│   ├── ui-components.test.js
-│   ├── control-visibility.test.js
-│   └── ...
-├── interaction/
-│   ├── user-interactions.test.js
-│   └── ...
-├── performance/
-│   ├── performance-tests.test.js
-│   └── ...
-├── integration/
-│   ├── component-integration.test.js
-│   └── ...
-├── visual/
-│   ├── visual-effects.test.js
-│   └── ...
-├── system/
-│   ├── system-tests.test.js
-│   └── ...
-└── dynamic/
-    ├── speed-slider.test.js
-    ├── fill-button.test.js
-    └── ...
-```
+Key files already ported (non-exhaustive):
+
+- core:
+  - `simulation-creation.test.js`, `grid-initialization.test.js`, `cell-toggle.test.js`, `neighbour-counting.test.js`, `movement.test.js`
+- features:
+  - `simulation-features.test.js`
+- interaction:
+  - `drag-toggle.test.js`, `drag-coordinate-fix.test.js`
+- performance:
+  - `performance.test.js`, `more-performance.test.js`
+- integration:
+  - `integration.tests.js`, `modal-manager.test.js`, `control-management.test.js`
+- ui:
+  - `ui.tests.js`, `shared-components.test.js`, `control-manager-visibility.test.js`, `element-cache.test.js`, `event-listener-manager.test.js`
+  - Modal-related: `modal-template-html.test.js`, `modal-template-injection.test.js`, `dynamic-modal-integration.test.js`, `learn-modal-content.test.js`
+- visual:
+  - `colour.tests.js`
+- system:
+  - `system.tests.js`, `test-utilities.test.js`
+
+The test manifest (`tests/manifest.js`) is auto-generated and currently includes 27 test files.
 
 ### 3. Test File Format
 
@@ -184,13 +175,20 @@ All tests are async functions. Ensure:
 - Timeout handling for long-running tests
 - Sequential test execution
 
+#### E. Skipped Tests
+
+- The runner now supports skipped tests. A test may set `skip: true` or return a `details` starting with `"Skipped:"`. Skipped tests:
+  - Render with a grey left border in the UI
+  - Are counted in the new “Skipped” badge in the summary
+  - Are exported in JSON with `"result": "skip"`
+
 ### 6. Implementation Steps
 
 1. **Analyze the old test suite**: Extract all `testSuite.addTest()` calls
 2. **Categorize tests**: Group tests by their category parameter
 3. **Create test files**: Create `.js` files in appropriate directories
 4. **Port test logic**: Convert each test to the new format
-5. **Update manifest**: Run `npm run generate:test-manifest` to update the manifest
+5. **Update manifest**: Run `npm run generate:test-manifest` to update the manifest (pre-commit hook also regenerates it)
 6. **Test the new suite**: Open `test-suite.html` and verify tests work
 
 ### 7. Test Dependencies
@@ -213,13 +211,37 @@ Ensure these dependencies are loaded in `test-suite.html`:
 After porting, verify:
 
 - [ ] All tests from the old suite are present in the new structure
-- [ ] Tests run without errors in the new interface
-- [ ] Test results are displayed correctly
-- [ ] Category filtering works properly
-- [ ] Manifest is up-to-date
-- [ ] Pre-commit hooks work correctly
+- [x] Tests run without errors in the new interface (except the known failing UI test noted below)
+- [x] Test results are displayed correctly (with category headings, tooltips, and skip styling)
+- [x] Category filtering works properly
+- [x] Manifest is up-to-date
+- [x] Pre-commit hooks work correctly (manifest + version update)
 
-### 9. Example Test Port
+### 9. Known Issues / Next Steps
+
+- Failing test: `Learn Modal Shows Correct Content for Current Simulation` (category `ui`).
+  - Current result: `fail` with details `conway=false, termite=false`.
+  - What’s been tried:
+    - Added a temporary `#canvas` node before instantiating the app to avoid `getContext` errors and removed it afterwards.
+    - Verified app flow: `app.switchSimulation(simType)` then `app.showLearnModal()`; waited briefly (50ms) for rendering; queried `#dynamic-modal h2` for the title.
+  - Hypothesis:
+    - The `ModalManager.registerDynamicModal(simType)` requires an existing `#dynamic-modal` element in the DOM. If it is missing, `register()` warns and the modal is not wired, leading to empty titles and the test failing.
+  - Suggested next debugging steps:
+    1. In the learn modal test, create a dynamic modal mount element (`#dynamic-modal` with `.modal > .modal-content` and `[data-modal-title]`, `[data-modal-content]`) before calling into the app, mirroring what fixed the dynamic modal integration test.
+    2. Increase the wait after `showLearnModal()` to ensure content injection completes (e.g., `requestAnimationFrame` twice or a slightly longer timeout).
+    3. If still failing, assert whether `ModalManager.modals` contains the dynamic modal after `showLearnModal()` and whether `ModalTemplateManager.injectModalContent` returns true for the current simType.
+
+### 10. Suite/UI Enhancements Implemented
+
+- Results grouping with category headings (e.g., CORE, FEATURES)
+- Test name tooltips showing the source file path
+- Copy logs (clipboard with toast) and Export logs (JSON download)
+- Version badge (injected from manifest) shown in the header and exported with logs
+- Page scrolling and panel top-alignment fixes for long trees/results
+- Compact header/summary panels (height fits content)
+- Skipped badge/count in summary and grey styling for skipped results
+
+### 11. Example Test Port
 
 **Old format (test-suite-old.html):**
 
