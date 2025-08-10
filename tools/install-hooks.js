@@ -14,7 +14,8 @@ node tools/generate-test-manifest.js
 git add tests/manifest.json tests/manifest.js
 `;
 
-const manifestMarker = "# Auto-generated pre-commit hook to keep tests manifest up to date";
+const manifestMarker =
+  "# Auto-generated pre-commit hook to keep tests manifest up to date";
 
 if (!fs.existsSync(gitDir)) {
   console.error("No .git directory found. Run this after git init.");
@@ -31,20 +32,27 @@ let newContent;
 if (existingContent.includes(manifestMarker)) {
   // Our script is already there, replace just our part
   const lines = existingContent.split("\n");
-  const startIndex = lines.findIndex(line => line.includes(manifestMarker));
-  const endIndex = lines.findIndex((line, i) => i > startIndex && line.trim() === "");
-  
+  const startIndex = lines.findIndex((line) => line.includes(manifestMarker));
+  const endIndex = lines.findIndex(
+    (line, i) => i > startIndex && line.trim() === ""
+  );
+
   if (startIndex !== -1) {
     // Remove our existing section
     const beforeOurScript = lines.slice(0, startIndex);
     const afterOurScript = endIndex !== -1 ? lines.slice(endIndex + 1) : [];
-    newContent = [...beforeOurScript, ...manifestScript.split("\n"), ...afterOurScript].join("\n");
+    newContent = [
+      ...beforeOurScript,
+      ...manifestScript.split("\n"),
+      ...afterOurScript,
+    ].join("\n");
   } else {
     newContent = existingContent;
   }
 } else {
   // No existing manifest script, append to existing content
-  newContent = existingContent + (existingContent ? "\n\n" : "") + manifestScript;
+  newContent =
+    existingContent + (existingContent ? "\n\n" : "") + manifestScript;
 }
 
 fs.writeFileSync(preCommitPath, newContent, "utf8");
