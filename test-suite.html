@@ -36,17 +36,17 @@
     <script src="tests/manifest.js"></script>
 
     <style>
-              :root {
-          --panel-bg: rgba(30, 30, 30, 0.6);
-          --panel-border: rgba(255, 255, 255, 0.12);
-          --text: #f5f5f7;
-          --muted: #c0c0c7;
-          --accent: #6ea8fe;
-          --pass: #2ecc71;
-          --fail: #e74c3c;
-          --error: #e67e22;
-          --skip: #9aa0a6;
-        }
+      :root {
+        --panel-bg: rgba(30, 30, 30, 0.6);
+        --panel-border: rgba(255, 255, 255, 0.12);
+        --text: #f5f5f7;
+        --muted: #c0c0c7;
+        --accent: #6ea8fe;
+        --pass: #2ecc71;
+        --fail: #e74c3c;
+        --error: #e67e22;
+        --skip: #9aa0a6;
+      }
       /* Override global app stylesheet to allow page-level scrolling on this suite page */
       html,
       body {
@@ -161,10 +161,10 @@
         color: var(--error);
         border-color: rgba(230, 126, 34, 0.3);
       }
-              .summary .skip {
-          color: var(--skip);
-          border-color: rgba(154, 160, 166, 0.3);
-        }
+      .summary .skip {
+        color: var(--skip);
+        border-color: rgba(154, 160, 166, 0.3);
+      }
       .results {
         overflow: visible;
       }
@@ -492,13 +492,49 @@
         const container = document.getElementById("results");
         container.innerHTML = "";
         let lastCategory = null;
+        // Group results by category and count statuses
+        const categoryResults = {};
+        results.forEach((r, idx) => {
+          const meta = (runner.tests && runner.tests[idx]) || {};
+          const category = meta.category || "general";
+          if (!categoryResults[category]) {
+            categoryResults[category] = { passed: 0, failed: 0, skipped: 0, errors: 0, total: 0 };
+          }
+          categoryResults[category].total++;
+          if (r.result === "pass") categoryResults[category].passed++;
+          else if (r.result === "fail") categoryResults[category].failed++;
+          else if (r.result === "skip") categoryResults[category].skipped++;
+          else if (r.result === "error") categoryResults[category].errors++;
+        });
+
+        // Render results with category headings and counts
         results.forEach((r, idx) => {
           const meta = (runner.tests && runner.tests[idx]) || {};
           const category = meta.category || "general";
           if (category !== lastCategory) {
             const heading = document.createElement("div");
             heading.className = "group-heading";
-            heading.textContent = category.toUpperCase();
+            heading.style.display = "flex";
+            heading.style.justifyContent = "space-between";
+            
+            const categoryName = document.createElement("div");
+            categoryName.style.display = "inline-flex";
+            categoryName.style.flexDirection = "row-reverse";
+            categoryName.style.justifyContent = "flex-end";
+            categoryName.textContent = category.toUpperCase();
+            
+            const counts = categoryResults[category];
+            const countsDiv = document.createElement("div");
+            countsDiv.style.display = "inline-flex";
+            countsDiv.style.flexDirection = "row";
+            countsDiv.style.justifyContent = "flex-end";
+            
+            const countsText = document.createElement("div");
+            countsText.innerHTML = `(<span style="color: var(--pass);">${counts.passed}</span>+<span style="color: var(--fail);">${counts.failed}</span>+<span style="color: var(--skip);">${counts.skipped}</span>+<span style="color: var(--error);">${counts.errors}</span>)/${counts.total}`;
+            
+            countsDiv.appendChild(countsText);
+            heading.appendChild(categoryName);
+            heading.appendChild(countsDiv);
             container.appendChild(heading);
             lastCategory = category;
           }
