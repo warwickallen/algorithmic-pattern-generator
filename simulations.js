@@ -1394,12 +1394,25 @@ class BaseSimulation {
       ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
       : 0.3
   ) {
+    // Create array of all cell positions
+    const cellPositions = [];
     for (let row = 0; row < grid.length; row++) {
-      const rowData = grid[row];
-      for (let col = 0; col < rowData.length; col++) {
-        rowData[col] = Math.random() < density;
+      for (let col = 0; col < grid[row].length; col++) {
+        cellPositions.push({ row, col });
       }
     }
+    
+    // Shuffle the cell positions to break any potential patterns in Math.random()
+    for (let i = cellPositions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cellPositions[i], cellPositions[j]] = [cellPositions[j], cellPositions[i]];
+    }
+    
+    // Apply randomization in shuffled order
+    for (const { row, col } of cellPositions) {
+      grid[row][col] = Math.random() < density;
+    }
+    
     return this.countLiveCells(grid);
   }
 
@@ -2269,14 +2282,26 @@ class TermiteAlgorithm extends BaseSimulation {
     }
     this.woodChips.clear();
 
-    // Use the same approach as other simulations for consistent coverage
+    // Create array of all cell positions
+    const cellPositions = [];
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
-        if (Math.random() < likelihood) {
-          const x = col * this.cellSize;
-          const y = row * this.cellSize;
-          this.woodChips.add(`${x},${y}`);
-        }
+        cellPositions.push({ row, col });
+      }
+    }
+    
+    // Shuffle the cell positions to break any potential patterns in Math.random()
+    for (let i = cellPositions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cellPositions[i], cellPositions[j]] = [cellPositions[j], cellPositions[i]];
+    }
+    
+    // Apply randomization in shuffled order
+    for (const { row, col } of cellPositions) {
+      if (Math.random() < likelihood) {
+        const x = col * this.cellSize;
+        const y = row * this.cellSize;
+        this.woodChips.add(`${x},${y}`);
       }
     }
 
@@ -2574,3 +2599,4 @@ class SimulationFactory {
     }
   }
 }
+
