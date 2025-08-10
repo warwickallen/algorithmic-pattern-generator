@@ -914,24 +914,24 @@ class BaseSimulation {
     // Calculate cell size to ensure even coverage and avoid coordinate bias
     const targetCells = 100; // Target approximately 100 cells along the smaller dimension
     const minDimension = Math.min(this.canvas.width, this.canvas.height);
-    
+
     // Find a cell size that divides evenly into both dimensions
     let cellSize = Math.max(1, Math.floor(minDimension / targetCells));
-    
-    // Adjust cell size to minimize uncovered area
+
+    // Adjust cell size to achieve PERFECT coverage (zero uncovered area)
     while (cellSize > 1) {
       const cols = Math.floor(this.canvas.width / cellSize);
       const rows = Math.floor(this.canvas.height / cellSize);
-      const uncoveredWidth = this.canvas.width - (cols * cellSize);
-      const uncoveredHeight = this.canvas.height - (rows * cellSize);
-      
-      // If uncovered area is small relative to cell size, use this size
-      if (uncoveredWidth < cellSize * 0.1 && uncoveredHeight < cellSize * 0.1) {
+      const uncoveredWidth = this.canvas.width - cols * cellSize;
+      const uncoveredHeight = this.canvas.height - rows * cellSize;
+
+      // Only accept if there's ZERO uncovered area
+      if (uncoveredWidth === 0 && uncoveredHeight === 0) {
         break;
       }
       cellSize--;
     }
-    
+
     this.cellSize = cellSize;
     this.cols = Math.max(1, Math.floor(this.canvas.width / this.cellSize));
     this.rows = Math.max(1, Math.floor(this.canvas.height / this.cellSize));
