@@ -99,16 +99,15 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
+        align-self: start; /* top-align left panel */
       }
       .right {
         grid-area: right;
         display: grid;
         grid-template-rows: auto auto;
         gap: 12px;
-        /* Prevent stretching to match left column height */
-        align-self: start;
-        /* Inside this grid, pack rows to the top rather than stretching */
-        align-content: start;
+        align-self: start; /* top-align right panel */
+        align-content: start; /* pack rows to top */
       }
       .btn {
         padding: 8px 12px;
