@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1-split-tests-2-f18696d-20250810T155501",
+  "version": "0.0.1-split-tests-2-3d54b2d-20250810T160052",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
@@ -19,8 +19,12 @@
     "tests/system/test-utilities.test.js",
     "tests/ui/config-validator.test.js",
     "tests/ui/control-manager-visibility.test.js",
+    "tests/ui/dynamic-modal-integration.test.js",
     "tests/ui/element-cache.test.js",
     "tests/ui/event-listener-manager.test.js",
+    "tests/ui/learn-modal-content.test.js",
+    "tests/ui/modal-template-html.test.js",
+    "tests/ui/modal-template-injection.test.js",
     "tests/ui/shared-components.test.js",
     "tests/ui/ui.tests.js",
     "tests/visual/colour.tests.js"

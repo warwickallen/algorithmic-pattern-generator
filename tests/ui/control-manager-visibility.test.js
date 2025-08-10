@@ -6,7 +6,10 @@
     "Initial Controls Visibility on Page Load",
     async () => {
       if (typeof ControlManager === "undefined") {
-        return { passed: true, details: "Skipped: ControlManager not available" };
+        return {
+          passed: true,
+          details: "Skipped: ControlManager not available",
+        };
       }
       const controlManager = new ControlManager();
       controlManager.showControls("conway");
@@ -23,5 +26,3 @@
     "ui"
   );
 })();
-
-
