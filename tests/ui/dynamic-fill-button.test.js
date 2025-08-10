@@ -102,13 +102,60 @@
         const hidden = button.style.display === "none";
         dynamicFillButton.show();
         const shown = button.style.display === "inline-block";
-        return { passed: visible && hidden && shown, details: `visible=${visible}, hidden=${hidden}, shown=${shown}` };
+        return {
+          passed: visible && hidden && shown,
+          details: `visible=${visible}, hidden=${hidden}, shown=${shown}`,
+        };
       } catch (e) {
         return { passed: false, details: e.message };
       } finally {
         dynamicFillButton.cleanup();
         eventFramework.cleanup && eventFramework.cleanup();
         if (button && button.parentNode) button.parentNode.removeChild(button);
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
+    "Dynamic Fill Button initial visibility after app load",
+    async () => {
+      if (
+        typeof DynamicFillButton === "undefined" ||
+        typeof AlgorithmicPatternGenerator === "undefined"
+      ) {
+        return {
+          skip: true,
+          details: "Skipped: required classes not available",
+        };
+      }
+      // Prepare required DOM elements
+      const canvas = document.createElement("canvas");
+      canvas.id = "canvas";
+      document.body.appendChild(canvas);
+      const fillBtn = document.createElement("button");
+      fillBtn.id = "dynamic-fill-btn";
+      document.body.appendChild(fillBtn);
+      try {
+        const app = new AlgorithmicPatternGenerator();
+        // Allow any async listeners to settle
+        await new Promise((r) => setTimeout(r, 50));
+        const button = document.getElementById("dynamic-fill-btn");
+        const isVisible =
+          button &&
+          button.style.display !== "none" &&
+          window.getComputedStyle(button).display !== "none";
+        const shouldBeVisible = app.currentType === "conway";
+        app.cleanup();
+        return {
+          passed: !!isVisible && shouldBeVisible,
+          details: `visible=${isVisible}, sim=${app.currentType}`,
+        };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        if (fillBtn.parentNode) fillBtn.parentNode.removeChild(fillBtn);
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
       }
     },
     "ui"

@@ -84,4 +84,68 @@
     },
     "ui"
   );
+
+  runner.addTest(
+    "UI Component Library: create select and manage options",
+    async () => {
+      if (typeof UIComponentLibrary === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const ui = new UIComponentLibrary(eventFramework);
+      const selectEl = document.createElement("select");
+      selectEl.id = "uic-test-select";
+      document.body.appendChild(selectEl);
+      try {
+        const select = ui.createSelect({ id: "uic-test-select", value: "a" });
+        select.methods.setOptions([
+          { value: "a", label: "A" },
+          { value: "b", label: "B" },
+        ]);
+        select.methods.setValue("b");
+        const ok = select.methods.getValue() === "b";
+        return { passed: ok, details: `value=${select.methods.getValue()}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        if (selectEl.parentNode) selectEl.parentNode.removeChild(selectEl);
+        ui.cleanup && ui.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
+    "UI Component Library: control group layout switch",
+    async () => {
+      if (typeof UIComponentLibrary === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const ui = new UIComponentLibrary(eventFramework);
+      const div = document.createElement("div");
+      div.id = "uic-control-group";
+      document.body.appendChild(div);
+      try {
+        const group = ui.createControlGroup("uic-control-group", { layout: "horizontal" });
+        group.methods.setLayout("vertical");
+        const ok = group.state.layout === "vertical";
+        return { passed: ok, details: `layout=${group.state.layout}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        if (div.parentNode) div.parentNode.removeChild(div);
+        ui.cleanup && ui.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
 })();

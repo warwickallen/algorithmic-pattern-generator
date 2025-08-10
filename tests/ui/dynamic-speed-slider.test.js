@@ -171,7 +171,10 @@
       const eventFramework = new EventFramework();
       const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
       try {
-        const mockApp = { handleSpeedChange: () => {}, currentSimulation: { speed: 30 } };
+        const mockApp = {
+          handleSpeedChange: () => {},
+          currentSimulation: { speed: 30 },
+        };
         dynamicSpeedSlider.switchToSimulation("conway", mockApp);
         dynamicSpeedSlider.setValue(30);
         dynamicSpeedSlider.adjustSpeed(1);
@@ -212,7 +215,10 @@
       const eventFramework = new EventFramework();
       const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
       try {
-        const mockApp = { handleSpeedChange: () => {}, currentSimulation: { speed: 30 } };
+        const mockApp = {
+          handleSpeedChange: () => {},
+          currentSimulation: { speed: 30 },
+        };
         dynamicSpeedSlider.switchToSimulation("conway", mockApp);
         const visible =
           document.querySelector(".speed-control .control-group").style
@@ -221,7 +227,10 @@
         const hidden =
           document.querySelector(".speed-control .control-group").style
             .display === "none";
-        return { passed: visible && hidden, details: `visible=${visible}, hidden=${hidden}` };
+        return {
+          passed: visible && hidden,
+          details: `visible=${visible}, hidden=${hidden}`,
+        };
       } catch (e) {
         return { passed: false, details: e.message };
       } finally {
