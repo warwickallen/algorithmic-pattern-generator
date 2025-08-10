@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1-split-tests-2-4442799-20250810T225129",
+  "version": "0.0.1-split-tests-2-c563e51-20250810T230100",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
@@ -8,13 +8,17 @@
     "tests/core/simulation-creation.test.js",
     "tests/features/simulation-features.test.js",
     "tests/integration/control-management.test.js",
+    "tests/integration/full-lifecycle.test.js",
     "tests/integration/integration.tests.js",
+    "tests/integration/keyboard-handler.test.js",
     "tests/integration/modal-manager.test.js",
     "tests/integration/modal-template-manager.test.js",
     "tests/interaction/drag-coordinate-fix.test.js",
     "tests/interaction/drag-toggle.test.js",
     "tests/performance/more-performance.test.js",
     "tests/performance/performance.test.js",
+    "tests/system/console-and-canvas.test.js",
+    "tests/system/fade-progression-debug.test.js",
     "tests/system/system.tests.js",
     "tests/system/test-utilities.test.js",
     "tests/ui/config-validator.test.js",
@@ -31,7 +35,8 @@
     "tests/ui/shared-components.test.js",
     "tests/ui/ui-component-library-2.test.js",
     "tests/ui/ui.tests.js",
-    "tests/visual/colour.tests.js"
+    "tests/visual/colour.tests.js",
+    "tests/visual/fade-visual-tests.test.js"
   ],
   "counts": {
     "tests/core/cell-toggle.test.js": 3,
@@ -41,13 +46,17 @@
     "tests/core/simulation-creation.test.js": 3,
     "tests/features/simulation-features.test.js": 4,
     "tests/integration/control-management.test.js": 2,
+    "tests/integration/full-lifecycle.test.js": 1,
     "tests/integration/integration.tests.js": 2,
+    "tests/integration/keyboard-handler.test.js": 1,
     "tests/integration/modal-manager.test.js": 1,
     "tests/integration/modal-template-manager.test.js": 1,
     "tests/interaction/drag-coordinate-fix.test.js": 1,
     "tests/interaction/drag-toggle.test.js": 1,
     "tests/performance/more-performance.test.js": 2,
     "tests/performance/performance.test.js": 2,
+    "tests/system/console-and-canvas.test.js": 2,
+    "tests/system/fade-progression-debug.test.js": 1,
     "tests/system/system.tests.js": 3,
     "tests/system/test-utilities.test.js": 1,
     "tests/ui/config-validator.test.js": 1,
@@ -64,7 +73,8 @@
     "tests/ui/shared-components.test.js": 3,
     "tests/ui/ui-component-library-2.test.js": 9,
     "tests/ui/ui.tests.js": 3,
-    "tests/visual/colour.tests.js": 3
+    "tests/visual/colour.tests.js": 3,
+    "tests/visual/fade-visual-tests.test.js": 3
   },
-  "totalTests": 73
+  "totalTests": 81
 }
