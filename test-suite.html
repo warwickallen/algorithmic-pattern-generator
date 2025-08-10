@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Algorithmic Pattern Generator — Test Suite</title>
+
+    <!-- App runtime dependencies (same load order as app/index where relevant) -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- jsTree (for Select Tests tree) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/themes/default/style.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/jstree.min.js"></script>
+
+    <!-- Core app scripts required by tests -->
+    <script src="constants.js"></script>
+    <script src="types.js"></script>
+    <script src="config-validator.js"></script>
+    <script src="dynamic-layout.js"></script>
+    <script src="i18n.js"></script>
+    <script src="utils.js"></script>
+    <script src="simulations.js"></script>
+    <script src="app.js"></script>
+
+    <!-- Test utilities and runner -->
+    <script src="test-utils.js"></script>
+    <script src="test-runner.js"></script>
+
+    <!-- Generated manifest (pre-commit keeps up to date) -->
+    <script src="tests/manifest.js"></script>
+
+    <style>
+      :root {
+        --panel-bg: rgba(30, 30, 30, 0.6);
+        --panel-border: rgba(255, 255, 255, 0.12);
+        --text: #f5f5f7;
+        --muted: #c0c0c7;
+        --accent: #6ea8fe;
+        --pass: #2ecc71;
+        --fail: #e74c3c;
+        --error: #e67e22;
+      }
+      body {
+        background: #0f0f12;
+        color: var(--text);
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+          "header header"
+          "left right";
+        height: 100vh;
+        gap: 12px;
+        padding: 12px;
+        box-sizing: border-box;
+      }
+      header {
+        grid-area: header;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        border-radius: 10px;
+      }
+      header .actions {
+        display: flex;
+        gap: 8px;
+      }
+      .panel {
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        border-radius: 10px;
+        padding: 12px;
+      }
+      .left {
+        grid-area: left;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .right {
+        grid-area: right;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 12px;
+      }
+      .btn {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--panel-border);
+        background: #1a1b1e;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .btn.primary {
+        background: #3b82f6;
+        border-color: #2563eb;
+        color: #ffffff;
+      }
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .legend {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .summary {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .summary .badge {
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #1a1b1e;
+        border: 1px solid var(--panel-border);
+        font-size: 12px;
+      }
+      .summary .pass {
+        color: var(--pass);
+        border-color: rgba(46, 204, 113, 0.3);
+      }
+      .summary .fail {
+        color: var(--fail);
+        border-color: rgba(231, 76, 60, 0.3);
+      }
+      .summary .error {
+        color: var(--error);
+        border-color: rgba(230, 126, 34, 0.3);
+      }
+      .results {
+        overflow: auto;
+      }
+      .result-item {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--panel-border);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+      }
+      .result-item .name {
+        color: var(--text);
+      }
+      .result-item .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .result-item.pass {
+        border-left: 3px solid var(--pass);
+      }
+      .result-item.fail {
+        border-left: 3px solid var(--fail);
+      }
+      .result-item.error {
+        border-left: 3px solid var(--error);
+      }
+      .tree-actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      #tree {
+        max-height: 55vh;
+        overflow: auto;
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 6px;
+      }
+      /* Remove selection highlight to rely solely on checkboxes */
+      .jstree-default .jstree-clicked {
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      .jstree-default .jstree-hovered {
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <header class="panel">
+        <div>
+          <strong>Test Suite</strong>
+          <div class="legend">Select tests from the tree, then run them.</div>
+        </div>
+        <div class="actions">
+          <button id="btn-run" class="btn primary">Run selected</button>
+          <button id="btn-clear" class="btn">Clear results</button>
+        </div>
+      </header>
+
+      <div class="left">
+        <div class="panel">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 6px;
+            "
+          >
+            <strong>Select Tests</strong>
+            <span class="legend"
+              >Use checkboxes to select files or whole folders</span
+            >
+          </div>
+          <div class="tree-actions">
+            <button id="btn-expand" class="btn">Expand all</button>
+            <button id="btn-collapse" class="btn">Collapse all</button>
+          </div>
+          <div id="tree"></div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="panel summary" id="summary">
+          <span class="badge" id="badge-total">Total: 0</span>
+          <span class="badge pass" id="badge-pass">Passed: 0</span>
+          <span class="badge fail" id="badge-fail">Failed: 0</span>
+          <span class="badge error" id="badge-error">Errors: 0</span>
+          <span class="badge" id="badge-duration">Duration: 0ms</span>
+        </div>
+        <div class="panel results" id="results"></div>
+      </div>
+    </div>
+
+    <script>
+      // Create a global runner instance that test files will register into
+      const runner = new TestRunner();
+      window.testRunner = runner;
+
+      function buildTreeDataFromManifest(manifest) {
+        const byId = { "#": { id: "#", children: [] } };
+        function ensureNode(id, text, parent) {
+          if (byId[id]) return byId[id];
+          const node = { id, text, parent, children: [] };
+          byId[id] = node;
+          if (byId[parent]) byId[parent].children.push(node);
+          return node;
+        }
+        (manifest.files || []).forEach((p) => {
+          const parts = p.split("/");
+          let parent = "#";
+          let acc = "";
+          for (let i = 0; i < parts.length; i++) {
+            acc = acc ? acc + "/" + parts[i] : parts[i];
+            const isFile = i === parts.length - 1;
+            const id = acc;
+            ensureNode(id, parts[i], parent);
+            parent = id;
+            if (isFile) {
+              byId[id].data = { path: p, isFile: true };
+              byId[id].icon = "jstree-file";
+            }
+          }
+        });
+        function flatten(node) {
+          const self =
+            node.id === "#"
+              ? []
+              : [
+                  {
+                    id: node.id,
+                    text: node.text,
+                    parent: node.parent || "#",
+                    data: node.data,
+                    icon: node.icon,
+                  },
+                ];
+          return self.concat(...node.children.map(flatten));
+        }
+        return flatten(byId["#"]);
+      }
+
+      function initTree() {
+        const data = buildTreeDataFromManifest(
+          window.TEST_MANIFEST || { files: [] }
+        );
+        const $tree = $("#tree");
+        $tree.jstree("destroy");
+        $tree.jstree({
+          core: {
+            data,
+            themes: { stripes: true },
+            multiple: true,
+            check_callback: true,
+          },
+          plugins: ["checkbox", "types", "state"],
+          checkbox: {
+            three_state: true,
+            whole_node: false,
+            tie_selection: false,
+          },
+        });
+
+        document.getElementById("btn-expand").onclick = () =>
+          $tree.jstree("open_all");
+        document.getElementById("btn-collapse").onclick = () =>
+          $tree.jstree("close_all");
+      }
+
+      function clearResultsUI() {
+        document.getElementById("results").innerHTML = "";
+        document.getElementById("badge-total").textContent = "Total: 0";
+        document.getElementById("badge-pass").textContent = "Passed: 0";
+        document.getElementById("badge-fail").textContent = "Failed: 0";
+        document.getElementById("badge-error").textContent = "Errors: 0";
+        document.getElementById("badge-duration").textContent = "Duration: 0ms";
+      }
+
+      function renderResults(summary, results) {
+        document.getElementById(
+          "badge-total"
+        ).textContent = `Total: ${summary.total}`;
+        document.getElementById(
+          "badge-pass"
+        ).textContent = `Passed: ${summary.passed}`;
+        document.getElementById(
+          "badge-fail"
+        ).textContent = `Failed: ${summary.failed}`;
+        document.getElementById(
+          "badge-error"
+        ).textContent = `Errors: ${summary.errors}`;
+        const duration = (summary.endTime - summary.startTime).toFixed(2);
+        document.getElementById(
+          "badge-duration"
+        ).textContent = `Duration: ${duration}ms`;
+        const container = document.getElementById("results");
+        container.innerHTML = "";
+        results.forEach((r) => {
+          const div = document.createElement("div");
+          div.className = `result-item ${r.result}`;
+          div.innerHTML = `<span class="name">${
+            r.name
+          }</span><span class="meta">${r.duration.toFixed(2)}ms${
+            r.details ? " — " + r.details : ""
+          }</span>`;
+          container.appendChild(div);
+        });
+      }
+
+      function getSelectedFilePaths() {
+        const $tree = $("#tree");
+        const selected = $tree.jstree("get_checked", true); // checked via checkbox
+        const allNodes = $tree.jstree(true)._model.data;
+        const filePaths = new Set();
+        function addDescendantFiles(node) {
+          if (node.data && node.data.isFile && node.data.path) {
+            filePaths.add(node.data.path);
+          }
+          (node.children || []).forEach((cid) =>
+            addDescendantFiles(allNodes[cid])
+          );
+        }
+        selected.forEach((node) => addDescendantFiles(node));
+        return Array.from(filePaths);
+      }
+
+      function loadScript(path) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = path;
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error("Failed to load " + path));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function runSelected() {
+        const btn = document.getElementById("btn-run");
+        btn.disabled = true;
+        try {
+          clearResultsUI();
+          // Reset runner state and remove any previously injected test scripts
+          runner.tests = [];
+          // Collect files and load in deterministic order
+          const files = getSelectedFilePaths().sort();
+          if (files.length === 0) {
+            alert("No tests selected");
+            return;
+          }
+          for (const f of files) {
+            // eslint-disable-next-line no-await-in-loop
+            await loadScript(f);
+          }
+          const { summary, results } = await runner.runAllTests();
+          renderResults(summary, results);
+        } catch (e) {
+          console.error(e);
+          alert(e.message || String(e));
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      document.getElementById("btn-run").addEventListener("click", runSelected);
+      document.getElementById("btn-clear").addEventListener("click", () => {
+        clearResultsUI();
+        runner.tests = [];
+      });
+
+      // Initialise tree on DOM ready and re-assert our runner in case other scripts set it
+      document.addEventListener("DOMContentLoaded", () => {
+        initTree();
+        window.testRunner = runner;
+      });
+    </script>
+  </body>
+</html>
