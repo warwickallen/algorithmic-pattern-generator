@@ -228,6 +228,15 @@
         background: transparent !important;
         box-shadow: none !important;
       }
+      /* Allow long filenames to wrap within the tree panel */
+      .jstree-default .jstree-node {
+        white-space: normal !important;
+      }
+      .jstree-default .jstree-anchor {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
       /* Show per-file test counts after filenames */
       .jstree-default .jstree-anchor[data-count]:after {
         content: " [" attr(data-count) "]";
@@ -400,11 +409,16 @@
           }
           const summaryEl = document.getElementById("selection-summary");
           if (summaryEl) {
-            summaryEl.textContent = `${testCount} tests selected in ${fileCount} test files`;
+            summaryEl.textContent = `${testCount} tests selected in ${fileCount} test files.`;
           }
         };
 
-        $tree.on("changed.jstree", updateSelectionSummary);
+        // Listen to checkbox-specific events (tie_selection is false)
+        $tree.on(
+          "check_node.jstree uncheck_node.jstree check_all.jstree uncheck_all.jstree",
+          updateSelectionSummary
+        );
+        $tree.on("ready.jstree", updateSelectionSummary);
         // Initial summary
         updateSelectionSummary();
 
