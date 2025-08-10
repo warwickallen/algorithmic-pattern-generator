@@ -208,6 +208,40 @@
         border: 1px solid var(--panel-border);
         border-radius: 6px;
       }
+      .filter-controls {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        background: #1a1b1e;
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+      }
+      .filter-controls label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .filter-controls input[type="checkbox"] {
+        margin: 0;
+        cursor: pointer;
+      }
+      .filter-controls .pass {
+        color: var(--pass);
+      }
+      .filter-controls .fail {
+        color: var(--fail);
+      }
+      .filter-controls .skip {
+        color: var(--skip);
+      }
+      .filter-controls .error {
+        color: var(--error);
+      }
       .tree-actions {
         display: flex;
         gap: 8px;
@@ -326,7 +360,27 @@
           <span class="badge error" id="badge-error">Errors: 0</span>
           <span class="badge" id="badge-duration">Duration: 0ms</span>
         </div>
-        <div class="panel results" id="results"></div>
+        <div class="panel results" id="results">
+          <div class="filter-controls">
+            <label class="pass">
+              <input type="checkbox" id="filter-pass" checked />
+              Passed
+            </label>
+            <label class="fail">
+              <input type="checkbox" id="filter-fail" checked />
+              Failed
+            </label>
+            <label class="skip">
+              <input type="checkbox" id="filter-skip" checked />
+              Skipped
+            </label>
+            <label class="error">
+              <input type="checkbox" id="filter-error" checked />
+              Errors
+            </label>
+          </div>
+          <div id="results-list"></div>
+        </div>
       </div>
     </div>
 
@@ -458,8 +512,12 @@
         }
       }
 
+      // Store current results for filtering
+      let currentResults = [];
+      let currentSummary = null;
+
       function clearResultsUI() {
-        document.getElementById("results").innerHTML = "";
+        document.getElementById("results-list").innerHTML = "";
         document.getElementById("badge-total").textContent = "Total: 0";
         document.getElementById("badge-pass").textContent = "Passed: 0";
         document.getElementById("badge-fail").textContent = "Failed: 0";
@@ -467,9 +525,15 @@
         if (skipEl) skipEl.textContent = "Skipped: 0";
         document.getElementById("badge-error").textContent = "Errors: 0";
         document.getElementById("badge-duration").textContent = "Duration: 0ms";
+        currentResults = [];
+        currentSummary = null;
       }
 
       function renderResults(summary, results) {
+        // Store results for filtering
+        currentResults = results;
+        currentSummary = summary;
+
         document.getElementById(
           "badge-total"
         ).textContent = `Total: ${summary.total}`;
@@ -489,16 +553,44 @@
         document.getElementById(
           "badge-duration"
         ).textContent = `Duration: ${duration}ms`;
-        const container = document.getElementById("results");
+
+        renderFilteredResults();
+      }
+
+      function renderFilteredResults() {
+        if (!currentResults.length) return;
+
+        const container = document.getElementById("results-list");
         container.innerHTML = "";
         let lastCategory = null;
-        // Group results by category and count statuses
+        // Get filter states
+        const showPass = document.getElementById("filter-pass").checked;
+        const showFail = document.getElementById("filter-fail").checked;
+        const showSkip = document.getElementById("filter-skip").checked;
+        const showError = document.getElementById("filter-error").checked;
+
+        // Filter results based on checkbox states
+        const filteredResults = currentResults.filter((r, idx) => {
+          if (r.result === "pass" && !showPass) return false;
+          if (r.result === "fail" && !showFail) return false;
+          if (r.result === "skip" && !showSkip) return false;
+          if (r.result === "error" && !showError) return false;
+          return true;
+        });
+
+        // Group filtered results by category and count statuses
         const categoryResults = {};
-        results.forEach((r, idx) => {
+        filteredResults.forEach((r, idx) => {
           const meta = (runner.tests && runner.tests[idx]) || {};
           const category = meta.category || "general";
           if (!categoryResults[category]) {
-            categoryResults[category] = { passed: 0, failed: 0, skipped: 0, errors: 0, total: 0 };
+            categoryResults[category] = {
+              passed: 0,
+              failed: 0,
+              skipped: 0,
+              errors: 0,
+              total: 0,
+            };
           }
           categoryResults[category].total++;
           if (r.result === "pass") categoryResults[category].passed++;
@@ -507,8 +599,8 @@
           else if (r.result === "error") categoryResults[category].errors++;
         });
 
-        // Render results with category headings and counts
-        results.forEach((r, idx) => {
+        // Render filtered results with category headings and counts
+        filteredResults.forEach((r, idx) => {
           const meta = (runner.tests && runner.tests[idx]) || {};
           const category = meta.category || "general";
           if (category !== lastCategory) {
@@ -516,22 +608,22 @@
             heading.className = "group-heading";
             heading.style.display = "flex";
             heading.style.justifyContent = "space-between";
-            
+
             const categoryName = document.createElement("div");
             categoryName.style.display = "inline-flex";
             categoryName.style.flexDirection = "row-reverse";
             categoryName.style.justifyContent = "flex-end";
             categoryName.textContent = category.toUpperCase();
-            
+
             const counts = categoryResults[category];
             const countsDiv = document.createElement("div");
             countsDiv.style.display = "inline-flex";
             countsDiv.style.flexDirection = "row";
             countsDiv.style.justifyContent = "flex-end";
-            
+
             const countsText = document.createElement("div");
             countsText.innerHTML = `(<span style="color: var(--pass);">${counts.passed}</span>+<span style="color: var(--fail);">${counts.failed}</span>+<span style="color: var(--skip);">${counts.skipped}</span>+<span style="color: var(--error);">${counts.errors}</span>)/${counts.total}`;
-            
+
             countsDiv.appendChild(countsText);
             heading.appendChild(categoryName);
             heading.appendChild(countsDiv);
@@ -769,11 +861,17 @@
         .getElementById("btn-export-logs")
         .addEventListener("click", handleExportLogs);
 
-      // Initialise tree on DOM ready and re-assert our runner in case other scripts set it
-      document.addEventListener("DOMContentLoaded", () => {
-        initTree();
-        window.testRunner = runner;
-      });
+             // Add filter event listeners
+       document.getElementById("filter-pass").addEventListener("change", renderFilteredResults);
+       document.getElementById("filter-fail").addEventListener("change", renderFilteredResults);
+       document.getElementById("filter-skip").addEventListener("change", renderFilteredResults);
+       document.getElementById("filter-error").addEventListener("change", renderFilteredResults);
+
+       // Initialise tree on DOM ready and re-assert our runner in case other scripts set it
+       document.addEventListener("DOMContentLoaded", () => {
+         initTree();
+         window.testRunner = runner;
+       });
     </script>
   </body>
 </html>
