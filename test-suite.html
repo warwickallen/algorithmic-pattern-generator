@@ -405,7 +405,15 @@
         const byId = { "#": { id: "#", children: [] } };
         function ensureNode(id, text, parent) {
           if (byId[id]) return byId[id];
-          const node = { id, text, parent, children: [], data: undefined, a_attr: undefined, icon: undefined };
+          const node = {
+            id,
+            text,
+            parent,
+            children: [],
+            data: undefined,
+            a_attr: undefined,
+            icon: undefined,
+          };
           byId[id] = node;
           if (byId[parent]) byId[parent].children.push(node);
           return node;
@@ -464,7 +472,7 @@
                     icon: node.icon,
                   },
                 ];
-        
+
           return self.concat(...node.children.map(flatten));
         }
         return flatten(byId["#"]);
