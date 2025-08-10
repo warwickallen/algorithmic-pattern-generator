@@ -339,6 +339,9 @@ static simulationControlTemplates = {
 
 Centralised configuration system that uses ControlTemplateManager:
 
+- Validation of slider/button/modal/simulation configs is delegated to a reusable `ConfigValidator` (see `config-validator.js`).
+- When the validator is unavailable (legacy/test contexts), minimal inline checks are used as a graceful fallback.
+
 #### EventFramework
 
 Comprehensive event management system with enhanced element caching and memory leak prevention:

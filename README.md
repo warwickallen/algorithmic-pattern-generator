@@ -163,6 +163,7 @@ The application uses a modular architecture with clear separation of concerns:
 - **`i18n.js`** - Internationalisation system
 - **`dynamic-layout.js`** - Dynamic layout management
 - **`constants.js`** - Centralised application constants (browser global `AppConstants`)
+- **`config-validator.js`** - Rule-based configuration validator used by configuration and UI systems
 - **`test-runner.js`** - Programmatic testing framework
 
 ### Core Components
@@ -184,6 +185,7 @@ The application uses a modular architecture with clear separation of concerns:
 - **Component Pattern** - Modular UI components
 - **Strategy Pattern** - Different simulation algorithms
 - **Template Pattern** - Control configuration via ControlTemplateManager
+- **Validation Pattern** - Rule-based config validation via ConfigValidator
 - **Singleton Pattern** - Global services like i18n
 
 ## Browser Compatibility

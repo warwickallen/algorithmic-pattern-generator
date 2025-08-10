@@ -2502,6 +2502,10 @@ class ConfigurationManager {
 
   // Validation methods
   static validateSliderConfig(config) {
+    if (typeof ConfigValidator !== "undefined") {
+      return ConfigValidator.validate("slider", { type: "slider", ...config })
+        .valid;
+    }
     const required = [
       "id",
       "valueElementId",
@@ -2511,22 +2515,40 @@ class ConfigurationManager {
       "value",
       "label",
     ];
-    return required.every((prop) => config.hasOwnProperty(prop));
+    return required.every((prop) =>
+      Object.prototype.hasOwnProperty.call(config, prop)
+    );
   }
 
   static validateButtonConfig(config) {
+    if (typeof ConfigValidator !== "undefined") {
+      return ConfigValidator.validate("button", { type: "button", ...config })
+        .valid;
+    }
     const required = ["id", "label"];
-    return required.every((prop) => config.hasOwnProperty(prop));
+    return required.every((prop) =>
+      Object.prototype.hasOwnProperty.call(config, prop)
+    );
   }
 
   static validateModalConfig(config) {
+    if (typeof ConfigValidator !== "undefined") {
+      return ConfigValidator.validate("modal", config).valid;
+    }
     const required = ["id", "closeId"];
-    return required.every((prop) => config.hasOwnProperty(prop));
+    return required.every((prop) =>
+      Object.prototype.hasOwnProperty.call(config, prop)
+    );
   }
 
   static validateSimulationConfig(config) {
+    if (typeof ConfigValidator !== "undefined") {
+      return ConfigValidator.validate("simulation", config).valid;
+    }
     const required = ["name", "controls", "modal"];
-    return required.every((prop) => config.hasOwnProperty(prop));
+    return required.every((prop) =>
+      Object.prototype.hasOwnProperty.call(config, prop)
+    );
   }
 
   // Factory method to create a complete simulation configuration
@@ -2541,13 +2563,23 @@ class ConfigurationManager {
     // Process control configurations
     Object.entries(controlConfigs).forEach(([controlName, controlConfig]) => {
       if (controlConfig.type === "slider") {
-        if (!this.validateSliderConfig(controlConfig)) {
+        if (typeof ConfigValidator !== "undefined") {
+          ConfigValidator.assert("slider", {
+            type: "slider",
+            ...controlConfig,
+          });
+        } else if (!this.validateSliderConfig(controlConfig)) {
           throw new Error(
             `Invalid slider config for ${simType}.${controlName}`
           );
         }
       } else if (controlConfig.type === "button") {
-        if (!this.validateButtonConfig(controlConfig)) {
+        if (typeof ConfigValidator !== "undefined") {
+          ConfigValidator.assert("button", {
+            type: "button",
+            ...controlConfig,
+          });
+        } else if (!this.validateButtonConfig(controlConfig)) {
           throw new Error(
             `Invalid button config for ${simType}.${controlName}`
           );

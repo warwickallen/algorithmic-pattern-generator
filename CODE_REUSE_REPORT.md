@@ -375,20 +375,23 @@ debounce(func, wait, key = null) { /* similar implementation */ }
 - **Code reduction achieved**: ~40 lines of duplicated debounce/throttle logic consolidated
 - **Testing**: Existing tests referencing `PerformanceOptimizer` remain valid; UI/performance tests continue to pass
 
-### 11. **Configuration Validation Consolidation**
+### 11. **Configuration Validation Consolidation** ✅ **IMPLEMENTED**
 
-**Current State**: Similar validation logic for different config types:
+**Previous State**: Duplicate and ad-hoc validation methods lived in `ConfigurationManager` for sliders, buttons, modals, and simulation configs.
 
-```javascript
-static validateSliderConfig(config) { /* validation logic */ }
-static validateButtonConfig(config) { /* similar validation logic */ }
-static validateModalConfig(config) { /* similar validation logic */ }
-```
+**Change Implemented**: Introduced a reusable, rule-based `ConfigValidator` module used across the app to validate configuration objects with shared schemas.
 
-**Opportunity**: Generic configuration validator with type-specific rules.
+- **Module**: `config-validator.js` exports a global `ConfigValidator` (browser) and CommonJS export (tests/node)
+- **Schemas Provided**: `slider`, `button`, `modal`, `simulation`
+- **Rules Supported**: `required`, `type` (including `integer`/`finite`), `min`, `max`, `oneOf`, `predicate`, plus cross-field rules (e.g., ensure slider `value` ∈ [min, max])
+- **Integration**: `ConfigurationManager` now delegates to `ConfigValidator` (`assert/validate`); retains legacy minimal checks as fallback when the validator is unavailable
+- **Inclusion**: Added `config-validator.js` to both `index.html` and `test-suite.html`
+- **Testing**: Extended `test-runner.js` with a smoke test ensuring valid slider configs pass and invalid ones fail
+- **Code reuse**: Centralises all configuration validation in one place; future component types only require schema additions
 
-**Estimated Reduction**: 30-45 lines
-**Implementation**: `ConfigValidator` class with rule-based validation.
+**Code reduction achieved**: ~35 lines of duplicate validation logic avoided and centralised
+
+**Extensibility**: New control types can register schemas and custom rules without touching call sites
 
 ### 12. **Event Framework Enhancement** ✅ **IMPLEMENTED**
 
@@ -779,7 +782,7 @@ function createMockContext() {
 
 **Documentation**: Updated `README.md` and `AS-BUILT.md` to describe the new facade and its API
 
-### 3. **Responsive Layout System** ❌ *WON'T DO*
+### 3. **Responsive Layout System** ❌ _WON'T DO_
 
 **Current State**: Responsive design handled through CSS media queries and JavaScript positioning.
 
@@ -848,8 +851,8 @@ function createMockContext() {
 ### Phase 5: Visual/Functional Changes
 
 1. **Unified Control Panel Design** ✅ **COMPLETED** - Implement consistent design system
-2. **Modal System Redesign** ✅ **COMPLETED**  - Create dynamic modal system
-3. **Responsive Layout System** ❌ *WON'T DO* - Implement CSS Grid layout
+2. **Modal System Redesign** ✅ **COMPLETED** - Create dynamic modal system
+3. **Responsive Layout System** ❌ _WON'T DO_ - Implement CSS Grid layout
 
 **Timeline**: 2-3 weeks
 **Expected Reduction**: 450-650 lines
