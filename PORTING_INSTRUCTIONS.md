@@ -327,3 +327,4 @@ testSuite.addTest(
 - Each test file should handle its own canvas creation and cleanup
 - The manifest system will automatically discover new test files
 - Follow the existing code style and formatting conventions
+ - Filenames are standardised to end with `.test.js` (legacy `.tests.js` have been renamed)
