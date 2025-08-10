@@ -54,12 +54,15 @@ Key files already ported (non-exhaustive):
 - ui:
   - `ui.tests.js`, `shared-components.test.js`, `control-manager-visibility.test.js`, `element-cache.test.js`, `event-listener-manager.test.js`
   - Modal-related: `modal-template-html.test.js`, `modal-template-injection.test.js`, `dynamic-modal-integration.test.js`, `learn-modal-content.test.js`
+  - Dynamic controls: `dynamic-speed-slider.test.js`, `dynamic-fill-button.test.js`
+  - Event system: `event-handler-factory.test.js`
+  - UI library: `ui-component-library-2.test.js`
 - visual:
   - `colour.tests.js`
 - system:
   - `system.tests.js`, `test-utilities.test.js`
 
-The test manifest (`tests/manifest.js`) is auto-generated and currently includes 27 test files.
+The test manifest (`tests/manifest.js`) is auto-generated and currently includes 31 test files, with 63 total tests.
 
 ### 3. Test File Format
 
@@ -229,6 +232,13 @@ After porting, verify:
   - Increased wait from 50ms to 100ms after `showLearnModal()`
   - Added proper cleanup of both canvas and modal mount elements
 - **All tests now pass or are skipped as expected**.
+
+Further items to port (tracked and being migrated incrementally):
+
+- Dynamic Speed Slider: Global value behaviour across simulation switches
+- Dynamic Fill Button: Statistical coverage tests (may be parameter-reduced for reliability)
+- Event Handler Factory: Control setup, custom handler binding, cleanup and ControlManager integration
+- UI Component Library: Status display creation and value management, modal state management, lifecycle hooks, batch operations, factory methods, component management
 
 ### 10. Suite/UI Enhancements Implemented
 
