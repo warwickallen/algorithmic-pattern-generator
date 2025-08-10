@@ -12,7 +12,8 @@ You need to complete the port of all functionality from `test-suite-old.html` to
 - ✅ A large set of tests have been ported and grouped by category (see below)
 - ✅ Test runner enhanced with skip support and richer exports
 - ✅ Suite UI improvements: copy/export logs, version badge, grouping headings, scrolling/top-alignment tweaks, non-blocking toasts, source file tooltips in results, skipped badge and grey styling
-- ❗ One known failing test remains in the UI category (see “Known Issues”)
+- ✅ **All tests now pass or are skipped as expected**
+- ✅ **Enhanced UI features**: selection summary, per-file counts, category result counts, status filtering, and improved jsTree layout
 
 ## Required Tasks
 
@@ -210,8 +211,8 @@ Ensure these dependencies are loaded in `test-suite.html`:
 
 After porting, verify:
 
-- [ ] All tests from the old suite are present in the new structure
-- [x] Tests run without errors in the new interface (except the known failing UI test noted below)
+- [x] All tests from the old suite are present in the new structure
+- [x] Tests run without errors in the new interface
 - [x] Test results are displayed correctly (with category headings, tooltips, and skip styling)
 - [x] Category filtering works properly
 - [x] Manifest is up-to-date
@@ -219,17 +220,15 @@ After porting, verify:
 
 ### 9. Known Issues / Next Steps
 
-- Failing test: `Learn Modal Shows Correct Content for Current Simulation` (category `ui`).
-  - Current result: `fail` with details `conway=false, termite=false`.
-  - What’s been tried:
-    - Added a temporary `#canvas` node before instantiating the app to avoid `getContext` errors and removed it afterwards.
-    - Verified app flow: `app.switchSimulation(simType)` then `app.showLearnModal()`; waited briefly (50ms) for rendering; queried `#dynamic-modal h2` for the title.
-  - Hypothesis:
-    - The `ModalManager.registerDynamicModal(simType)` requires an existing `#dynamic-modal` element in the DOM. If it is missing, `register()` warns and the modal is not wired, leading to empty titles and the test failing.
-  - Suggested next debugging steps:
-    1. In the learn modal test, create a dynamic modal mount element (`#dynamic-modal` with `.modal > .modal-content` and `[data-modal-title]`, `[data-modal-content]`) before calling into the app, mirroring what fixed the dynamic modal integration test.
-    2. Increase the wait after `showLearnModal()` to ensure content injection completes (e.g., `requestAnimationFrame` twice or a slightly longer timeout).
-    3. If still failing, assert whether `ModalManager.modals` contains the dynamic modal after `showLearnModal()` and whether `ModalTemplateManager.injectModalContent` returns true for the current simType.
+✅ **RESOLVED**: The failing test `Learn Modal Shows Correct Content for Current Simulation` (category `ui`) has been fixed.
+
+- **Solution implemented**: Added dynamic modal mount element creation in the test, increased wait times, and ensured proper cleanup.
+- What’s been tried:
+- **Changes made**:
+  - Created `#dynamic-modal` with required structure before app initialization
+  - Increased wait from 50ms to 100ms after `showLearnModal()`
+  - Added proper cleanup of both canvas and modal mount elements
+- **All tests now pass or are skipped as expected**.
 
 ### 10. Suite/UI Enhancements Implemented
 
@@ -240,6 +239,11 @@ After porting, verify:
 - Page scrolling and panel top-alignment fixes for long trees/results
 - Compact header/summary panels (height fits content)
 - Skipped badge/count in summary and grey styling for skipped results
+- **Selection summary**: Live-updating "n tests selected in m test files" display
+- **Per-file test counts**: File names show test counts in italicised brackets [n]
+- **Category result counts**: Group headings show (passed+failed+skipped+errors)/total format
+- **Status filtering**: Checkboxes to filter results by pass/fail/skip/error status
+- **jsTree improvements**: Fixed wrapping, indentation, and overlap issues for long filenames
 
 ### 11. Example Test Port
 
