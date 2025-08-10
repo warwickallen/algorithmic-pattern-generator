@@ -1387,18 +1387,6 @@ class BaseSimulation {
     }
   }
 
-  // Cryptographically secure random number generator to avoid Math.random() bias
-  getSecureRandom() {
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      const array = new Uint32Array(1);
-      crypto.getRandomValues(array);
-      return array[0] / (0xffffffff + 1); // Convert to 0-1 range
-    } else {
-      // Fallback to Math.random() if crypto is not available
-      return Math.random();
-    }
-  }
-
   // Common random grid generation utility
   randomizeGrid(
     grid,
@@ -1406,11 +1394,10 @@ class BaseSimulation {
       ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
       : 0.3
   ) {
-    // Use simple row-major order but with cryptographically secure randomness
     for (let row = 0; row < grid.length; row++) {
       const rowData = grid[row];
       for (let col = 0; col < rowData.length; col++) {
-        rowData[col] = this.getSecureRandom() < density;
+        rowData[col] = Math.random() < density;
       }
     }
     return this.countLiveCells(grid);
@@ -2282,10 +2269,10 @@ class TermiteAlgorithm extends BaseSimulation {
     }
     this.woodChips.clear();
 
-    // Use simple row-major order but with cryptographically secure randomness
+    // Use the same approach as other simulations for consistent coverage
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
-        if (this.getSecureRandom() < likelihood) {
+        if (Math.random() < likelihood) {
           const x = col * this.cellSize;
           const y = row * this.cellSize;
           this.woodChips.add(`${x},${y}`);
