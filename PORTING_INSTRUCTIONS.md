@@ -238,7 +238,7 @@ Further items to port (tracked and being migrated incrementally):
 - Dynamic Speed Slider: Global value behaviour across simulation switches
 - Dynamic Fill Button: Statistical coverage tests (may be parameter-reduced for reliability)
 - Event Handler Factory: Control setup — added; custom handler binding — added; cleanup — added; ControlManager integration still pending
-- UI Component Library: Status display — added; modal state management — added; lifecycle hooks and batch operations — added; remaining: factory methods and component management (basic tests exist; may expand)
+- UI Component Library: Status display — added; modal state management — added; lifecycle hooks and batch operations — added; factory methods — added; remaining: component management expansion as needed
 
 ### 10. Suite/UI Enhancements Implemented
 

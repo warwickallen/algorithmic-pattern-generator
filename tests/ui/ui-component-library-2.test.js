@@ -44,6 +44,85 @@
   );
 
   runner.addTest(
+    "UI Component Library: factory methods (sliderWithLabel, button group, form group)",
+    async () => {
+      if (typeof UIComponentLibrary === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const ui = new UIComponentLibrary(eventFramework);
+      // DOM for slider + label
+      const input = document.createElement("input");
+      input.id = "fac-slider";
+      input.type = "range";
+      const value = document.createElement("span");
+      value.id = "fac-slider-value";
+      const labelEl = document.createElement("label");
+      labelEl.id = "fac-slider-label";
+      document.body.appendChild(input);
+      document.body.appendChild(value);
+      document.body.appendChild(labelEl);
+      // DOM for button group and form group containers
+      const btn1 = document.createElement("button");
+      btn1.id = "btn-1";
+      const btn2 = document.createElement("button");
+      btn2.id = "btn-2";
+      document.body.appendChild(btn1);
+      document.body.appendChild(btn2);
+      const formSlider = document.createElement("input");
+      formSlider.id = "form-slider";
+      formSlider.type = "range";
+      const formSliderValue = document.createElement("span");
+      formSliderValue.id = "form-slider-value";
+      document.body.appendChild(formSlider);
+      document.body.appendChild(formSliderValue);
+      try {
+        const { slider, label } = ui.createSliderWithLabel({
+          id: "fac-slider",
+          valueElementId: "fac-slider-value",
+          label: "Speed",
+          min: 0,
+          max: 100,
+          value: 10,
+        });
+        const sliderOk = !!(slider && label);
+
+        const group = ui.createButtonGroup([
+          { id: "btn-1", label: "One" },
+          { id: "btn-2", label: "Two" },
+        ]);
+        const groupOk = group && group.state && group.state.children.length === 2;
+
+        const form = ui.createFormGroup([
+          {
+            type: "slider",
+            id: "form-slider",
+            valueElementId: "form-slider-value",
+            min: 0,
+            max: 100,
+            value: 5,
+          },
+        ]);
+        const formOk = form && form.state && form.state.children.length === 1;
+
+        return { passed: sliderOk && groupOk && formOk, details: `slider=${sliderOk}, group=${groupOk}, form=${formOk}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        [input, value, labelEl, btn1, btn2, formSlider, formSliderValue].forEach((el) => {
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        });
+        ui.cleanup && ui.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
     "UI Component Library: lifecycle hooks and batch ops",
     async () => {
       if (typeof UIComponentLibrary === "undefined") {
@@ -80,7 +159,10 @@
         const beforeCleanupUpdates = updates;
         ui.cleanup();
         const ok = beforeCleanupUpdates >= 3 && unmounted === true;
-        return { passed: ok, details: `updates=${beforeCleanupUpdates}, unmounted=${unmounted}` };
+        return {
+          passed: ok,
+          details: `updates=${beforeCleanupUpdates}, unmounted=${unmounted}`,
+        };
       } catch (e) {
         return { passed: false, details: e.message };
       } finally {
