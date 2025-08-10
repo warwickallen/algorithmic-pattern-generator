@@ -44,10 +44,61 @@
   );
 
   runner.addTest(
+    "UI Component Library: lifecycle hooks and batch ops",
+    async () => {
+      if (typeof UIComponentLibrary === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const ui = new UIComponentLibrary(eventFramework);
+      const btnEl = document.createElement("button");
+      btnEl.id = "uic-life-btn";
+      document.body.appendChild(btnEl);
+      try {
+        const button = ui.createButton({ id: "uic-life-btn", label: "X" });
+        // Override hooks to capture calls
+        let updates = 0;
+        let unmounted = false;
+        ui.lifecycleHooks.set(button.id, {
+          onUpdate: () => {
+            updates += 1;
+          },
+          onUnmount: () => {
+            unmounted = true;
+          },
+        });
+        // Trigger some updates
+        button.methods.setText("Y");
+        button.methods.press();
+        button.methods.release();
+        // Batch ops
+        ui.hideAllComponents();
+        ui.showAllComponents();
+        const beforeCleanupUpdates = updates;
+        ui.cleanup();
+        const ok = beforeCleanupUpdates >= 3 && unmounted === true;
+        return { passed: ok, details: `updates=${beforeCleanupUpdates}, unmounted=${unmounted}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        if (btnEl.parentNode) btnEl.parentNode.removeChild(btnEl);
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
     "UI Component Library: modal state and title/content",
     async () => {
       if (typeof UIComponentLibrary === "undefined") {
-        return { skip: true, details: "Skipped: UIComponentLibrary not available" };
+        return {
+          skip: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
       }
       const eventFramework = new EventFramework();
       const ui = new UIComponentLibrary(eventFramework);
@@ -68,17 +119,28 @@
       modal.appendChild(body);
       document.body.appendChild(modal);
       try {
-        const comp = ui.createModal({ id: "uic-modal", title: "T", content: "<p>X</p>", closeOnEscape: false, backdrop: false });
+        const comp = ui.createModal({
+          id: "uic-modal",
+          title: "T",
+          content: "<p>X</p>",
+          closeOnEscape: false,
+          backdrop: false,
+        });
         const initiallyClosed = comp.state.isOpen === false;
         comp.methods.open();
-        const isOpen = comp.state.isOpen === true && modal.style.display === "block";
+        const isOpen =
+          comp.state.isOpen === true && modal.style.display === "block";
         comp.methods.setTitle("Updated");
         const titleOk = comp.methods.getTitle() === "Updated";
         comp.methods.setContent("<p>Y</p>");
         const contentOk = comp.methods.getContent().includes("Y");
         comp.methods.close();
-        const isClosed = comp.state.isOpen === false && modal.style.display === "none";
-        return { passed: initiallyClosed && isOpen && titleOk && contentOk && isClosed, details: "modal ok" };
+        const isClosed =
+          comp.state.isOpen === false && modal.style.display === "none";
+        return {
+          passed: initiallyClosed && isOpen && titleOk && contentOk && isClosed,
+          details: "modal ok",
+        };
       } catch (e) {
         return { passed: false, details: e.message };
       } finally {

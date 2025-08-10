@@ -35,6 +35,39 @@
   );
 
   runner.addTest(
+    "EventHandlerFactory custom handler and cleanup",
+    async () => {
+      if (typeof EventHandlerFactory === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: EventHandlerFactory not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const factory = new EventHandlerFactory(eventFramework);
+      try {
+        const context = { value: 7 };
+        const baseFn = function (x) {
+          return this.value + x;
+        };
+        const handler = factory.createCustomHandler("sum", context, baseFn);
+        const customOk = typeof handler === "function" && handler(5) === 12;
+        // Register and then cleanup
+        factory.createSimulationHandlers("conway", { handleSpeedChange: () => {}, handleRandomPattern: () => {}, showLearnModal: () => {}, handleAddAnt: () => {}, handleTermiteCountChange: () => {}, setBrightness: () => {}, setLikelihood: () => {} });
+        const hadHandlers = factory.hasRegisteredHandlers("conway");
+        factory.cleanup();
+        const cleaned = !factory.hasRegisteredHandlers("conway");
+        return { passed: customOk && hadHandlers && cleaned, details: `custom=${customOk}, registered=${hadHandlers}, cleaned=${cleaned}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
     "EventHandlerFactory control setup binds DOM to handlers",
     async () => {
       if (typeof EventHandlerFactory === "undefined") {
