@@ -44,6 +44,53 @@
   );
 
   runner.addTest(
+    "UI Component Library: modal state and title/content",
+    async () => {
+      if (typeof UIComponentLibrary === "undefined") {
+        return { skip: true, details: "Skipped: UIComponentLibrary not available" };
+      }
+      const eventFramework = new EventFramework();
+      const ui = new UIComponentLibrary(eventFramework);
+      // Build minimal modal structure matching library expectations
+      const modal = document.createElement("div");
+      modal.id = "uic-modal";
+      const header = document.createElement("div");
+      header.className = "modal-header";
+      const titleEl = document.createElement("h2");
+      titleEl.setAttribute("data-modal-title", "");
+      header.appendChild(titleEl);
+      const body = document.createElement("div");
+      body.className = "modal-body";
+      const contentEl = document.createElement("div");
+      contentEl.setAttribute("data-modal-content", "");
+      body.appendChild(contentEl);
+      modal.appendChild(header);
+      modal.appendChild(body);
+      document.body.appendChild(modal);
+      try {
+        const comp = ui.createModal({ id: "uic-modal", title: "T", content: "<p>X</p>", closeOnEscape: false, backdrop: false });
+        const initiallyClosed = comp.state.isOpen === false;
+        comp.methods.open();
+        const isOpen = comp.state.isOpen === true && modal.style.display === "block";
+        comp.methods.setTitle("Updated");
+        const titleOk = comp.methods.getTitle() === "Updated";
+        comp.methods.setContent("<p>Y</p>");
+        const contentOk = comp.methods.getContent().includes("Y");
+        comp.methods.close();
+        const isClosed = comp.state.isOpen === false && modal.style.display === "none";
+        return { passed: initiallyClosed && isOpen && titleOk && contentOk && isClosed, details: "modal ok" };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        if (modal.parentNode) modal.parentNode.removeChild(modal);
+        ui.cleanup && ui.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
     "UI Component Library: create slider updates value element",
     async () => {
       if (typeof UIComponentLibrary === "undefined") {
@@ -166,7 +213,10 @@
       el.id = "uic-status";
       document.body.appendChild(el);
       try {
-        const status = ui.createStatusDisplay({ id: "uic-status", values: { a: 1 } });
+        const status = ui.createStatusDisplay({
+          id: "uic-status",
+          values: { a: 1 },
+        });
         status.methods.setValue("b", 2);
         const values = status.methods.getValues();
         const ok = values.a === 1 && values.b === 2;

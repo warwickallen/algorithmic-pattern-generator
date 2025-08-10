@@ -98,7 +98,10 @@
         await new Promise((r) => setTimeout(r, 30));
 
         const ok = speedChanged > 0 && likeChanged > 0;
-        return { passed: ok, details: `speed=${speedChanged}, like=${likeChanged}` };
+        return {
+          passed: ok,
+          details: `speed=${speedChanged}, like=${likeChanged}`,
+        };
       } catch (e) {
         return { passed: false, details: e.message };
       } finally {
