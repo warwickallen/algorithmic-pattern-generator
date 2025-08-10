@@ -405,7 +405,8 @@
           "badge-fail"
         ).textContent = `Failed: ${summary.failed}`;
         const skipBadge = document.getElementById("badge-skip");
-        if (skipBadge) skipBadge.textContent = `Skipped: ${summary.skipped || 0}`;
+        if (skipBadge)
+          skipBadge.textContent = `Skipped: ${summary.skipped || 0}`;
         document.getElementById(
           "badge-error"
         ).textContent = `Errors: ${summary.errors}`;

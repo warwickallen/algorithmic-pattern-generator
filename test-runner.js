@@ -51,7 +51,9 @@ class TestRunner {
       // Determine skip/pass/fail
       const isSkipFlag = result && result.skip === true;
       const isSkipDetails =
-        result && typeof result.details === "string" && /^\s*Skipped:/i.test(result.details);
+        result &&
+        typeof result.details === "string" &&
+        /^\s*Skipped:/i.test(result.details);
       if (isSkipFlag || isSkipDetails) {
         test.result = "skip";
         this.testResults.skipped++;

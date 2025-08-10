@@ -16,7 +16,8 @@
           mount = document.createElement("div");
           mount.id = "dynamic-modal";
           mount.className = "modal";
-          mount.innerHTML = '<div class="modal-content"><div class="modal-header"><h2 data-modal-title></h2><button class="modal-close">&times;</button></div><div class="modal-body" data-modal-content></div></div>';
+          mount.innerHTML =
+            '<div class="modal-content"><div class="modal-header"><h2 data-modal-title></h2><button class="modal-close">&times;</button></div><div class="modal-body" data-modal-content></div></div>';
           document.body.appendChild(mount);
           created = true;
         }
@@ -56,7 +57,8 @@
           /Termite/.test(tTitle);
 
         modalManager.cleanup();
-        if (created && mount && mount.parentNode) mount.parentNode.removeChild(mount);
+        if (created && mount && mount.parentNode)
+          mount.parentNode.removeChild(mount);
         return {
           passed: registrationOk && contentOk,
           details: registrationOk && contentOk ? "ok" : "failed",
