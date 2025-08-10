@@ -187,6 +187,18 @@
       .result-item.error {
         border-left: 3px solid var(--error);
       }
+      .group-heading {
+        margin-top: 10px;
+        margin-bottom: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: #1a1b1e;
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+      }
       .tree-actions {
         display: flex;
         gap: 8px;
@@ -390,10 +402,24 @@
         ).textContent = `Duration: ${duration}ms`;
         const container = document.getElementById("results");
         container.innerHTML = "";
+        let lastCategory = null;
         results.forEach((r, idx) => {
+          const meta = (runner.tests && runner.tests[idx]) || {};
+          const category = meta.category || "general";
+          if (category !== lastCategory) {
+            const heading = document.createElement("div");
+            heading.className = "group-heading";
+            heading.textContent = category.toUpperCase();
+            container.appendChild(heading);
+            lastCategory = category;
+          }
           const div = document.createElement("div");
           div.className = `result-item ${r.result}`;
-          const source = (runner.tests && runner.tests[idx] && runner.tests[idx].sourceFile) || "";
+          const source =
+            (runner.tests &&
+              runner.tests[idx] &&
+              runner.tests[idx].sourceFile) ||
+            "";
           div.innerHTML = `<span class=\"name\" title=\"${source}\">${
             r.name
           }</span><span class=\"meta\">${r.duration.toFixed(2)}ms${
