@@ -405,7 +405,7 @@
         const byId = { "#": { id: "#", children: [] } };
         function ensureNode(id, text, parent) {
           if (byId[id]) return byId[id];
-          const node = { id, text, parent, children: [] };
+          const node = { id, text, parent, children: [], data: undefined, a_attr: undefined, icon: undefined };
           byId[id] = node;
           if (byId[parent]) byId[parent].children.push(node);
           return node;
@@ -423,12 +423,33 @@
             const node = ensureNode(id, label, parent);
             parent = id;
             if (isFile) {
-              byId[id].data = { path: p, isFile: true };
-              byId[id].icon = "jstree-file";
-              byId[id].a_attr = { "data-count": counts[p] ?? 0 };
+              node.data = { path: p, isFile: true };
+              node.icon = "jstree-file";
+              node.a_attr = { "data-count": counts[p] ?? 0 };
             }
           }
         });
+
+        // Compute directory counts as the sum of descendant file counts
+        function computeCounts(node) {
+          if (node.data && node.data.isFile && node.data.path) {
+            const c = counts[node.data.path] || 0;
+            node._sum = c;
+            return c;
+          }
+          let sum = 0;
+          for (const child of node.children) {
+            sum += computeCounts(child);
+          }
+          node._sum = sum;
+          // Set directory count on anchor attributes (exclude root)
+          if (node.id !== "#" && !(node.data && node.data.isFile)) {
+            node.a_attr = { ...(node.a_attr || {}), "data-count": sum };
+          }
+          return sum;
+        }
+        computeCounts(byId["#"]);
+
         function flatten(node) {
           const self =
             node.id === "#"
@@ -443,6 +464,7 @@
                     icon: node.icon,
                   },
                 ];
+        
           return self.concat(...node.children.map(flatten));
         }
         return flatten(byId["#"]);

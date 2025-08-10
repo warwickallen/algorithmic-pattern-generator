@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1-split-tests-2-b8ca0da-20250810T233247",
+  "version": "0.0.1-split-tests-2-028fab5-20250810T233745",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
