@@ -11,6 +11,7 @@ class TestRunner {
       total: 0,
       passed: 0,
       failed: 0,
+      skipped: 0,
       errors: 0,
       startTime: null,
       endTime: null,
@@ -47,15 +48,23 @@ class TestRunner {
       const result = await test.testFunction();
       const endTime = performance.now();
 
-      test.result = result.passed ? "pass" : "fail";
+      // Determine skip/pass/fail
+      const isSkipFlag = result && result.skip === true;
+      const isSkipDetails =
+        result && typeof result.details === "string" && /^\s*Skipped:/i.test(result.details);
+      if (isSkipFlag || isSkipDetails) {
+        test.result = "skip";
+        this.testResults.skipped++;
+      } else {
+        test.result = result.passed ? "pass" : "fail";
+        if (result.passed) {
+          this.testResults.passed++;
+        } else {
+          this.testResults.failed++;
+        }
+      }
       test.details = result.details || "";
       test.duration = endTime - startTime;
-
-      if (result.passed) {
-        this.testResults.passed++;
-      } else {
-        this.testResults.failed++;
-      }
 
       return {
         name: test.name,
@@ -92,6 +101,7 @@ class TestRunner {
       total: 0,
       passed: 0,
       failed: 0,
+      skipped: 0,
       errors: 0,
       startTime: performance.now(),
       endTime: null,
@@ -113,6 +123,8 @@ class TestRunner {
           ? "✅"
           : result.result === "fail"
           ? "❌"
+          : result.result === "skip"
+          ? "⏭️"
           : "💥";
       console.log(`${status} ${result.name} (${result.duration.toFixed(2)}ms)`);
 

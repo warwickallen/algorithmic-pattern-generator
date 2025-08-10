@@ -160,6 +160,10 @@
         color: var(--error);
         border-color: rgba(230, 126, 34, 0.3);
       }
+      .summary .skip {
+        color: #9aa0a6;
+        border-color: rgba(154, 160, 166, 0.3);
+      }
       .results {
         overflow: visible;
       }
@@ -186,6 +190,10 @@
       }
       .result-item.error {
         border-left: 3px solid var(--error);
+      }
+      .result-item.skip {
+        border-left: 3px solid #9aa0a6;
+        opacity: 0.85;
       }
       .group-heading {
         margin-top: 10px;
@@ -268,6 +276,7 @@
           <span class="badge" id="badge-total">Total: 0</span>
           <span class="badge pass" id="badge-pass">Passed: 0</span>
           <span class="badge fail" id="badge-fail">Failed: 0</span>
+          <span class="badge skip" id="badge-skip">Skipped: 0</span>
           <span class="badge error" id="badge-error">Errors: 0</span>
           <span class="badge" id="badge-duration">Duration: 0ms</span>
         </div>
@@ -379,6 +388,8 @@
         document.getElementById("badge-total").textContent = "Total: 0";
         document.getElementById("badge-pass").textContent = "Passed: 0";
         document.getElementById("badge-fail").textContent = "Failed: 0";
+        const skipEl = document.getElementById("badge-skip");
+        if (skipEl) skipEl.textContent = "Skipped: 0";
         document.getElementById("badge-error").textContent = "Errors: 0";
         document.getElementById("badge-duration").textContent = "Duration: 0ms";
       }
@@ -393,6 +404,8 @@
         document.getElementById(
           "badge-fail"
         ).textContent = `Failed: ${summary.failed}`;
+        const skipBadge = document.getElementById("badge-skip");
+        if (skipBadge) skipBadge.textContent = `Skipped: ${summary.skipped || 0}`;
         document.getElementById(
           "badge-error"
         ).textContent = `Errors: ${summary.errors}`;
