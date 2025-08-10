@@ -3291,56 +3291,42 @@
       );
 
       testSuite.addTest(
-        "Dynamic Speed Slider State Preservation",
+        "Dynamic Speed Slider Global Value",
         async () => {
           try {
             const eventFramework = new EventFramework();
             const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
 
-            // Create mock app
+            let lastSpeedValue = null;
             const mockApp = {
+              currentSimulation: { speed: 30 },
               handleSpeedChange: (simType, value) => {
-                // Mock implementation
+                lastSpeedValue = value;
               },
             };
 
-            // Set different speeds for each simulation
+            // Set a speed and ensure it applies across simulations
             dynamicSpeedSlider.switchToSimulation("conway", mockApp);
-            dynamicSpeedSlider.setValue(15);
-
-            dynamicSpeedSlider.switchToSimulation("termite", mockApp);
-            dynamicSpeedSlider.setValue(25);
-
-            dynamicSpeedSlider.switchToSimulation("langton", mockApp);
-            dynamicSpeedSlider.setValue(35);
-
-            // Switch back to Conway and check if speed is preserved
-            dynamicSpeedSlider.switchToSimulation("conway", mockApp);
-            const conwaySpeed = dynamicSpeedSlider.getValue();
-
-            // Switch back to Termite and check if speed is preserved
+            dynamicSpeedSlider.setValue(22);
             dynamicSpeedSlider.switchToSimulation("termite", mockApp);
             const termiteSpeed = dynamicSpeedSlider.getValue();
-
-            // Switch back to Langton and check if speed is preserved
             dynamicSpeedSlider.switchToSimulation("langton", mockApp);
             const langtonSpeed = dynamicSpeedSlider.getValue();
+
+            const passed = termiteSpeed === 22 && langtonSpeed === 22;
 
             // Clean up
             dynamicSpeedSlider.cleanup();
             eventFramework.cleanup();
 
-            const speedsPreserved =
-              conwaySpeed === 15 && termiteSpeed === 25 && langtonSpeed === 35;
-
             return {
-              passed: speedsPreserved,
-              details: `Conway: ${conwaySpeed}, Termite: ${termiteSpeed}, Langton: ${langtonSpeed}`,
+              passed,
+              details: `Speed applied globally: termite=${termiteSpeed}, langton=${langtonSpeed}, lastChange=${lastSpeedValue}`,
             };
           } catch (error) {
             return {
               passed: false,
-              details: `Error in state preservation: ${error.message}`,
+              details: `Error in global speed test: ${error.message}`,
             };
           }
         },

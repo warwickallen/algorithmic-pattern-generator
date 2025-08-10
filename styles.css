@@ -350,8 +350,9 @@ body {
   box-shadow: none;
   z-index: auto;
   display: flex;
-  align-items: center;
+  align-items: center; /* vertically centre label, slider, value */
   gap: var(--spacing-sm);
+  min-height: 2rem; /* ensure consistent row height across all slider groups */
 }
 
 .control-group--transparent {
@@ -461,9 +462,13 @@ body {
 .speed-control {
   display: flex;
   gap: var(--spacing-lg);
-  align-items: center;
+  align-items: center; /* centre controls as a row */
   margin-left: var(--spacing-lg);
 }
+
+/* No speed-specific offsets */
+
+/* Use generic control-group--static centring for all groups; no speed-specific rule */
 
 .control-buttons {
   display: flex;
@@ -513,14 +518,10 @@ body {
 /* Slider Styles */
 .slider {
   width: 100px;
-  height: 6px;
-  background: linear-gradient(
-    145deg,
-    var(--color-surface),
-    var(--color-surface-light)
-  );
-  border: 1px solid var(--color-border);
-  border-radius: 3px;
+  height: 6px; /* same as track height */
+  background: transparent; /* track draws the bar */
+  border: none; /* avoid extra box height that offsets track */
+  padding: 0; /* remove browser padding */
   outline: none;
   cursor: pointer;
   -webkit-appearance: none;
@@ -544,6 +545,20 @@ body {
   box-shadow: var(--shadow-glow);
   will-change: transform;
   transform: var(--gpu-accelerate);
+  margin-top: -5px; /* centre thumb on 6px track in WebKit/Blink */
+}
+
+/* Centre the track inside the input for WebKit/Blink */
+.slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: linear-gradient(
+    145deg,
+    var(--color-surface),
+    var(--color-surface-light)
+  );
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  margin: 0; /* avoid adding extra vertical space */
 }
 
 .slider::-moz-range-thumb {
@@ -560,6 +575,19 @@ body {
   box-shadow: var(--shadow-glow);
   will-change: transform;
   transform: var(--gpu-accelerate);
+}
+
+/* Centre the track inside the input for Firefox */
+.slider::-moz-range-track {
+  height: 6px;
+  background: linear-gradient(
+    145deg,
+    var(--color-surface),
+    var(--color-surface-light)
+  );
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  margin: 0;
 }
 
 /* Value Display */

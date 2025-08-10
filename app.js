@@ -1207,7 +1207,6 @@ class DynamicSpeedSlider {
       (e) => {
         if (this.currentSimType) {
           const value = parseFloat(e.target.value);
-          this.speedValues.set(this.currentSimType, value);
           this.onSpeedChange(value);
         }
       },
@@ -1234,12 +1233,10 @@ class DynamicSpeedSlider {
     this.currentSimType = simType;
     this.app = app;
 
-    // Get the stored speed value for this simulation, or use default
-    const storedValue = this.speedValues.get(simType) || 30;
-
-    // Update slider value and display
-    this.slider.value = storedValue;
-    this.updateDisplay(storedValue);
+    // Apply current global slider value to the newly selected simulation
+    const currentValue = this.getValue();
+    this.updateDisplay(currentValue);
+    this.onSpeedChange(currentValue);
 
     // Show the speed control container
     this.container.style.display = "block";
@@ -1281,9 +1278,6 @@ class DynamicSpeedSlider {
     if (!this.isInitialized) return;
     this.slider.value = value;
     this.updateDisplay(value);
-    if (this.currentSimType) {
-      this.speedValues.set(this.currentSimType, value);
-    }
   }
 
   adjustSpeed(direction) {
