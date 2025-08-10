@@ -895,11 +895,40 @@ class BaseSimulation {
     const originalWidth = this.canvas.width;
     const originalHeight = this.canvas.height;
 
-    if (isAttached) {
-      // Use getBoundingClientRect for attached canvases
-      const rect = this.canvas.getBoundingClientRect();
-      this.canvas.width = rect.width;
-      this.canvas.height = rect.height;
+          if (isAttached) {
+        // For attached canvases, use a more robust approach to handle browser differences
+        // The canvas is styled with width: 100% and height: 100%, so we need to get the actual viewport size
+        
+        // Method 1: Use window dimensions as the primary source for viewport-sized canvas
+        let targetWidth = window.innerWidth;
+        let targetHeight = window.innerHeight;
+        
+        // Method 2: If window dimensions seem unreasonable, fall back to getBoundingClientRect
+        if (targetWidth <= 0 || targetHeight <= 0 || targetWidth > 5000 || targetHeight > 5000) {
+          const rect = this.canvas.getBoundingClientRect();
+          targetWidth = rect.width;
+          targetHeight = rect.height;
+        }
+        
+        // Method 3: If still unreasonable, use parent container size
+        if (targetWidth <= 0 || targetHeight <= 0 || targetWidth > 5000 || targetHeight > 5000) {
+          const parent = this.canvas.parentElement;
+          if (parent) {
+            const parentRect = parent.getBoundingClientRect();
+            targetWidth = parentRect.width;
+            targetHeight = parentRect.height;
+          }
+        }
+        
+        // Method 4: Final fallback to reasonable defaults
+        if (targetWidth <= 0 || targetHeight <= 0) {
+          targetWidth = 800;
+          targetHeight = 600;
+        }
+        
+        // Set canvas dimensions
+        this.canvas.width = targetWidth;
+        this.canvas.height = targetHeight;
     } else {
       // For detached canvases (like in tests), use the canvas attributes
       // These should already be set by the test code
