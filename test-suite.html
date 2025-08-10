@@ -245,15 +245,18 @@
         line-height: 1.2 !important;
         padding-top: 2px;
         padding-bottom: 2px;
-        max-width: calc(100% - 28px); /* leave space for toggler at very deep levels */
+        max-width: calc(
+          100% - 28px
+        ); /* leave space for toggler at very deep levels */
       }
       .jstree-default .jstree-ocl,
       .jstree-default .jstree-themeicon,
       .jstree-default .jstree-checkbox,
       .jstree-default .jstree-icon {
         vertical-align: top; /* align icons to the top of multiline labels */
-        height: auto !important;
-        line-height: 1.2 !important;
+        display: inline-block;
+        width: 18px; /* preserve icon box so theme sprites render */
+        height: 18px; /* avoid collapsing to 0 height */
         margin-top: 2px; /* reduce perceived gap above filenames */
       }
       /* Show per-file test counts after filenames */
