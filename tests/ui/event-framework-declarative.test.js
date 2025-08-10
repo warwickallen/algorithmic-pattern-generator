@@ -6,7 +6,10 @@
     "EventFramework Declarative Registration",
     async () => {
       if (typeof EventFramework === "undefined") {
-        return { passed: true, details: "Skipped: EventFramework not available" };
+        return {
+          passed: true,
+          details: "Skipped: EventFramework not available",
+        };
       }
       const ef = new EventFramework();
       const btn = document.createElement("button");
@@ -31,7 +34,10 @@
     "EventFramework Delegated Registration",
     async () => {
       if (typeof EventFramework === "undefined") {
-        return { passed: true, details: "Skipped: EventFramework not available" };
+        return {
+          passed: true,
+          details: "Skipped: EventFramework not available",
+        };
       }
       const ef = new EventFramework();
       const container = document.createElement("div");
@@ -50,5 +56,3 @@
     "ui"
   );
 })();
-
-
