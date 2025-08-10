@@ -861,17 +861,25 @@
         .getElementById("btn-export-logs")
         .addEventListener("click", handleExportLogs);
 
-             // Add filter event listeners
-       document.getElementById("filter-pass").addEventListener("change", renderFilteredResults);
-       document.getElementById("filter-fail").addEventListener("change", renderFilteredResults);
-       document.getElementById("filter-skip").addEventListener("change", renderFilteredResults);
-       document.getElementById("filter-error").addEventListener("change", renderFilteredResults);
+      // Add filter event listeners
+      document
+        .getElementById("filter-pass")
+        .addEventListener("change", renderFilteredResults);
+      document
+        .getElementById("filter-fail")
+        .addEventListener("change", renderFilteredResults);
+      document
+        .getElementById("filter-skip")
+        .addEventListener("change", renderFilteredResults);
+      document
+        .getElementById("filter-error")
+        .addEventListener("change", renderFilteredResults);
 
-       // Initialise tree on DOM ready and re-assert our runner in case other scripts set it
-       document.addEventListener("DOMContentLoaded", () => {
-         initTree();
-         window.testRunner = runner;
-       });
+      // Initialise tree on DOM ready and re-assert our runner in case other scripts set it
+      document.addEventListener("DOMContentLoaded", () => {
+        initTree();
+        window.testRunner = runner;
+      });
     </script>
   </body>
 </html>
