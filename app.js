@@ -3578,10 +3578,20 @@ class AlgorithmicPatternGenerator {
     const generationCount = this.elementCache.get("#generation-count");
     const cellCount = this.elementCache.get("#cell-count");
     const fps = this.elementCache.get("#fps");
+    const gridSizeEl = this.elementCache.get("#grid-size");
+    const canvasSizeEl = this.elementCache.get("#canvas-size");
 
     if (generationCount) generationCount.textContent = stats.generation;
     if (cellCount) cellCount.textContent = stats.cellCount;
     if (fps) fps.textContent = stats.fps;
+    if (this.currentSimulation) {
+      if (gridSizeEl) {
+        gridSizeEl.textContent = `${this.currentSimulation.cols} × ${this.currentSimulation.rows}`;
+      }
+      if (canvasSizeEl && this.canvas) {
+        canvasSizeEl.textContent = `${this.canvas.width} × ${this.canvas.height}`;
+      }
+    }
 
     // Update simulation selector
     const simulationSelect = this.elementCache.get("#simulation-select");

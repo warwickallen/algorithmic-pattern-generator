@@ -851,6 +851,10 @@ class BaseSimulation {
     // Dynamic colour scheme
     this.colourScheme = new DynamicColourScheme();
 
+    // Grid offsets for centring when canvas is not an exact multiple of cell size
+    this.gridOffsetX = 0;
+    this.gridOffsetY = 0;
+
     // Lifecycle framework integration
     this.stateManager = simulationLifecycleFramework.createStateManager({
       isRunning: false,
@@ -895,40 +899,50 @@ class BaseSimulation {
     const originalWidth = this.canvas.width;
     const originalHeight = this.canvas.height;
 
-          if (isAttached) {
-        // For attached canvases, use a more robust approach to handle browser differences
-        // The canvas is styled with width: 100% and height: 100%, so we need to get the actual viewport size
-        
-        // Method 1: Use window dimensions as the primary source for viewport-sized canvas
-        let targetWidth = window.innerWidth;
-        let targetHeight = window.innerHeight;
-        
-        // Method 2: If window dimensions seem unreasonable, fall back to getBoundingClientRect
-        if (targetWidth <= 0 || targetHeight <= 0 || targetWidth > 5000 || targetHeight > 5000) {
-          const rect = this.canvas.getBoundingClientRect();
-          targetWidth = rect.width;
-          targetHeight = rect.height;
+    if (isAttached) {
+      // For attached canvases, use a more robust approach to handle browser differences
+      // The canvas is styled with width: 100% and height: 100%, so we need to get the actual viewport size
+
+      // Method 1: Use window dimensions as the primary source for viewport-sized canvas
+      let targetWidth = window.innerWidth;
+      let targetHeight = window.innerHeight;
+
+      // Method 2: If window dimensions seem unreasonable, fall back to getBoundingClientRect
+      if (
+        targetWidth <= 0 ||
+        targetHeight <= 0 ||
+        targetWidth > 5000 ||
+        targetHeight > 5000
+      ) {
+        const rect = this.canvas.getBoundingClientRect();
+        targetWidth = rect.width;
+        targetHeight = rect.height;
+      }
+
+      // Method 3: If still unreasonable, use parent container size
+      if (
+        targetWidth <= 0 ||
+        targetHeight <= 0 ||
+        targetWidth > 5000 ||
+        targetHeight > 5000
+      ) {
+        const parent = this.canvas.parentElement;
+        if (parent) {
+          const parentRect = parent.getBoundingClientRect();
+          targetWidth = parentRect.width;
+          targetHeight = parentRect.height;
         }
-        
-        // Method 3: If still unreasonable, use parent container size
-        if (targetWidth <= 0 || targetHeight <= 0 || targetWidth > 5000 || targetHeight > 5000) {
-          const parent = this.canvas.parentElement;
-          if (parent) {
-            const parentRect = parent.getBoundingClientRect();
-            targetWidth = parentRect.width;
-            targetHeight = parentRect.height;
-          }
-        }
-        
-        // Method 4: Final fallback to reasonable defaults
-        if (targetWidth <= 0 || targetHeight <= 0) {
-          targetWidth = 800;
-          targetHeight = 600;
-        }
-        
-        // Set canvas dimensions
-        this.canvas.width = targetWidth;
-        this.canvas.height = targetHeight;
+      }
+
+      // Method 4: Final fallback to reasonable defaults
+      if (targetWidth <= 0 || targetHeight <= 0) {
+        targetWidth = 800;
+        targetHeight = 600;
+      }
+
+      // Set canvas dimensions
+      this.canvas.width = targetWidth;
+      this.canvas.height = targetHeight;
     } else {
       // For detached canvases (like in tests), use the canvas attributes
       // These should already be set by the test code
@@ -943,30 +957,20 @@ class BaseSimulation {
       this.canvas.height = 600;
     }
 
-    // Calculate cell size to ensure even coverage and avoid coordinate bias
+    // Calculate cell size targeting ~100 cells on the smaller axis (no perfect-divisibility requirement)
     const targetCells = 100; // Target approximately 100 cells along the smaller dimension
     const minDimension = Math.min(this.canvas.width, this.canvas.height);
+    this.cellSize = Math.max(1, Math.floor(minDimension / targetCells));
 
-    // Find a cell size that divides evenly into both dimensions
-    let cellSize = Math.max(1, Math.floor(minDimension / targetCells));
-
-    // Adjust cell size to achieve PERFECT coverage (zero uncovered area)
-    while (cellSize > 1) {
-      const cols = Math.floor(this.canvas.width / cellSize);
-      const rows = Math.floor(this.canvas.height / cellSize);
-      const uncoveredWidth = this.canvas.width - cols * cellSize;
-      const uncoveredHeight = this.canvas.height - rows * cellSize;
-
-      // Only accept if there's ZERO uncovered area
-      if (uncoveredWidth === 0 && uncoveredHeight === 0) {
-        break;
-      }
-      cellSize--;
-    }
-
-    this.cellSize = cellSize;
+    // Compute grid dimensions
     this.cols = Math.max(1, Math.floor(this.canvas.width / this.cellSize));
     this.rows = Math.max(1, Math.floor(this.canvas.height / this.cellSize));
+
+    // Centre the grid within the canvas
+    const gridPixelWidth = this.cols * this.cellSize;
+    const gridPixelHeight = this.rows * this.cellSize;
+    this.gridOffsetX = Math.floor((this.canvas.width - gridPixelWidth) / 2);
+    this.gridOffsetY = Math.floor((this.canvas.height - gridPixelHeight) / 2);
 
     // Clear caches on resize
     this.clearCaches();
@@ -1424,8 +1428,8 @@ class BaseSimulation {
     for (let row = 0; row < grid.length; row++) {
       const rowData = grid[row];
       for (let col = 0; col < rowData.length; col++) {
-        const x = col * this.cellSize;
-        const y = row * this.cellSize;
+        const x = this.gridOffsetX + col * this.cellSize;
+        const y = this.gridOffsetY + row * this.cellSize;
         const isActive = rowData[col];
 
         if (cellRenderer && typeof cellRenderer === "function") {
@@ -1465,16 +1469,18 @@ class BaseSimulation {
 
   // Common cell coordinate conversion utilities
   screenToGrid(x, y) {
+    const localX = x - this.gridOffsetX;
+    const localY = y - this.gridOffsetY;
     return {
-      col: Math.floor(x / this.cellSize),
-      row: Math.floor(y / this.cellSize),
+      col: Math.floor(localX / this.cellSize),
+      row: Math.floor(localY / this.cellSize),
     };
   }
 
   gridToScreen(col, row) {
     return {
-      x: col * this.cellSize,
-      y: row * this.cellSize,
+      x: this.gridOffsetX + col * this.cellSize,
+      y: this.gridOffsetY + row * this.cellSize,
     };
   }
 
@@ -2134,10 +2140,14 @@ class TermiteAlgorithm extends BaseSimulation {
     const numChips = Math.floor(this.cols * this.rows * defaultCoverage);
 
     for (let i = 0; i < numChips; i++) {
-      const x = Math.floor(Math.random() * this.cols) * this.cellSize;
-      const y = Math.floor(Math.random() * this.rows) * this.cellSize;
+      const col = Math.floor(Math.random() * this.cols);
+      const row = Math.floor(Math.random() * this.rows);
+      const x = this.gridOffsetX + col * this.cellSize;
+      const y = this.gridOffsetY + row * this.cellSize;
       this.woodChips.add(`${x},${y}`);
     }
+    // Ensure cell count reflects initial wood chips even when paused
+    this.cellCount = this.woodChips.size;
   }
 
   // Override lifecycle methods
@@ -2199,9 +2209,14 @@ class TermiteAlgorithm extends BaseSimulation {
       termite.x = (termite.x + this.canvas.width) % this.canvas.width;
       termite.y = (termite.y + this.canvas.height) % this.canvas.height;
 
-      // Check for wood chips
-      const gridX = Math.floor(termite.x / this.cellSize) * this.cellSize;
-      const gridY = Math.floor(termite.y / this.cellSize) * this.cellSize;
+      // Check for wood chips (snap to nearest cell accounting for grid offset)
+      let gridCol = Math.floor((termite.x - this.gridOffsetX) / this.cellSize);
+      let gridRow = Math.floor((termite.y - this.gridOffsetY) / this.cellSize);
+      // Clamp to valid grid bounds to avoid off-grid chip positions
+      gridCol = Math.max(0, Math.min(this.cols - 1, gridCol));
+      gridRow = Math.max(0, Math.min(this.rows - 1, gridRow));
+      const gridX = this.gridOffsetX + gridCol * this.cellSize;
+      const gridY = this.gridOffsetY + gridRow * this.cellSize;
       const chipKey = `${gridX},${gridY}`;
 
       if (termite.carrying) {
@@ -2248,8 +2263,8 @@ class TermiteAlgorithm extends BaseSimulation {
     // Draw the entire grid so fading of inactive cells is visible
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
-        const x = col * this.cellSize;
-        const y = row * this.cellSize;
+        const x = this.gridOffsetX + col * this.cellSize;
+        const y = this.gridOffsetY + row * this.cellSize;
         const isActive = virtualGrid[row][col];
         this.drawCell(x, y, null, isActive);
       }
@@ -2288,8 +2303,8 @@ class TermiteAlgorithm extends BaseSimulation {
     const { col, row } = this.screenToGrid(x, y);
 
     if (this.isValidGridPosition(row, col)) {
-      const gridX = col * this.cellSize;
-      const gridY = row * this.cellSize;
+      const gridX = this.gridOffsetX + col * this.cellSize;
+      const gridY = this.gridOffsetY + row * this.cellSize;
       const chipKey = `${gridX},${gridY}`;
 
       const wasActive = this.woodChips.has(chipKey);
@@ -2344,8 +2359,8 @@ class TermiteAlgorithm extends BaseSimulation {
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
         if (virtualGrid[row][col]) {
-          const x = col * this.cellSize;
-          const y = row * this.cellSize;
+          const x = this.gridOffsetX + col * this.cellSize;
+          const y = this.gridOffsetY + row * this.cellSize;
           this.woodChips.add(`${x},${y}`);
           convertedChips++;
         }
@@ -2359,8 +2374,8 @@ class TermiteAlgorithm extends BaseSimulation {
 
     // Reinitialise brightness using unified helper
     this.resetBrightnessFromActiveGrid((row, col) => {
-      const gridX = col * this.cellSize;
-      const gridY = row * this.cellSize;
+      const gridX = this.gridOffsetX + col * this.cellSize;
+      const gridY = this.gridOffsetY + row * this.cellSize;
       const chipKey = `${gridX},${gridY}`;
       return this.woodChips.has(chipKey);
     });
@@ -2492,9 +2507,9 @@ class LangtonsAnt extends BaseSimulation {
       // Get current cell state
       const currentCell = this.grid[ant.y][ant.x];
 
-      // Update trail before moving (convert grid coordinates to screen coordinates)
-      const antX = ant.x * this.cellSize + this.cellSize / 2;
-      const antY = ant.y * this.cellSize + this.cellSize / 2;
+      // Update trail before moving (convert grid coordinates to screen coordinates with offsets)
+      const antX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
+      const antY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
       this.updateActorTrail(ant, antX, antY);
 
       // Flip the cell
@@ -2537,8 +2552,8 @@ class LangtonsAnt extends BaseSimulation {
 
     // Draw each ant with trails
     this.ants.forEach((ant) => {
-      const antX = ant.x * this.cellSize + this.cellSize / 2;
-      const antY = ant.y * this.cellSize + this.cellSize / 2;
+      const antX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
+      const antY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
 
       // Draw trail first (behind the ant)
       this.drawActorTrail(ant, this.cellSize / 4);

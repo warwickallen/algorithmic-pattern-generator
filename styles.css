@@ -694,6 +694,13 @@ body {
   text-shadow: var(--shadow-glow);
 }
 
+/* Ensure labels in stats have small gaps between pairs */
+#generation-label,
+#cell-count-label,
+#grid-size-label {
+  margin-left: var(--spacing-lg);
+}
+
 /* ==========================================================================
    IMMERSIVE MODE
    ========================================================================== */
