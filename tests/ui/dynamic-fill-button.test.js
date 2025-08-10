@@ -80,4 +80,37 @@
     },
     "ui"
   );
+
+  runner.addTest(
+    "Dynamic Fill Button Show/Hide",
+    async () => {
+      if (typeof DynamicFillButton === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: DynamicFillButton not available",
+        };
+      }
+      const button = ensureFillButtonDom();
+      const eventFramework = new EventFramework();
+      const dynamicFillButton = new DynamicFillButton(eventFramework);
+      try {
+        const mockApp = { handleRandomPattern: () => {} };
+        dynamicFillButton.init();
+        dynamicFillButton.switchToSimulation("conway", mockApp);
+        const visible = button.style.display === "inline-block";
+        dynamicFillButton.hide();
+        const hidden = button.style.display === "none";
+        dynamicFillButton.show();
+        const shown = button.style.display === "inline-block";
+        return { passed: visible && hidden && shown, details: `visible=${visible}, hidden=${hidden}, shown=${shown}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        dynamicFillButton.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+        if (button && button.parentNode) button.parentNode.removeChild(button);
+      }
+    },
+    "ui"
+  );
 })();

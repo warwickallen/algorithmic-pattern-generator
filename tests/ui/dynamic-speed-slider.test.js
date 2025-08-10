@@ -113,4 +113,123 @@
     },
     "ui"
   );
+
+  runner.addTest(
+    "Dynamic Speed Slider Simulation Switching",
+    async () => {
+      if (typeof DynamicSpeedSlider === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: DynamicSpeedSlider not available",
+        };
+      }
+      const { container } = createSpeedSliderDom();
+      const eventFramework = new EventFramework();
+      const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+      try {
+        const mockApp = {
+          handleSpeedChange: () => {},
+          currentSimulation: { speed: 30 },
+        };
+        dynamicSpeedSlider.switchToSimulation("conway", mockApp);
+        const conwayActive = dynamicSpeedSlider.currentSimType === "conway";
+        const visible =
+          document.querySelector(".speed-control .control-group").style
+            .display === "block";
+
+        dynamicSpeedSlider.switchToSimulation("termite", mockApp);
+        const termiteActive = dynamicSpeedSlider.currentSimType === "termite";
+
+        dynamicSpeedSlider.switchToSimulation("langton", mockApp);
+        const langtonActive = dynamicSpeedSlider.currentSimType === "langton";
+
+        return {
+          passed: conwayActive && termiteActive && langtonActive && visible,
+          details: `conway=${conwayActive}, termite=${termiteActive}, langton=${langtonActive}, visible=${visible}`,
+        };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        dynamicSpeedSlider.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+        container.parentNode && container.parentNode.removeChild(container);
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
+    "Dynamic Speed Slider Speed Adjustment",
+    async () => {
+      if (typeof DynamicSpeedSlider === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: DynamicSpeedSlider not available",
+        };
+      }
+      const { container } = createSpeedSliderDom();
+      const eventFramework = new EventFramework();
+      const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+      try {
+        const mockApp = { handleSpeedChange: () => {}, currentSimulation: { speed: 30 } };
+        dynamicSpeedSlider.switchToSimulation("conway", mockApp);
+        dynamicSpeedSlider.setValue(30);
+        dynamicSpeedSlider.adjustSpeed(1);
+        const up = dynamicSpeedSlider.getValue() === 31;
+        dynamicSpeedSlider.adjustSpeed(-1);
+        const down = dynamicSpeedSlider.getValue() === 30;
+        dynamicSpeedSlider.setValue(1);
+        dynamicSpeedSlider.adjustSpeed(-1);
+        const minBoundary = dynamicSpeedSlider.getValue() === 1;
+        dynamicSpeedSlider.setValue(60);
+        dynamicSpeedSlider.adjustSpeed(1);
+        const maxBoundary = dynamicSpeedSlider.getValue() === 60;
+        return {
+          passed: up && down && minBoundary && maxBoundary,
+          details: `up=${up}, down=${down}, min=${minBoundary}, max=${maxBoundary}`,
+        };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        dynamicSpeedSlider.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+        container.parentNode && container.parentNode.removeChild(container);
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
+    "Dynamic Speed Slider Hide/Show",
+    async () => {
+      if (typeof DynamicSpeedSlider === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: DynamicSpeedSlider not available",
+        };
+      }
+      const { container } = createSpeedSliderDom();
+      const eventFramework = new EventFramework();
+      const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+      try {
+        const mockApp = { handleSpeedChange: () => {}, currentSimulation: { speed: 30 } };
+        dynamicSpeedSlider.switchToSimulation("conway", mockApp);
+        const visible =
+          document.querySelector(".speed-control .control-group").style
+            .display === "block";
+        dynamicSpeedSlider.hide();
+        const hidden =
+          document.querySelector(".speed-control .control-group").style
+            .display === "none";
+        return { passed: visible && hidden, details: `visible=${visible}, hidden=${hidden}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        dynamicSpeedSlider.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+        container.parentNode && container.parentNode.removeChild(container);
+      }
+    },
+    "ui"
+  );
 })();

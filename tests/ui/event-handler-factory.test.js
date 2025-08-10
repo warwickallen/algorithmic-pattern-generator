@@ -79,4 +79,74 @@
     },
     "ui"
   );
+
+  runner.addTest(
+    "EventHandlerFactory slider/button handler creation",
+    async () => {
+      if (typeof EventHandlerFactory === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: EventHandlerFactory not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const factory = new EventHandlerFactory(eventFramework);
+      try {
+        // DOM elements for slider and button
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.id = "test-speed-slider";
+        const value = document.createElement("span");
+        value.id = "test-speed-value";
+        const btn = document.createElement("button");
+        btn.id = "test-random-btn";
+        document.body.appendChild(slider);
+        document.body.appendChild(value);
+        document.body.appendChild(btn);
+
+        const handlers = {
+          speedChange: () => {},
+          brightnessChange: () => {},
+          likelihoodChange: () => {},
+          termiteCountChange: () => {},
+          randomPattern: () => {},
+          showLearnModal: () => {},
+          addAnt: () => {},
+        };
+
+        const sliderConfig = {
+          id: "test-speed-slider",
+          valueElementId: "test-speed-value",
+          format: (v) => `${v} steps/s`,
+        };
+        const buttonConfig = { id: "test-random-btn" };
+
+        const inputHandler = factory.createSliderInputHandler(
+          sliderConfig,
+          handlers
+        );
+        const changeHandler = factory.createSliderChangeHandler(
+          sliderConfig,
+          handlers
+        );
+        const clickHandler = factory.createButtonClickHandler(
+          buttonConfig,
+          handlers
+        );
+
+        const ok =
+          typeof inputHandler === "function" &&
+          typeof changeHandler === "function" &&
+          typeof clickHandler === "function";
+
+        return { passed: ok, details: `created=${ok}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        factory.cleanup && factory.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
 })();
