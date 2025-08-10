@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1-split-tests-2-506312e-20250810T210916",
+  "version": "0.0.1-split-tests-2-668f50f-20250810T214918",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
@@ -19,13 +19,17 @@
     "tests/system/test-utilities.test.js",
     "tests/ui/config-validator.test.js",
     "tests/ui/control-manager-visibility.test.js",
+    "tests/ui/dynamic-fill-button.test.js",
     "tests/ui/dynamic-modal-integration.test.js",
+    "tests/ui/dynamic-speed-slider.test.js",
     "tests/ui/element-cache.test.js",
+    "tests/ui/event-handler-factory.test.js",
     "tests/ui/event-listener-manager.test.js",
     "tests/ui/learn-modal-content.test.js",
     "tests/ui/modal-template-html.test.js",
     "tests/ui/modal-template-injection.test.js",
     "tests/ui/shared-components.test.js",
+    "tests/ui/ui-component-library-2.test.js",
     "tests/ui/ui.tests.js",
     "tests/visual/colour.tests.js"
   ],
@@ -48,15 +52,19 @@
     "tests/system/test-utilities.test.js": 1,
     "tests/ui/config-validator.test.js": 1,
     "tests/ui/control-manager-visibility.test.js": 1,
+    "tests/ui/dynamic-fill-button.test.js": 2,
     "tests/ui/dynamic-modal-integration.test.js": 1,
+    "tests/ui/dynamic-speed-slider.test.js": 2,
     "tests/ui/element-cache.test.js": 1,
+    "tests/ui/event-handler-factory.test.js": 2,
     "tests/ui/event-listener-manager.test.js": 1,
     "tests/ui/learn-modal-content.test.js": 1,
     "tests/ui/modal-template-html.test.js": 1,
     "tests/ui/modal-template-injection.test.js": 1,
     "tests/ui/shared-components.test.js": 3,
+    "tests/ui/ui-component-library-2.test.js": 2,
     "tests/ui/ui.tests.js": 3,
     "tests/visual/colour.tests.js": 3
   },
-  "totalTests": 47
+  "totalTests": 55
 }
