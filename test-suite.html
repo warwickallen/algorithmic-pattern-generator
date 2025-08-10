@@ -91,6 +91,7 @@
         background: var(--panel-bg);
         border-radius: 10px;
         padding: 10px;
+        width: fit-content; /* avoid spanning full width when content is small */
       }
       .left {
         grid-area: left;
@@ -103,6 +104,10 @@
         display: grid;
         grid-template-rows: auto auto;
         gap: 12px;
+        /* Prevent stretching to match left column height */
+        align-self: start;
+        /* Inside this grid, pack rows to the top rather than stretching */
+        align-content: start;
       }
       .btn {
         padding: 8px 12px;
@@ -126,7 +131,7 @@
         color: var(--muted);
       }
       .summary {
-        display: flex;
+        display: inline-flex; /* shrink-wrap height/width to content */
         gap: 16px;
         align-items: center;
       }
