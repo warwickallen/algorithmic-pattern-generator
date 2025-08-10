@@ -62,7 +62,7 @@ Key files already ported (non-exhaustive):
 - system:
   - `system.tests.js`, `test-utilities.test.js`
 
-The test manifest (`tests/manifest.js`) is auto-generated and currently includes 40 test files, with 95 total tests.
+The test manifest (`tests/manifest.js`) is auto-generated and currently includes 42 test files, with 99 total tests.
 
 ### 3. Test File Format
 
@@ -327,4 +327,4 @@ testSuite.addTest(
 - Each test file should handle its own canvas creation and cleanup
 - The manifest system will automatically discover new test files
 - Follow the existing code style and formatting conventions
- - Filenames are standardised to end with `.test.js` (legacy `.tests.js` have been renamed)
+- Filenames are standardised to end with `.test.js` (legacy `.tests.js` have been renamed)
