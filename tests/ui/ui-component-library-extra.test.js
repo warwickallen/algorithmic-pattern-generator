@@ -16,7 +16,10 @@
     "UI Component Library: create label and set text",
     async () => {
       if (typeof UIComponentLibrary === "undefined") {
-        return { passed: true, details: "Skipped: UIComponentLibrary not available" };
+        return {
+          passed: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
       }
       const ef = new EventFramework();
       ensureEl("span", "test-label");
@@ -24,7 +27,10 @@
       const label = ui.createLabel({ id: "test-label", text: "Hello" });
       const el = document.getElementById("test-label");
       const ok = !!label && el && el.textContent === "Hello";
-      return { passed: ok, details: `created=${!!label}, text=${el && el.textContent}` };
+      return {
+        passed: ok,
+        details: `created=${!!label}, text=${el && el.textContent}`,
+      };
     },
     "ui"
   );
@@ -33,7 +39,10 @@
     "UI Component Library: create container and update layout",
     async () => {
       if (typeof UIComponentLibrary === "undefined") {
-        return { passed: true, details: "Skipped: UIComponentLibrary not available" };
+        return {
+          passed: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
       }
       const ef = new EventFramework();
       ensureEl("div", "test-container");
@@ -48,5 +57,3 @@
     "ui"
   );
 })();
-
-

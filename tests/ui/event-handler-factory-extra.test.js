@@ -6,7 +6,10 @@
     "EventHandlerFactory Initialization",
     async () => {
       if (typeof EventHandlerFactory === "undefined") {
-        return { passed: true, details: "Skipped: EventHandlerFactory not available" };
+        return {
+          passed: true,
+          details: "Skipped: EventHandlerFactory not available",
+        };
       }
       const ef = new EventFramework();
       const factory = new EventHandlerFactory(ef);
@@ -21,7 +24,10 @@
     "EventHandlerFactory Cleanup",
     async () => {
       if (typeof EventHandlerFactory === "undefined") {
-        return { passed: true, details: "Skipped: EventHandlerFactory not available" };
+        return {
+          passed: true,
+          details: "Skipped: EventHandlerFactory not available",
+        };
       }
       const ef = new EventFramework();
       const factory = new EventHandlerFactory(ef);
@@ -35,5 +41,3 @@
     "ui"
   );
 })();
-
-
