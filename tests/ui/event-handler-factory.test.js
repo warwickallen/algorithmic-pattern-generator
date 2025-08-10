@@ -35,6 +35,40 @@
   );
 
   runner.addTest(
+    "EventHandlerFactory integrates with ControlManager",
+    async () => {
+      if (
+        typeof EventHandlerFactory === "undefined" ||
+        typeof ControlManager === "undefined"
+      ) {
+        return {
+          skip: true,
+          details: "Skipped: required classes not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const controlManager = new ControlManager(eventFramework);
+      try {
+        // Should not throw when registering handlers for a sim type
+        controlManager.registerSimulationHandlers("conway", {
+          handleSpeedChange: () => {},
+          handleRandomPattern: () => {},
+          showLearnModal: () => {},
+          handleAddAnt: () => {},
+          handleTermiteCountChange: () => {},
+          setBrightness: () => {},
+          setLikelihood: () => {},
+        });
+        controlManager.cleanup();
+        return { passed: true, details: "registration ok" };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
     "EventHandlerFactory custom handler and cleanup",
     async () => {
       if (typeof EventHandlerFactory === "undefined") {
@@ -53,11 +87,22 @@
         const handler = factory.createCustomHandler("sum", context, baseFn);
         const customOk = typeof handler === "function" && handler(5) === 12;
         // Register and then cleanup
-        factory.createSimulationHandlers("conway", { handleSpeedChange: () => {}, handleRandomPattern: () => {}, showLearnModal: () => {}, handleAddAnt: () => {}, handleTermiteCountChange: () => {}, setBrightness: () => {}, setLikelihood: () => {} });
+        factory.createSimulationHandlers("conway", {
+          handleSpeedChange: () => {},
+          handleRandomPattern: () => {},
+          showLearnModal: () => {},
+          handleAddAnt: () => {},
+          handleTermiteCountChange: () => {},
+          setBrightness: () => {},
+          setLikelihood: () => {},
+        });
         const hadHandlers = factory.hasRegisteredHandlers("conway");
         factory.cleanup();
         const cleaned = !factory.hasRegisteredHandlers("conway");
-        return { passed: customOk && hadHandlers && cleaned, details: `custom=${customOk}, registered=${hadHandlers}, cleaned=${cleaned}` };
+        return {
+          passed: customOk && hadHandlers && cleaned,
+          details: `custom=${customOk}, registered=${hadHandlers}, cleaned=${cleaned}`,
+        };
       } catch (e) {
         return { passed: false, details: e.message };
       } finally {

@@ -62,7 +62,7 @@ Key files already ported (non-exhaustive):
 - system:
   - `system.tests.js`, `test-utilities.test.js`
 
-The test manifest (`tests/manifest.js`) is auto-generated and currently includes 31 test files, with 68 total tests.
+The test manifest (`tests/manifest.js`) is auto-generated and currently includes 31 test files, with 73 total tests.
 
 ### 3. Test File Format
 
@@ -235,10 +235,10 @@ After porting, verify:
 
 Further items to port (tracked and being migrated incrementally):
 
-- Dynamic Speed Slider: Global value behaviour across simulation switches
-- Dynamic Fill Button: Statistical coverage tests (may be parameter-reduced for reliability)
-- Event Handler Factory: Control setup — added; custom handler binding — added; cleanup — added; ControlManager integration still pending
-- UI Component Library: Status display — added; modal state management — added; lifecycle hooks and batch operations — added; factory methods — added; remaining: component management expansion as needed
+- Dynamic Speed Slider: Global value behaviour across simulation switches — added
+- Dynamic Fill Button: Statistical coverage check — added (reduced/loose bounds)
+- Event Handler Factory: Control setup — added; custom handler binding — added; cleanup — added; ControlManager integration — added
+- UI Component Library: Status display — added; modal state management — added; lifecycle hooks and batch operations — added; factory methods — added; component management retrieval tests — added
 
 ### 10. Suite/UI Enhancements Implemented
 

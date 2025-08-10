@@ -241,4 +241,37 @@
     },
     "ui"
   );
+
+  runner.addTest(
+    "Dynamic Speed Slider Global Value",
+    async () => {
+      if (typeof DynamicSpeedSlider === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: DynamicSpeedSlider not available",
+        };
+      }
+      const { container } = createSpeedSliderDom();
+      const eventFramework = new EventFramework();
+      const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
+      try {
+        const mockApp = { handleSpeedChange: () => {}, currentSimulation: { speed: 30 } };
+        dynamicSpeedSlider.switchToSimulation("conway", mockApp);
+        dynamicSpeedSlider.setValue(22);
+        dynamicSpeedSlider.switchToSimulation("termite", mockApp);
+        const tVal = dynamicSpeedSlider.getValue();
+        dynamicSpeedSlider.switchToSimulation("langton", mockApp);
+        const lVal = dynamicSpeedSlider.getValue();
+        const passed = tVal === 22 && lVal === 22;
+        return { passed, details: `termite=${tVal}, langton=${lVal}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        dynamicSpeedSlider.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+        container.parentNode && container.parentNode.removeChild(container);
+      }
+    },
+    "ui"
+  );
 })();

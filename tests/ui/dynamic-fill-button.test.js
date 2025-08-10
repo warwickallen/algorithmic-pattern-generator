@@ -160,4 +160,53 @@
     },
     "ui"
   );
+
+  runner.addTest(
+    "Dynamic Fill Button activates cells approximately",
+    async () => {
+      if (typeof AlgorithmicPatternGenerator === "undefined") {
+        return { skip: true, details: "Skipped: app class not available" };
+      }
+      // Minimal DOM
+      const canvas = document.createElement("canvas");
+      canvas.id = "canvas";
+      document.body.appendChild(canvas);
+      const btn = document.createElement("button");
+      btn.id = "dynamic-fill-btn";
+      document.body.appendChild(btn);
+      const like = document.createElement("input");
+      like.type = "range";
+      like.id = "likelihood-slider";
+      like.value = "30";
+      const likeVal = document.createElement("span");
+      likeVal.id = "likelihood-value";
+      likeVal.textContent = "30%";
+      document.body.appendChild(like);
+      document.body.appendChild(likeVal);
+      try {
+        const app = new AlgorithmicPatternGenerator();
+        await new Promise((r) => setTimeout(r, 50));
+        // Click fill once
+        btn.click();
+        const sim = app.currentSimulation;
+        if (!sim || !sim.rows || !sim.cols) {
+          app.cleanup();
+          return { skip: true, details: "Skipped: simulation not initialised" };
+        }
+        const N = sim.rows * sim.cols;
+        const observed = sim.cellCount || 0;
+        // Loose bounds to avoid flakes
+        const lower = Math.max(0, Math.floor(N * 0.1));
+        const upper = Math.ceil(N * 0.6);
+        const passed = observed >= lower && observed <= upper;
+        app.cleanup();
+        return { passed, details: `N=${N}, observed=${observed}, bounds=[${lower}..${upper}]` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        [canvas, btn, like, likeVal].forEach((el) => el.parentNode && el.parentNode.removeChild(el));
+      }
+    },
+    "ui"
+  );
 })();

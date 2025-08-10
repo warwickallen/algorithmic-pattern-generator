@@ -44,6 +44,40 @@
   );
 
   runner.addTest(
+    "UI Component Library: component management retrieval",
+    async () => {
+      if (typeof UIComponentLibrary === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const ui = new UIComponentLibrary(eventFramework);
+      const btn = document.createElement("button");
+      btn.id = "cm-btn";
+      document.body.appendChild(btn);
+      try {
+        const c = ui.createButton({ id: "cm-btn", label: "C" });
+        const has = ui.hasComponent("cm-btn");
+        const byId = ui.getComponent("cm-btn");
+        const all = ui.getAllComponents();
+        const byType = ui.getComponentsByType("button");
+        const types = ui.getComponentTypes();
+        const passed = has && byId === c && all.length >= 1 && byType.length >= 1 && types.has("button");
+        return { passed, details: `has=${has}, all=${all.length}, types=${types.size}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        if (btn.parentNode) btn.parentNode.removeChild(btn);
+        ui.cleanup && ui.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
     "UI Component Library: factory methods (sliderWithLabel, button group, form group)",
     async () => {
       if (typeof UIComponentLibrary === "undefined") {
