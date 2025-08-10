@@ -134,7 +134,9 @@
       div.id = "uic-control-group";
       document.body.appendChild(div);
       try {
-        const group = ui.createControlGroup("uic-control-group", { layout: "horizontal" });
+        const group = ui.createControlGroup("uic-control-group", {
+          layout: "horizontal",
+        });
         group.methods.setLayout("vertical");
         const ok = group.state.layout === "vertical";
         return { passed: ok, details: `layout=${group.state.layout}` };
@@ -142,6 +144,37 @@
         return { passed: false, details: e.message };
       } finally {
         if (div.parentNode) div.parentNode.removeChild(div);
+        ui.cleanup && ui.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
+    "UI Component Library: status display create and set values",
+    async () => {
+      if (typeof UIComponentLibrary === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: UIComponentLibrary not available",
+        };
+      }
+      const eventFramework = new EventFramework();
+      const ui = new UIComponentLibrary(eventFramework);
+      const el = document.createElement("div");
+      el.id = "uic-status";
+      document.body.appendChild(el);
+      try {
+        const status = ui.createStatusDisplay({ id: "uic-status", values: { a: 1 } });
+        status.methods.setValue("b", 2);
+        const values = status.methods.getValues();
+        const ok = values.a === 1 && values.b === 2;
+        return { passed: ok, details: `a=${values.a}, b=${values.b}` };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        if (el.parentNode) el.parentNode.removeChild(el);
         ui.cleanup && ui.cleanup();
         eventFramework.cleanup && eventFramework.cleanup();
       }
