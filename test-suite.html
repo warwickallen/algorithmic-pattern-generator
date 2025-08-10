@@ -71,6 +71,8 @@
         gap: 12px;
         padding: 12px;
         box-sizing: border-box;
+        /* Pack grid rows at the top instead of stretching them to fill height */
+        align-content: start;
       }
       header {
         grid-area: header;
@@ -96,18 +98,17 @@
       }
       .left {
         grid-area: left;
-        display: flex;
-        flex-direction: column;
+        display: block; /* avoid intrinsic flex height stretching */
+        /* keep children stacked naturally */
         gap: 12px;
         align-self: start; /* top-align left panel */
       }
       .right {
         grid-area: right;
-        display: grid;
-        grid-template-rows: auto auto;
-        gap: 12px;
+        display: block; /* avoid internal grid stretch; let children size themselves */
+        /* gaps managed by child panels' margins */
         align-self: start; /* top-align right panel */
-        align-content: start; /* pack rows to top */
+        /* no align-content needed when not using grid here */
       }
       .btn {
         padding: 8px 12px;
