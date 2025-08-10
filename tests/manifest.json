@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1-split-tests-2-7c0dc3a-20250810T231616",
+  "version": "0.0.1-split-tests-2-0fc4377-20250810T232316",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
@@ -9,7 +9,7 @@
     "tests/features/simulation-features.test.js",
     "tests/integration/control-management.test.js",
     "tests/integration/full-lifecycle.test.js",
-    "tests/integration/integration.tests.js",
+    "tests/integration/integration.test.js",
     "tests/integration/keyboard-handler.test.js",
     "tests/integration/modal-manager.test.js",
     "tests/integration/modal-template-manager.test.js",
@@ -19,7 +19,7 @@
     "tests/performance/performance.test.js",
     "tests/system/console-and-canvas.test.js",
     "tests/system/fade-progression-debug.test.js",
-    "tests/system/system.tests.js",
+    "tests/system/system.test.js",
     "tests/system/test-utilities.test.js",
     "tests/ui/config-validator.test.js",
     "tests/ui/control-manager-visibility.test.js",
@@ -37,9 +37,9 @@
     "tests/ui/modal-template-injection.test.js",
     "tests/ui/shared-components.test.js",
     "tests/ui/ui-component-library-2.test.js",
-    "tests/ui/ui.tests.js",
+    "tests/ui/ui.test.js",
     "tests/ui/unified-modal-system.test.js",
-    "tests/visual/colour.tests.js",
+    "tests/visual/colour.test.js",
     "tests/visual/fade-visual-tests.test.js"
   ],
   "counts": {
@@ -51,7 +51,7 @@
     "tests/features/simulation-features.test.js": 4,
     "tests/integration/control-management.test.js": 2,
     "tests/integration/full-lifecycle.test.js": 1,
-    "tests/integration/integration.tests.js": 2,
+    "tests/integration/integration.test.js": 2,
     "tests/integration/keyboard-handler.test.js": 1,
     "tests/integration/modal-manager.test.js": 1,
     "tests/integration/modal-template-manager.test.js": 1,
@@ -61,7 +61,7 @@
     "tests/performance/performance.test.js": 2,
     "tests/system/console-and-canvas.test.js": 2,
     "tests/system/fade-progression-debug.test.js": 1,
-    "tests/system/system.tests.js": 3,
+    "tests/system/system.test.js": 3,
     "tests/system/test-utilities.test.js": 1,
     "tests/ui/config-validator.test.js": 1,
     "tests/ui/control-manager-visibility.test.js": 1,
@@ -79,9 +79,9 @@
     "tests/ui/modal-template-injection.test.js": 1,
     "tests/ui/shared-components.test.js": 3,
     "tests/ui/ui-component-library-2.test.js": 9,
-    "tests/ui/ui.tests.js": 3,
+    "tests/ui/ui.test.js": 3,
     "tests/ui/unified-modal-system.test.js": 1,
-    "tests/visual/colour.tests.js": 3,
+    "tests/visual/colour.test.js": 3,
     "tests/visual/fade-visual-tests.test.js": 3
   },
   "totalTests": 95
