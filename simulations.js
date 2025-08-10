@@ -1421,6 +1421,16 @@ class BaseSimulation {
     return this.countLiveCells(grid);
   }
 
+  // Base randomize method with common pattern
+  randomize(
+    likelihood = typeof AppConstants !== "undefined"
+      ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
+      : 0.3
+  ) {
+    // Default implementation - subclasses can override if they need special behavior
+    console.warn(`randomize() not implemented for ${this.simulationId}`);
+  }
+
   // Common cell coordinate conversion utilities
   screenToGrid(x, y) {
     return {
@@ -1982,6 +1992,7 @@ class ConwayGameOfLife extends BaseSimulation {
     this.updateInterval = 1000 / this.speed;
   }
 
+  // Conway-specific randomize implementation
   randomize(
     likelihood = typeof AppConstants !== "undefined"
       ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
@@ -2287,10 +2298,19 @@ class TermiteAlgorithm extends BaseSimulation {
     }
     this.woodChips.clear();
 
-    // Use the same approach as other simulations for consistent coverage
+    // Create a virtual grid and use the base randomizeGrid method for consistency
+    const virtualGrid = [];
+    for (let row = 0; row < this.rows; row++) {
+      virtualGrid[row] = new Array(this.cols).fill(false);
+    }
+    
+    // Use the base class randomizeGrid method (no coordinate conversion!)
+    this.randomizeGrid(virtualGrid, likelihood);
+    
+    // Convert the virtual grid results to woodChips using grid coordinates
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
-        if (Math.random() < likelihood) {
+        if (virtualGrid[row][col]) {
           const x = col * this.cellSize;
           const y = row * this.cellSize;
           this.woodChips.add(`${x},${y}`);
@@ -2562,7 +2582,12 @@ class LangtonsAnt extends BaseSimulation {
     }
   }
 
-  randomize(likelihood = 0.5) {
+  // Langton-specific randomize implementation
+  randomize(
+    likelihood = typeof AppConstants !== "undefined"
+      ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
+      : 0.3
+  ) {
     // Clear existing pattern
     this.initGrid();
 
