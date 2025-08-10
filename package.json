@@ -2,5 +2,9 @@
   "dependencies": {
     "canvas": "^3.1.2",
     "jsdom": "^26.1.0"
+  },
+  "scripts": {
+    "generate:test-manifest": "node tools/generate-test-manifest.js",
+    "install:hooks": "node tools/install-hooks.js"
   }
 }
