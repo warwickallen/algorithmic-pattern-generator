@@ -255,7 +255,10 @@
       const eventFramework = new EventFramework();
       const dynamicSpeedSlider = new DynamicSpeedSlider(eventFramework);
       try {
-        const mockApp = { handleSpeedChange: () => {}, currentSimulation: { speed: 30 } };
+        const mockApp = {
+          handleSpeedChange: () => {},
+          currentSimulation: { speed: 30 },
+        };
         dynamicSpeedSlider.switchToSimulation("conway", mockApp);
         dynamicSpeedSlider.setValue(22);
         dynamicSpeedSlider.switchToSimulation("termite", mockApp);

@@ -200,11 +200,16 @@
         const upper = Math.ceil(N * 0.6);
         const passed = observed >= lower && observed <= upper;
         app.cleanup();
-        return { passed, details: `N=${N}, observed=${observed}, bounds=[${lower}..${upper}]` };
+        return {
+          passed,
+          details: `N=${N}, observed=${observed}, bounds=[${lower}..${upper}]`,
+        };
       } catch (e) {
         return { passed: false, details: e.message };
       } finally {
-        [canvas, btn, like, likeVal].forEach((el) => el.parentNode && el.parentNode.removeChild(el));
+        [canvas, btn, like, likeVal].forEach(
+          (el) => el.parentNode && el.parentNode.removeChild(el)
+        );
       }
     },
     "ui"

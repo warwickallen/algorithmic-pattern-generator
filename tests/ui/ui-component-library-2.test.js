@@ -64,8 +64,16 @@
         const all = ui.getAllComponents();
         const byType = ui.getComponentsByType("button");
         const types = ui.getComponentTypes();
-        const passed = has && byId === c && all.length >= 1 && byType.length >= 1 && types.has("button");
-        return { passed, details: `has=${has}, all=${all.length}, types=${types.size}` };
+        const passed =
+          has &&
+          byId === c &&
+          all.length >= 1 &&
+          byType.length >= 1 &&
+          types.has("button");
+        return {
+          passed,
+          details: `has=${has}, all=${all.length}, types=${types.size}`,
+        };
       } catch (e) {
         return { passed: false, details: e.message };
       } finally {
