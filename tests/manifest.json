@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1-split-tests-2-0ff16fe-20250810T153942",
+  "version": "0.0.1-split-tests-2-b340abd-20250810T154745",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
@@ -18,6 +18,9 @@
     "tests/system/system.tests.js",
     "tests/system/test-utilities.test.js",
     "tests/ui/config-validator.test.js",
+    "tests/ui/control-manager-visibility.test.js",
+    "tests/ui/element-cache.test.js",
+    "tests/ui/event-listener-manager.test.js",
     "tests/ui/shared-components.test.js",
     "tests/ui/ui.tests.js",
     "tests/visual/colour.tests.js"

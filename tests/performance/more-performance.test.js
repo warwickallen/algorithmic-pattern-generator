@@ -6,7 +6,8 @@
     "Cell Counting Performance",
     async () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 120; canvas.height = 80;
+      canvas.width = 120;
+      canvas.height = 80;
       const ctx = canvas.getContext("2d");
       const sim = new ConwayGameOfLife(canvas, ctx);
       sim.init();
@@ -15,7 +16,10 @@
       const count = sim.countLiveCells(sim.grids.current);
       const end = performance.now();
       const took = end - start;
-      return { passed: took < 10, details: `count=${count} in ${took.toFixed(2)}ms` };
+      return {
+        passed: took < 10,
+        details: `count=${count} in ${took.toFixed(2)}ms`,
+      };
     },
     "performance"
   );
@@ -24,7 +28,8 @@
     "Drawing Performance",
     async () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 120; canvas.height = 80;
+      canvas.width = 120;
+      canvas.height = 80;
       const ctx = canvas.getContext("2d");
       const sim = new ConwayGameOfLife(canvas, ctx);
       sim.init();
@@ -38,5 +43,3 @@
     "performance"
   );
 })();
-
-

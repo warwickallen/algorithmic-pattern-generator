@@ -6,7 +6,8 @@
     "Termite Movement",
     async () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 120; canvas.height = 80;
+      canvas.width = 120;
+      canvas.height = 80;
       const ctx = canvas.getContext("2d");
       const simulation = new TermiteAlgorithm(canvas, ctx);
       simulation.init();
@@ -15,7 +16,10 @@
       simulation.update();
       const nx = simulation.termites[0].x;
       const ny = simulation.termites[0].y;
-      return { passed: nx !== ix || ny !== iy, details: `(${ix},${iy})->(${nx},${ny})` };
+      return {
+        passed: nx !== ix || ny !== iy,
+        details: `(${ix},${iy})->(${nx},${ny})`,
+      };
     },
     "core"
   );
@@ -24,7 +28,8 @@
     "Langton Ant Movement",
     async () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 120; canvas.height = 80;
+      canvas.width = 120;
+      canvas.height = 80;
       const ctx = canvas.getContext("2d");
       const simulation = new LangtonsAnt(canvas, ctx);
       simulation.init();
@@ -33,10 +38,11 @@
       simulation.update();
       const nx = simulation.ants[0].x;
       const ny = simulation.ants[0].y;
-      return { passed: nx !== ix || ny !== iy, details: `(${ix},${iy})->(${nx},${ny})` };
+      return {
+        passed: nx !== ix || ny !== iy,
+        details: `(${ix},${iy})->(${nx},${ny})`,
+      };
     },
     "core"
   );
 })();
-
-
