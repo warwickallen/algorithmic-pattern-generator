@@ -892,6 +892,9 @@ class BaseSimulation {
     // Check if canvas is attached to DOM
     const isAttached = this.canvas.parentNode !== null;
 
+    const originalWidth = this.canvas.width;
+    const originalHeight = this.canvas.height;
+
     if (isAttached) {
       // Use getBoundingClientRect for attached canvases
       const rect = this.canvas.getBoundingClientRect();
@@ -935,6 +938,8 @@ class BaseSimulation {
     this.cellSize = cellSize;
     this.cols = Math.max(1, Math.floor(this.canvas.width / this.cellSize));
     this.rows = Math.max(1, Math.floor(this.canvas.height / this.cellSize));
+
+
 
     // Clear caches on resize
     this.clearCaches();
@@ -2303,10 +2308,10 @@ class TermiteAlgorithm extends BaseSimulation {
     for (let row = 0; row < this.rows; row++) {
       virtualGrid[row] = new Array(this.cols).fill(false);
     }
-    
+
     // Use the base class randomizeGrid method (no coordinate conversion!)
     this.randomizeGrid(virtualGrid, likelihood);
-    
+
     // Convert the virtual grid results to woodChips using grid coordinates
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
