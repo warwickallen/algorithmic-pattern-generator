@@ -3814,6 +3814,191 @@
         "dynamic-fill-button"
       );
 
+      // Statistical test for equal chance of cell activation
+      testSuite.addTest(
+        "Fill Button Equal Cell Activation Probability (Chi-Square Test)",
+        async () => {
+          try {
+            // Ensure likelihood slider exists so handleRandomPattern reads from it
+            let slider = document.getElementById("likelihood-slider");
+            let sliderValueEl = document.getElementById("likelihood-value");
+            const createdEls = [];
+            if (!slider) {
+              slider = document.createElement("input");
+              slider.type = "range";
+              slider.id = "likelihood-slider";
+              slider.min = "0";
+              slider.max = "100";
+              slider.value = "30"; // default 30%
+              document.body.appendChild(slider);
+              createdEls.push(slider);
+            }
+            if (!sliderValueEl) {
+              sliderValueEl = document.createElement("span");
+              sliderValueEl.id = "likelihood-value";
+              sliderValueEl.textContent = `${slider.value}%`;
+              document.body.appendChild(sliderValueEl);
+              createdEls.push(sliderValueEl);
+            }
+
+            // Create app (defaults to Conway) and ensure Fill button is wired
+            const app = new AlgorithmicPatternGenerator();
+
+            // Initialize the app properly
+            app.init();
+
+            // Wait a moment for initialization to complete
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            // Set test parameters
+            const P = 0.3; // 30% probability
+            const numTrials = 50; // Number of Fill operations to perform
+            const significanceLevel = 0.05; // 5% significance level for chi-square test
+            slider.value = String(Math.round(P * 100));
+
+            const sim = app.currentSimulation;
+            if (!sim) throw new Error("No active simulation");
+            if (!sim.grids) throw new Error("Simulation grids not initialized");
+            if (!sim.grids.current)
+              throw new Error("Current grid not initialized");
+
+            const rows = sim.rows;
+            const cols = sim.cols;
+            const totalCells = rows * cols;
+
+            // Track activation count for each cell
+            const cellActivationCounts = new Array(totalCells).fill(0);
+
+            // Perform multiple Fill operations
+            let trialActivations = [];
+            for (let trial = 0; trial < numTrials; trial++) {
+              // Clear the grid first
+              if (sim.clear) {
+                sim.clear();
+              }
+
+              // Click Fill button
+              const fillBtn = document.getElementById("dynamic-fill-btn");
+              if (!fillBtn) throw new Error("Fill button not found");
+              fillBtn.click();
+
+              // Count activated cells for this trial
+              let trialActivationCount = 0;
+              for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                  const cellIndex = row * cols + col;
+                  let isActivated = false;
+
+                  // Check if cell is activated (different method for different simulation types)
+                  if (sim.simulationId === "conway") {
+                    // Conway uses boolean values (true/false), not 1/0
+                    isActivated =
+                      sim.grids &&
+                      sim.grids.current[row] &&
+                      sim.grids.current[row][col] === true;
+                  } else if (sim.simulationId === "termite") {
+                    const x = col * sim.cellSize;
+                    const y = row * sim.cellSize;
+                    const chipKey = `${x},${y}`;
+                    isActivated = sim.woodChips && sim.woodChips.has(chipKey);
+                  } else if (sim.simulationId === "langton") {
+                    // Langton also uses boolean values (true/false), not 1/0
+                    isActivated =
+                      sim.grid && sim.grid[row] && sim.grid[row][col] === true;
+                  }
+
+                  if (isActivated) {
+                    cellActivationCounts[cellIndex]++;
+                    trialActivationCount++;
+                  }
+                }
+              }
+              trialActivations.push(trialActivationCount);
+
+              // Early exit if we're still getting zero activations after a few trials
+              if (
+                trial === 2 &&
+                trialActivations.every((count) => count === 0)
+              ) {
+                throw new Error(
+                  `No cell activations detected after ${
+                    trial + 1
+                  } trials. SimType: ${sim.simulationId}, CellCount: ${
+                    sim.cellCount
+                  }, Grids exist: ${!!sim.grids}, Current grid exists: ${!!sim
+                    .grids?.current}`
+                );
+              }
+            }
+
+            // Calculate expected frequency for each cell
+            const expectedFrequency = numTrials * P;
+
+            // Perform chi-square goodness of fit test
+            let chiSquareStatistic = 0;
+            let totalActivations = 0;
+
+            for (let i = 0; i < totalCells; i++) {
+              const observed = cellActivationCounts[i];
+              totalActivations += observed;
+              const expected = expectedFrequency;
+
+              // Chi-square formula: Σ((observed - expected)² / expected)
+              if (expected > 0) {
+                chiSquareStatistic +=
+                  Math.pow(observed - expected, 2) / expected;
+              }
+            }
+
+            // Calculate degrees of freedom (number of cells - 1)
+            const degreesOfFreedom = totalCells - 1;
+
+            // For large degrees of freedom, use normal approximation
+            // Chi-square with df degrees of freedom is approximately normal with:
+            // mean = df, variance = 2*df
+            const expectedChiSquare = degreesOfFreedom;
+            const chiSquareVariance = 2 * degreesOfFreedom;
+            const chiSquareStdDev = Math.sqrt(chiSquareVariance);
+
+            // Calculate z-score for the chi-square statistic
+            const zScore =
+              (chiSquareStatistic - expectedChiSquare) / chiSquareStdDev;
+
+            // For 95% confidence (α = 0.05), critical z-values are approximately ±1.96
+            const criticalZ = 1.96;
+            const passed = Math.abs(zScore) <= criticalZ;
+
+            // Calculate some summary statistics
+            const avgActivationsPerCell = totalActivations / totalCells;
+            const expectedAvgPerCell = expectedFrequency;
+            const minActivations = Math.min(...cellActivationCounts);
+            const maxActivations = Math.max(...cellActivationCounts);
+
+            // Cleanup app and any temporary elements
+            app.cleanup && app.cleanup();
+            createdEls.forEach(
+              (el) => el.parentNode && el.parentNode.removeChild(el)
+            );
+
+            return {
+              passed: passed,
+              details: `Trials=${numTrials}, Cells=${totalCells}, P=${P}, χ²=${chiSquareStatistic.toFixed(
+                2
+              )}, z=${zScore.toFixed(
+                2
+              )} (critical=±${criticalZ}), Avg/cell=${avgActivationsPerCell.toFixed(
+                4
+              )} (expected=${expectedAvgPerCell.toFixed(
+                4
+              )}), Range=[${minActivations}-${maxActivations}], TotalActivations=${totalActivations}`,
+            };
+          } catch (e) {
+            return { passed: false, details: `Error: ${e.message}` };
+          }
+        },
+        "dynamic-fill-button"
+      );
+
       testSuite.addTest(
         "Keyboard Handler",
         async () => {
