@@ -2514,7 +2514,10 @@ class LangtonsAnt extends BaseSimulation {
             2
           : 2;
       const approxLength = Math.PI * radius * 0.5; // quarter-arc baseline
-      const samples = Math.max(2, Math.round(approxLength / Math.max(1, termiteStep)));
+      const samples = Math.max(
+        2,
+        Math.round(approxLength / Math.max(1, termiteStep))
+      );
       for (let i = 0; i <= samples; i++) {
         const t = i / samples;
         const omt = 1 - t;
@@ -2592,9 +2595,13 @@ class LangtonsAnt extends BaseSimulation {
           t * t * t * p3.y;
         // Derivative for heading
         const dx =
-          3 * omt * omt * (p1.x - p0.x) + 6 * omt * t * (p2.x - p1.x) + 3 * t * t * (p3.x - p2.x);
+          3 * omt * omt * (p1.x - p0.x) +
+          6 * omt * t * (p2.x - p1.x) +
+          3 * t * t * (p3.x - p2.x);
         const dy =
-          3 * omt * omt * (p1.y - p0.y) + 6 * omt * t * (p2.y - p1.y) + 3 * t * t * (p3.y - p2.y);
+          3 * omt * omt * (p1.y - p0.y) +
+          6 * omt * t * (p2.y - p1.y) +
+          3 * t * t * (p3.y - p2.y);
         headingAngle = Math.atan2(dy, dx);
       } else {
         drawX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
