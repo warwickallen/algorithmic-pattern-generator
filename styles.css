@@ -964,6 +964,16 @@ body {
 .glass-hover a:link,
 .glass-hover a:visited {
   color: skyblue;
+  text-decoration: none;
+}
+
+.modal a:hover,
+.modal-content a:hover,
+.glass a:hover,
+.glass-light a:hover,
+.glass-hover a:hover {
+  color: skyblue;
+  text-decoration: underline;
 }
 
 /* ==========================================================================
