@@ -26,6 +26,20 @@ The project currently has a well-structured modular architecture with:
 
 ---
 
+## Recent Code Reuse: Reaction–Diffusion Integration
+
+- Added `ReactionDiffusion` by extending `BaseSimulation`, reusing:
+  - Lifecycle, grid utilities, rendering helpers, brightness, colour scheme
+  - State preservation via `stateManager` serializer (consistent with other sims)
+- Registered in `SimulationFactory`; no structural changes elsewhere
+- UI wired via existing systems:
+  - `ControlTemplateManager` entries for Feed/Kill sliders (template reuse)
+  - `EventHandlerFactory` routing with `reactionParamChange` → app handler
+  - Dynamic Fill button reused; likelihood slider reused
+  - Visibility uses `ControlVisibilityManager`
+
+---
+
 ## High Priority Opportunities
 
 ### 1. **Simulation Control Configuration Consolidation** ✅ **IMPLEMENTED**

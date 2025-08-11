@@ -4,24 +4,25 @@ A sophisticated web application featuring three classic algorithmic simulations:
 
 ## Features
 
-### Three Simulations
+### Simulations
 
 1. **Conway's Game of Life** - A cellular automaton where cells live or die based on their neighbours
 2. **Termite Algorithm** - Termites that pick up and drop wood chips (active cells), creating fascinating patterns
 3. **Langton's Ant** - Ants now move with smooth Bézier-interpolated paths across each cell, visually matching termites. Add ants under the pointer with the keyboard.
+4. **Reaction–Diffusion (Gray–Scott)** - Two-chemical reaction/diffusion model that generates Turing patterns (stripes, spots, labyrinths). Includes live Feed (F) and Kill (k) sliders, Random Fill support, click/drag seeding, and state preservation on resize.
 
 ### Key Features
 
 - **Simulation Selector** - Switch between the three algorithms seamlessly
 - **Immersive Mode** - Hide controls for a full-screen experience
 - **Internationalisation** - Support for UK English and US English (easily extensible)
-- **Interactive Controls** - Click to toggle cells in Conway's Game of Life; add ants under the pointer (Langton) and adjust actor counts via sliders
+- **Interactive Controls** - Click to toggle cells in Conway's Game of Life; add ants under the pointer (Langton) and adjust actor counts via sliders; for Reaction–Diffusion, click/drag to seed V, adjust Feed/Kill sliders, and use Fill to reseed.
 - **Real-time Statistics** - Generation count, cell count, and FPS display
 - **Keyboard Shortcuts** - Space to start/pause, Ctrl+R to reset, Ctrl+C to clear, Ctrl+I for immersive mode, 'A' to add an actor under the pointer (where supported)
-- **Dynamic Colour Scheme** - Time-based four-corner hue rotation with smooth interpolation
+- **Dynamic Colour Scheme** - Time-based four-corner hue rotation with smooth interpolation (applies to Reaction–Diffusion rendering as well)
 - **Performance Optimised** - Hardware acceleration, debounced inputs, and efficient rendering
 - **Responsive Design** - Works on desktop, tablet, and mobile devices
-- **Comprehensive Testing** - Visual and programmatic test suites for quality assurance
+- **Comprehensive Testing** - Visual and programmatic test suites for quality assurance (new Reaction–Diffusion tests under `tests/reaction/`)
 - **TestUtilityFactory** - Centralised test helpers for mock canvas/ctx and simulation creation
 - **CSS-Based Control Visibility** - Declarative control visibility management using CSS classes and data attributes
 - **EventHandlerFactory** - Template-based event handler creation and registration system

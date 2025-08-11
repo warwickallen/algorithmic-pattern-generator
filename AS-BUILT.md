@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The Algorithmic Pattern Generator is a sophisticated web application that combines three classic algorithmic simulations: Conway's Game of Life, the Termite Algorithm, and Langton's Ant. Built with vanilla JavaScript, it features a modular architecture, dynamic colour schemes, comprehensive testing, and performance optimisations.
+The Algorithmic Pattern Generator is a sophisticated web application that combines classic algorithmic simulations: Conway's Game of Life, the Termite Algorithm, Langton's Ant, and Reaction–Diffusion (Gray–Scott). Built with vanilla JavaScript, it features a modular architecture, dynamic colour schemes, comprehensive testing, and performance optimisations.
 
 ## Architecture Overview
 
@@ -34,6 +34,35 @@ algorithmic-pattern-generator/
 ├── AS-BUILT.md             # This comprehensive implementation guide
 └── TESTING.md              # Detailed testing instructions
 ```
+
+## Reaction–Diffusion Integration Notes
+
+### Overview
+
+The Reaction–Diffusion (Gray–Scott) simulation was added with the following minimal integration steps while maximising reuse of existing infrastructure:
+
+- Implemented `class ReactionDiffusion extends BaseSimulation` in `simulations.js` with U/V scalar fields, Gray–Scott updates, and wrap‑around Laplacian.
+- Registered the type in `SimulationFactory.createSimulation("reaction", ...)`.
+- Added UI option to the selector in `index.html`.
+- Declared control templates in `ControlTemplateManager.simulationControlTemplates.reaction` with two sliders:
+  - `reaction-feed-slider` (Feed F)
+  - `reaction-kill-slider` (Kill k)
+- Routed new slider events via `EventHandlerFactory` using `reactionParamChange` → `AlgorithmicPatternGenerator.handleReactionParamChange` → `ReactionDiffusion.setReactionParam`.
+- Included Learn modal content in `ModalTemplateManager` for Reaction–Diffusion.
+- Enabled the Dynamic Fill button for the reaction simulation.
+- Preserved state across resize using `stateManager.registerSerializer` to capture and restore U/V arrays with dimension clamping; `resize()` no longer re-seeds.
+
+### UI/Control Visibility
+
+- `ControlVisibilityManager` updated defensively to clear `.active` from known control IDs to support fixtures without `data-simulation`.
+
+### Dynamic Speed Slider adjustments
+
+- Change events now propagate immediately to the app and also via a debounced call; removed internal guard so app can decide to no‑op. This ensures deterministic tests while keeping good UX.
+
+### Tests
+
+- Added three Reaction–Diffusion test files under `tests/reaction/` and updated manifests.
 
 ## Core Components
 

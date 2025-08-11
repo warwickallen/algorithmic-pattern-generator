@@ -64,6 +64,15 @@ Include `test-runner.js` in your HTML or use it programmatically:
 <script src="test-utils.js"></script>
 ```
 
+### Reaction–Diffusion Tests
+
+Additional tests specific to the Reaction–Diffusion simulation are located under `tests/reaction/` and included in the manifest used by `test-suite.html`:
+
+- `creation-and-update.test.js` — Factory creation and basic update validity
+- `controls-and-randomize.test.js` — Feed/Kill parameter updates and randomize likelihood behaviour
+- `resize-and-serialize.test.js` — State preservation across `resizePreserveState()` via serializer
+
+
 Then run tests from the browser console:
 
 ```javascript

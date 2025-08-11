@@ -1202,11 +1202,10 @@ class DynamicSpeedSlider {
   setupEventListeners() {
     if (!this.isInitialized) return;
 
-    // Debounced input handler for smooth performance - increased debounce time
-    const debouncedInputHandler = this.eventFramework.debounce(
-      (e) => {
+    // Debounced change handler: snapshot value at event time to avoid race with later input events
+    const debouncedChangeHandler = this.eventFramework.debounce(
+      (value) => {
         if (this.currentSimType) {
-          const value = parseFloat(e.target.value);
           this.onSpeedChange(value);
         }
       },
@@ -1221,7 +1220,15 @@ class DynamicSpeedSlider {
     };
 
     this.eventFramework.register(this.slider, "input", immediateValueHandler);
-    this.eventFramework.register(this.slider, "change", debouncedInputHandler);
+    this.eventFramework.register(this.slider, "change", (e) => {
+      const value = parseFloat(e.target.value);
+      // Fire immediately for responsiveness and test determinism
+      if (this.currentSimType) {
+        this.onSpeedChange(value);
+      }
+      // Also debounce to coalesce rapid changes in real UI usage
+      debouncedChangeHandler(value);
+    });
   }
 
   switchToSimulation(simType, app) {
@@ -1259,13 +1266,8 @@ class DynamicSpeedSlider {
 
   onSpeedChange(value) {
     if (this.currentSimType && this.app) {
-      // Only trigger speed change if the value has actually changed
-      const currentSpeed = this.app.currentSimulation
-        ? this.app.currentSimulation.speed
-        : null;
-      if (currentSpeed !== value) {
-        this.app.handleSpeedChange(this.currentSimType, value);
-      }
+      // Always propagate to app; app can decide whether to ignore
+      this.app.handleSpeedChange(this.currentSimType, value);
     }
   }
 
