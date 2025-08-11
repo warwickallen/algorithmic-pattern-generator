@@ -1421,6 +1421,7 @@ class ControlVisibilityManager {
           "termite-controls": "hidden",
           "langton-controls": "visible",
           "termites-container": "hidden",
+          "ants-container": "visible",
         },
       ],
     ]);
