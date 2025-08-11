@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2-HEAD-d68dde8-20250811T231902",
+  "version": "0.0.2-main-8ab0329-20250811T235048",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
