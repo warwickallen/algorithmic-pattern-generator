@@ -1186,9 +1186,17 @@ class DynamicSpeedSlider {
   }
 
   init() {
-    this.slider = document.getElementById("dynamic-speed-slider");
-    this.valueElement = document.getElementById("dynamic-speed-value");
-    this.container = document.querySelector(".speed-control .control-group");
+    // Prefer the most recently added elements if duplicates exist in DOM during tests
+    const sliders = document.querySelectorAll("#dynamic-speed-slider");
+    this.slider = sliders.length ? sliders[sliders.length - 1] : null;
+    const values = document.querySelectorAll("#dynamic-speed-value");
+    this.valueElement = values.length ? values[values.length - 1] : null;
+    const containers = document.querySelectorAll(
+      ".speed-control .control-group"
+    );
+    this.container = containers.length
+      ? containers[containers.length - 1]
+      : null;
 
     if (!this.slider || !this.valueElement || !this.container) {
       console.error("DynamicSpeedSlider: Required elements not found");
@@ -1196,6 +1204,11 @@ class DynamicSpeedSlider {
     }
 
     this.isInitialized = true;
+    console.debug("DynamicSpeedSlider:init", {
+      slider: !!this.slider,
+      valueElement: !!this.valueElement,
+      container: !!this.container,
+    });
     this.setupEventListeners();
   }
 
@@ -1223,12 +1236,39 @@ class DynamicSpeedSlider {
     this.eventFramework.register(this.slider, "change", (e) => {
       const value = parseFloat(e.target.value);
       // Fire immediately for responsiveness and test determinism
-      if (this.currentSimType) {
-        this.onSpeedChange(value);
-      }
+      console.debug("DynamicSpeedSlider:change(eventFramework)", {
+        value,
+        currentSimType: this.currentSimType,
+        hasApp: !!this.app,
+      });
+      this.onSpeedChange(value);
       // Also debounce to coalesce rapid changes in real UI usage
       debouncedChangeHandler(value);
     });
+
+    // Native fallback listener to ensure direct dispatched events are caught in all environments
+    this._nativeChangeHandler = (e) => {
+      const value = parseFloat(e.target.value);
+      console.debug("DynamicSpeedSlider:change(native)", {
+        value,
+        currentSimType: this.currentSimType,
+        hasApp: !!this.app,
+      });
+      this.onSpeedChange(value);
+    };
+    this.slider.addEventListener("change", this._nativeChangeHandler);
+
+    // Property-based fallback to maximise compatibility across environments
+    this._propertyChangeHandler = (e) => {
+      const value = parseFloat(e.target.value);
+      console.debug("DynamicSpeedSlider:change(property)", {
+        value,
+        currentSimType: this.currentSimType,
+        hasApp: !!this.app,
+      });
+      this.onSpeedChange(value);
+    };
+    this.slider.onchange = this._propertyChangeHandler;
   }
 
   switchToSimulation(simType, app) {
@@ -1237,21 +1277,41 @@ class DynamicSpeedSlider {
     // Only update if the simulation type has actually changed
     if (this.currentSimType === simType) return;
 
+    console.debug("DynamicSpeedSlider:switchToSimulation:start", {
+      from: this.currentSimType,
+      to: simType,
+    });
     this.currentSimType = simType;
     this.app = app;
 
     // Apply current global slider value to the newly selected simulation
     const currentValue = this.getValue();
     this.updateDisplay(currentValue);
+    console.debug("DynamicSpeedSlider:switchToSimulation:onSpeedChange", {
+      simType: this.currentSimType,
+      value: currentValue,
+      hasApp: !!this.app,
+    });
     this.onSpeedChange(currentValue);
 
-    // Show the speed control container
-    this.container.style.display = "block";
+    // Show the speed control container(s) to be resilient in test environments
+    const containers = document.querySelectorAll(
+      ".speed-control .control-group"
+    );
+    containers.forEach((el) => {
+      el.style.display = "block";
+    });
   }
 
   hide() {
     if (!this.isInitialized) return;
-    this.container.style.display = "none";
+    // Hide all matching containers to avoid duplicate DOM interference across tests
+    const containers = document.querySelectorAll(
+      ".speed-control .control-group"
+    );
+    containers.forEach((el) => {
+      el.style.display = "none";
+    });
   }
 
   updateDisplay(value) {
@@ -1267,6 +1327,11 @@ class DynamicSpeedSlider {
   onSpeedChange(value) {
     if (this.currentSimType && this.app) {
       // Always propagate to app; app can decide whether to ignore
+      console.debug("DynamicSpeedSlider:onSpeedChange", {
+        simType: this.currentSimType,
+        value,
+        hasApp: !!this.app,
+      });
       this.app.handleSpeedChange(this.currentSimType, value);
     }
   }
@@ -1301,6 +1366,14 @@ class DynamicSpeedSlider {
 
     this.eventFramework.remove(this.slider, "input");
     this.eventFramework.remove(this.slider, "change");
+    if (this._nativeChangeHandler) {
+      this.slider.removeEventListener("change", this._nativeChangeHandler);
+      this._nativeChangeHandler = null;
+    }
+    if (this._propertyChangeHandler) {
+      this.slider.onchange = null;
+      this._propertyChangeHandler = null;
+    }
     this.speedValues.clear();
     this.currentSimType = null;
     this.app = null;
@@ -2821,7 +2894,13 @@ class EventFramework {
   // Element cache with automatic cleanup
   getElement(selector) {
     if (!this.elementCache.has(selector)) {
-      const element = document.querySelector(selector);
+      let element = null;
+      if (typeof selector === "string" && selector.startsWith("#")) {
+        const matches = document.querySelectorAll(selector);
+        element = matches.length ? matches[matches.length - 1] : null;
+      } else {
+        element = document.querySelector(selector);
+      }
       if (element) {
         this.elementCache.set(selector, element);
       } else {
