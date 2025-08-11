@@ -3363,7 +3363,8 @@ class AlgorithmicPatternGenerator {
 
   parseUrlFlags() {
     try {
-      const search = typeof window !== "undefined" ? window.location.search : "";
+      const search =
+        typeof window !== "undefined" ? window.location.search : "";
       const params = new URLSearchParams(search || "");
       // Accepted params: dir, showDir, showDirectionIndicator
       const key = ["dir", "showDir", "showDirectionIndicator"].find((k) =>
@@ -3512,8 +3513,10 @@ class AlgorithmicPatternGenerator {
     this.currentSimulation.init();
 
     // Apply forced direction indicator override if specified
-    if (this.forcedShowDirectionIndicator !== null &&
-        typeof this.currentSimulation.setShowDirectionIndicator === "function") {
+    if (
+      this.forcedShowDirectionIndicator !== null &&
+      typeof this.currentSimulation.setShowDirectionIndicator === "function"
+    ) {
       this.currentSimulation.setShowDirectionIndicator(
         this.forcedShowDirectionIndicator
       );
