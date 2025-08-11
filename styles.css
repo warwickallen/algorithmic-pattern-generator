@@ -933,6 +933,25 @@ body {
   color: var(--color-primary);
 }
 
+/* Learn modal footer and divider */
+.modal-divider {
+  margin-top: var(--spacing-xl);
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.modal-footer.meta {
+  margin-top: var(--spacing-md);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.modal-footer .app-meta {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
 /* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */

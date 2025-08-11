@@ -2155,6 +2155,109 @@ class EventHandlerFactory {
   }
 }
 
+// Application metadata loader and footer renderer for Learn modals
+class AppMetadataLoader {
+  static cache = null;
+  static loadingPromise = null;
+
+  static async loadMetadata() {
+    if (this.cache) return this.cache;
+    if (this.loadingPromise) return this.loadingPromise;
+
+    const readTextSafe = async (path) => {
+      try {
+        const res = await fetch(path, { cache: "no-store" });
+        if (!res.ok) throw new Error("not ok");
+        return await res.text();
+      } catch (_) {
+        return null;
+      }
+    };
+
+    this.loadingPromise = (async () => {
+      const [readme, version, licensePreferred, licenseFallback] =
+        await Promise.all([
+          readTextSafe("README.md"),
+          readTextSafe("VERSION"),
+          readTextSafe("LICENSE"),
+          readTextSafe("LICENCE"),
+        ]);
+
+      const name =
+        this.parseNameFromReadme(readme) || "Algorithmic Pattern Generator";
+      const build = (version && version.trim()) || "dev";
+      const licenceText = licensePreferred || licenseFallback;
+      const licenceName =
+        this.parseLicenceName(licenceText) || "Unknown licence";
+
+      const meta = { name, build, licenceName };
+      this.cache = meta;
+      this.loadingPromise = null;
+      return meta;
+    })();
+
+    return this.loadingPromise;
+  }
+
+  static parseNameFromReadme(text) {
+    if (!text) return null;
+    const lines = text.split(/\r?\n/);
+    const h1 = lines.find((l) => /^#\s+/.test(l));
+    return h1 ? h1.replace(/^#\s+/, "").trim() : null;
+  }
+
+  static parseLicenceName(text) {
+    if (!text) return null;
+    const firstLine = text.split(/\r?\n/)[0] || "";
+    const candidates = [firstLine, text];
+    const match = candidates.find((t) =>
+      /(MIT|Apache|GPL|BSD|MPL|Unlicense|ISC)/i.test(t)
+    );
+    return (match && match.trim()) || firstLine.trim() || null;
+  }
+
+  static renderFooterHTML(meta) {
+    const safe = (s) =>
+      String(s || "").replace(
+        /[<>&]/g,
+        (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c])
+      );
+    return `
+      <div class="modal-divider" aria-hidden="true"></div>
+      <div class="modal-footer meta" role="contentinfo">
+        <span class="app-meta">
+          ${safe(meta.name)} • Build ${safe(meta.build)} • Licence: ${safe(
+      meta.licenceName
+    )}
+        </span>
+      </div>
+    `;
+  }
+
+  static appendFooter(containerElement) {
+    if (!containerElement) return;
+    // Create a placeholder footer immediately to avoid layout shift
+    const wrapper = document.createElement("div");
+    wrapper.className = "modal-meta-wrapper";
+    wrapper.innerHTML = `
+      <div class="modal-divider" aria-hidden="true"></div>
+      <div class="modal-footer meta" role="contentinfo">
+        <span class="app-meta">Loading application details…</span>
+      </div>
+    `;
+    containerElement.appendChild(wrapper);
+
+    // Load and replace content asynchronously
+    this.loadMetadata().then((meta) => {
+      try {
+        wrapper.innerHTML = this.renderFooterHTML(meta);
+      } catch (_) {
+        // keep placeholder on failure
+      }
+    });
+  }
+}
+
 class ModalTemplateManager {
   constructor() {
     this.modalTemplates = new Map();
@@ -2346,7 +2449,17 @@ class ModalTemplateManager {
     // Update content using data attribute for more robust selection
     const contentElement = modalElement.querySelector("[data-modal-content]");
     if (contentElement) {
+      // Inject main educational content
       contentElement.innerHTML = template.content;
+      // Remove any previous footer wrapper to avoid duplicates on reinjection
+      const previous = contentElement.querySelector(".modal-meta-wrapper");
+      if (previous && previous.parentNode === contentElement) {
+        contentElement.removeChild(previous);
+      }
+      // Append footer (divider + metadata) at the end
+      if (typeof AppMetadataLoader !== "undefined") {
+        AppMetadataLoader.appendFooter(contentElement);
+      }
     }
 
     return true;

@@ -25,6 +25,10 @@
           ? cBody.querySelector(".modal-content") !== null
           : false;
         const cValid = cBody && !cNested && cBody.innerHTML.trim() !== "";
+        // Footer placeholder should be appended
+        const cFooter =
+          cBody &&
+          cBody.querySelector(".modal-footer.meta, .modal-meta-wrapper");
 
         const tOk = mtm.injectModalContent("termite", modal);
         const tTitle = modal.querySelector("h2")?.textContent || "";
@@ -33,6 +37,9 @@
           ? tBody.querySelector(".modal-content") !== null
           : false;
         const tValid = tBody && !tNested && tBody.innerHTML.trim() !== "";
+        const tFooter =
+          tBody &&
+          tBody.querySelector(".modal-footer.meta, .modal-meta-wrapper");
 
         const lOk = mtm.injectModalContent("langton", modal);
         const lTitle = modal.querySelector("h2")?.textContent || "";
@@ -41,6 +48,9 @@
           ? lBody.querySelector(".modal-content") !== null
           : false;
         const lValid = lBody && !lNested && lBody.innerHTML.trim() !== "";
+        const lFooter =
+          lBody &&
+          lBody.querySelector(".modal-footer.meta, .modal-meta-wrapper");
 
         mtm.cleanup();
 
@@ -51,6 +61,9 @@
           cValid &&
           tValid &&
           lValid &&
+          cFooter &&
+          tFooter &&
+          lFooter &&
           /Conway|Termite|Langton/.test(cTitle + tTitle + lTitle);
         return {
           passed: ok,
