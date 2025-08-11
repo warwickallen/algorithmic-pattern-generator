@@ -855,6 +855,9 @@ class BaseSimulation {
     this.gridOffsetX = 0;
     this.gridOffsetY = 0;
 
+    // Shared actor rendering options
+    this.showDirectionIndicator = true;
+
     // Lifecycle framework integration
     this.stateManager = simulationLifecycleFramework.createStateManager({
       isRunning: false,
@@ -1105,6 +1108,15 @@ class BaseSimulation {
     this.brightness = Math.max(0.1, Math.min(2.0, value));
     // Clear color cache when brightness changes
     this.colorCache.clear();
+  }
+
+  // Shared actor rendering toggles
+  setShowDirectionIndicator(enabled) {
+    this.showDirectionIndicator = !!enabled;
+  }
+
+  getShowDirectionIndicator() {
+    return !!this.showDirectionIndicator;
   }
 
   // Fade-to-black configuration methods
@@ -2277,7 +2289,9 @@ class TermiteAlgorithm extends BaseSimulation {
 
       // Draw termite
       this.drawActor(termite.x, termite.y, 3);
-      this.drawDirectionIndicator(termite.x, termite.y, termite.angle);
+      if (this.getShowDirectionIndicator()) {
+        this.drawDirectionIndicator(termite.x, termite.y, termite.angle);
+      }
     });
   }
 
@@ -2618,15 +2632,17 @@ class LangtonsAnt extends BaseSimulation {
       // Draw ant
       this.drawActor(drawX, drawY, this.cellSize / 3);
 
-      // Draw direction indicator using common utility
-      this.drawDirectionIndicator(
-        drawX,
-        drawY,
-        headingAngle,
-        this.cellSize / 2,
-        "#ffffff",
-        2
-      );
+      // Draw direction indicator using shared toggle
+      if (this.getShowDirectionIndicator()) {
+        this.drawDirectionIndicator(
+          drawX,
+          drawY,
+          headingAngle,
+          this.cellSize / 2,
+          "#ffffff",
+          2
+        );
+      }
     });
   }
 

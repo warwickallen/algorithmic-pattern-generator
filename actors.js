@@ -42,5 +42,3 @@
   global.GridActor = GridActor;
   global.ContinuousActor = ContinuousActor;
 })(typeof window !== "undefined" ? window : globalThis);
-
-
