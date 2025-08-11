@@ -127,7 +127,7 @@ Terminology note: use “decision step” (or “cell transition”) rather than
 **5.3 Movement System Architecture**
 
 - **Path Planning**: Calculate turn direction before entering cell
- - **Smooth Interpolation**: For grid-based actors (for example, Langton's Ant), interpolate actor rendering between entry and exit edges per decision step; for continuous actors (for example, termites), interpolation may be linear or Bézier and is not constrained to cell edges.
+- **Smooth Interpolation**: For grid-based actors (for example, Langton's Ant), interpolate actor rendering between entry and exit edges per decision step; for continuous actors (for example, termites), interpolation may be linear or Bézier and is not constrained to cell edges.
 - **Edge Entry/Exit**: Define entry/exit points on cell edges (top, right, bottom, left)
 - **State Management**: Maintain grid state while actors move smoothly
 
