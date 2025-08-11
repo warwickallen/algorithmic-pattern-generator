@@ -2484,10 +2484,15 @@ class LangtonsAnt extends BaseSimulation {
       // Increase trail sampling frequency along the arc to approximate termite density
       const termiteStep =
         typeof AppConstants !== "undefined"
-          ? (AppConstants.TermiteDefaults && AppConstants.TermiteDefaults.MOVE_SPEED) || 2
+          ? (AppConstants.TermiteDefaults &&
+              AppConstants.TermiteDefaults.MOVE_SPEED) ||
+            2
           : 2;
       const pathLength = Math.abs(endAngle - startAngle) * radius; // quarter-arc length
-      const samples = Math.max(1, Math.round(pathLength / Math.max(1, termiteStep)));
+      const samples = Math.max(
+        1,
+        Math.round(pathLength / Math.max(1, termiteStep))
+      );
       for (let i = 0; i <= samples; i++) {
         const t = i / samples;
         const angle = startAngle + (endAngle - startAngle) * t;
