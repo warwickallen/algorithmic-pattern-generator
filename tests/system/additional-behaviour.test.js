@@ -5,7 +5,9 @@
 if (typeof window !== "undefined") {
   (function () {
     const addResult = (name, passed, details = "") => {
-      console.log(`${passed ? "✅" : "❌"} ${name}${details ? ` - ${details}` : ""}`);
+      console.log(
+        `${passed ? "✅" : "❌"} ${name}${details ? ` - ${details}` : ""}`
+      );
       return { name, passed, details };
     };
 
@@ -20,8 +22,12 @@ if (typeof window !== "undefined") {
 
         const app = new AlgorithmicPatternGenerator();
         const sim = app.currentSimulation;
-        const forcedOff = typeof sim.getShowDirectionIndicator === "function" && !sim.getShowDirectionIndicator();
-        results.push(addResult("Direction indicator forced off via URL", forcedOff));
+        const forcedOff =
+          typeof sim.getShowDirectionIndicator === "function" &&
+          !sim.getShowDirectionIndicator();
+        results.push(
+          addResult("Direction indicator forced off via URL", forcedOff)
+        );
 
         // Clean up
         app.cleanup();
@@ -29,7 +35,9 @@ if (typeof window !== "undefined") {
         url.searchParams.delete("dir");
         history.replaceState({}, "", url);
       } catch (e) {
-        results.push(addResult("Direction indicator forced off via URL", false, e.message));
+        results.push(
+          addResult("Direction indicator forced off via URL", false, e.message)
+        );
       }
 
       // 2) Ants slider responsiveness (Langton)
@@ -43,7 +51,13 @@ if (typeof window !== "undefined") {
         const before = sim.ants.length;
         sim.setAntCount(5);
         const after = sim.ants.length;
-        results.push(addResult("Ants slider responsiveness", after === 5 && after !== before, `before=${before}, after=${after}`));
+        results.push(
+          addResult(
+            "Ants slider responsiveness",
+            after === 5 && after !== before,
+            `before=${before}, after=${after}`
+          )
+        );
       } catch (e) {
         results.push(addResult("Ants slider responsiveness", false, e.message));
       }
@@ -64,28 +78,42 @@ if (typeof window !== "undefined") {
 
         // Place a termite over that cell, not carrying
         sim.termites = [
-          { x: sim.gridOffsetX + col * sim.cellSize + 1, y: sim.gridOffsetY + row * sim.cellSize + 1, angle: 0, isCarrying: false, trail: [] },
+          {
+            x: sim.gridOffsetX + col * sim.cellSize + 1,
+            y: sim.gridOffsetY + row * sim.cellSize + 1,
+            angle: 0,
+            isCarrying: false,
+            trail: [],
+          },
         ];
 
         // One update should cause pickup (active -> inactive, carrying -> true)
         sim.update();
-        const pickedUp = sim.termites[0].isCarrying === true && sim.grid[row][col] === false;
+        const pickedUp =
+          sim.termites[0].isCarrying === true && sim.grid[row][col] === false;
 
         // Move to neighbouring empty cell and drop
         const ncol = Math.max(0, Math.min(sim.cols - 1, col + 1));
         sim.termites[0].x = sim.gridOffsetX + ncol * sim.cellSize + 1;
         sim.termites[0].y = sim.gridOffsetY + row * sim.cellSize + 1;
         sim.update();
-        const dropped = sim.termites[0].isCarrying === false && sim.grid[row][ncol] === true;
+        const dropped =
+          sim.termites[0].isCarrying === false && sim.grid[row][ncol] === true;
 
-        results.push(addResult("Termite pickup/drop edge cases", pickedUp && dropped, `pickedUp=${pickedUp}, dropped=${dropped}`));
+        results.push(
+          addResult(
+            "Termite pickup/drop edge cases",
+            pickedUp && dropped,
+            `pickedUp=${pickedUp}, dropped=${dropped}`
+          )
+        );
       } catch (e) {
-        results.push(addResult("Termite pickup/drop edge cases", false, e.message));
+        results.push(
+          addResult("Termite pickup/drop edge cases", false, e.message)
+        );
       }
 
       return results;
     };
   })();
 }
-
-
