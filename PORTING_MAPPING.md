@@ -1,112 +1,112 @@
 # Old-to-New Test Mapping
 
-This document maps each test from `test-suite-old.html` to its corresponding new test file and category.
+This document maps each test from `test-suite-old.html` to its corresponding new test file.
 
 Note: Some items were consolidated across fewer, broader tests. Names matched by title where possible.
 
-| Old test name | Old category | New test file(s) | New category |
+| Id | Old test name | Old category | New test file(s) |
 | --- | --- | --- | --- |
-| Basic Environment Check | system | tests/system/system.test.js | system |
-| Conway Game of Life Creation | simulation-core | tests/core/simulation-creation.test.js | core |
-| Termite Algorithm Creation | simulation-core | tests/core/simulation-creation.test.js | core |
-| Langton's Ant Creation | simulation-core | tests/core/simulation-creation.test.js | core |
-| Conway Grid Initialization | simulation-core | tests/core/grid-initialization.test.js | core |
-| Conway Cell Toggle | simulation-core | tests/core/cell-toggle.test.js | core |
-| Termite Cell Toggle | simulation-core | tests/core/cell-toggle.test.js | core |
-| Langton Cell Toggle | simulation-core | tests/core/cell-toggle.test.js | core |
-| Conway Neighbour Counting | simulation-core | tests/core/neighbour-counting.test.js | core |
-| Termite Movement | simulation-core | tests/core/movement.test.js | core |
-| Langton Ant Movement | simulation-core | tests/core/movement.test.js | core |
-| Termite Slider Functionality | simulation-features | tests/features/simulation-features.test.js | features |
-| Brightness Application | simulation-features | tests/features/simulation-features.test.js | features |
-| Cell Toggle | simulation-features | UNMAPPED | UNMAPPED |
-| Drag Cell Toggle | interaction | tests/interaction/drag-toggle.test.js | interaction |
-| Drag Coordinate Fix | interaction | tests/interaction/drag-coordinate-fix.test.js | interaction |
-| Speed Setting | simulation-features | tests/features/simulation-features.test.js | features |
-| Configuration Manager | ui | tests/ui/ui.test.js | ui |
-| Shared Components | ui | UNMAPPED | UNMAPPED |
-| Performance Optimizer | ui | tests/ui/ui.test.js | ui |
-| Element Cache | ui | tests/ui/element-cache.test.js | ui |
-| Element Cache | ui | tests/ui/shared-components.test.js | ui |
-| Event Listener Manager | ui | tests/ui/event-listener-manager.test.js | ui |
-| Event Listener Manager | ui | tests/ui/shared-components.test.js | ui |
-| Grid Creation Performance | performance | tests/performance/performance.test.js | performance |
-| Cell Counting Performance | performance | tests/performance/more-performance.test.js | performance |
-| Drawing Performance | performance | tests/performance/more-performance.test.js | performance |
-| Update Performance | performance | tests/performance/performance.test.js | performance |
-| Simulation Switching | integration | tests/integration/integration.test.js | integration |
-| State Preservation | integration | tests/integration/integration.test.js | integration |
-| Modal Management | integration | tests/integration/modal-manager.test.js | integration |
-| Control Management | integration | tests/integration/control-management.test.js | integration |
-| Initial Controls Visibility on Page Load | ui | tests/ui/control-manager-visibility.test.js | ui |
-| Controls Visibility Timing | ui | tests/integration/control-management.test.js | integration |
-| Termite Slider Integration | termite | UNMAPPED | UNMAPPED |
-| Modal Template Manager - Content Templates | ui | tests/integration/modal-template-manager.test.js | integration |
-| Modal Template Manager - HTML Generation | ui | tests/ui/modal-template-html.test.js | ui |
-| Modal Template Manager - Content Injection | ui | tests/ui/modal-template-injection.test.js | ui |
-| Dynamic Modal System - Integration | conway | tests/ui/dynamic-modal-integration.test.js | conway |
-| Learn Modal Content Verification | conway | UNMAPPED | UNMAPPED |
-| Learn Modal Shows Correct Content for Current Simulation | ui | tests/ui/learn-modal-content.test.js | ui |
-| UnifiedModalSystem opens custom content | ui | tests/ui/unified-modal-system.test.js | ui |
-| Modal Scroll Position Management | conway | tests/ui/modal-scroll-position.test.js | conway |
-| Dynamic Speed Slider Initialization | dynamic-speed-slider | tests/ui/dynamic-speed-slider.test.js | ui |
-| Dynamic Speed Slider Simulation Switching | dynamic-speed-slider | tests/ui/dynamic-speed-slider.test.js | ui |
-| Dynamic Speed Slider Global Value | dynamic-speed-slider | tests/ui/dynamic-speed-slider.test.js | ui |
-| Dynamic Speed Slider Event Handling | dynamic-speed-slider | tests/ui/dynamic-speed-slider.test.js | ui |
-| Dynamic Speed Slider Speed Adjustment | dynamic-speed-slider | tests/ui/dynamic-speed-slider.test.js | ui |
-| Dynamic Speed Slider Hide/Show | dynamic-speed-slider | tests/ui/dynamic-speed-slider.test.js | ui |
-| Dynamic Fill Button Class Exists | dynamic-fill-button | UNMAPPED | UNMAPPED |
-| Dynamic Fill Button Simulation Switching | dynamic-fill-button | UNMAPPED | UNMAPPED |
-| Dynamic Fill Button Show/Hide | dynamic-fill-button | tests/ui/dynamic-fill-button.test.js | ui |
-| Dynamic Fill Button Event Handling | dynamic-fill-button | UNMAPPED | UNMAPPED |
-| Dynamic Fill Button Initial Visibility After App Load | dynamic-fill-button | UNMAPPED | UNMAPPED |
-| Dynamic Fill Coverage Statistical Bounds (±2σ, r=2) | dynamic-fill-button | UNMAPPED | UNMAPPED |
-| Fill Button Equal Cell Activation Probability (Variance Test) | dynamic-fill-button | UNMAPPED | UNMAPPED |
-| Keyboard Handler | integration | tests/integration/keyboard-handler.test.js | integration |
-| Fade-to-Black Effect | visual | tests/visual/fade-visual-tests.test.js | visual |
-| Comprehensive Fade Functionality | visual | tests/visual/fade-visual-tests.test.js | visual |
-| Visual Regression Test | visual | tests/visual/fade-visual-tests.test.js | visual |
-| Full Simulation Lifecycle Test | integration | tests/integration/full-lifecycle.test.js | integration |
-| Console Warning Detection | system | tests/system/console-and-canvas.test.js | system |
-| Test Canvas Configuration | system | tests/system/console-and-canvas.test.js | system |
-| Fade Progression Debug | system | tests/system/fade-progression-debug.test.js | system |
-| ControlVisibilityManager Initialization | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlVisibilityManager CSS Classes | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlVisibilityManager Conway Simulation | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlVisibilityManager Termite Simulation | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlVisibilityManager Langton Simulation | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlVisibilityManager State Clearing | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlVisibilityManager Backward Compatibility | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlVisibilityManager Control Visibility Check | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlVisibilityManager Extensibility | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| ControlManager Integration with ControlVisibilityManager | control-visibility | tests/ui/control-visibility-manager.test.js | ui |
-| EventFramework Declarative Registration | event-framework | tests/ui/event-framework-declarative.test.js | ui |
-| EventFramework Delegated Registration | event-framework | tests/ui/event-framework-declarative.test.js | ui |
-| EventHandlerFactory Initialization | event-handler-factory | tests/ui/event-handler-factory-extra.test.js | ui |
-| EventHandlerFactory Simulation Handlers Creation | event-handler-factory | UNMAPPED | UNMAPPED |
-| EventHandlerFactory Slider Handler Creation | event-handler-factory | UNMAPPED | UNMAPPED |
-| EventHandlerFactory Button Handler Creation | event-handler-factory | UNMAPPED | UNMAPPED |
-| EventHandlerFactory Control Setup | event-handler-factory | UNMAPPED | UNMAPPED |
-| EventHandlerFactory Custom Handler Creation | event-handler-factory | UNMAPPED | UNMAPPED |
-| EventHandlerFactory Cleanup | event-handler-factory | tests/ui/event-handler-factory-extra.test.js | ui |
-| EventHandlerFactory Integration with ControlManager | event-handler-factory | UNMAPPED | UNMAPPED |
-| UI Component Library Constructor | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Default Configurations | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Slider Creation | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Slider State Management | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Button Creation | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Button State Management | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Select Creation | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Select Options Management | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Control Group Creation | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Control Group Layout Management | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Status Display Creation | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Status Display Value Management | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Modal Creation | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Modal State Management | Updated Title | UNMAPPED | UNMAPPED |
-| UI Component Library Label Creation | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Container Creation | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Lifecycle Hooks | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Batch Operations | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Factory Methods | ui-component-library | UNMAPPED | UNMAPPED |
-| UI Component Library Component Management | ui-component-library | UNMAPPED | UNMAPPED |
+| 1 | Basic Environment Check | system | system/system.test.js |
+| 2 | Conway Game of Life Creation | simulation-core | core/simulation-creation.test.js |
+| 3 | Termite Algorithm Creation | simulation-core | core/simulation-creation.test.js |
+| 4 | Langton's Ant Creation | simulation-core | core/simulation-creation.test.js |
+| 5 | Conway Grid Initialization | simulation-core | core/grid-initialization.test.js |
+| 6 | Conway Cell Toggle | simulation-core | core/cell-toggle.test.js |
+| 7 | Termite Cell Toggle | simulation-core | core/cell-toggle.test.js |
+| 8 | Langton Cell Toggle | simulation-core | core/cell-toggle.test.js |
+| 9 | Conway Neighbour Counting | simulation-core | core/neighbour-counting.test.js |
+| 10 | Termite Movement | simulation-core | core/movement.test.js |
+| 11 | Langton Ant Movement | simulation-core | core/movement.test.js |
+| 12 | Termite Slider Functionality | simulation-features | features/simulation-features.test.js |
+| 13 | Brightness Application | simulation-features | features/simulation-features.test.js |
+| 14 | Cell Toggle | simulation-features | UNMAPPED |
+| 15 | Drag Cell Toggle | interaction | interaction/drag-toggle.test.js |
+| 16 | Drag Coordinate Fix | interaction | interaction/drag-coordinate-fix.test.js |
+| 17 | Speed Setting | simulation-features | features/simulation-features.test.js |
+| 18 | Configuration Manager | ui | ui/ui.test.js |
+| 19 | Shared Components | ui | UNMAPPED |
+| 20 | Performance Optimizer | ui | ui/ui.test.js |
+| 21 | Element Cache | ui | ui/element-cache.test.js |
+| 22 | Element Cache | ui | ui/shared-components.test.js |
+| 23 | Event Listener Manager | ui | ui/event-listener-manager.test.js |
+| 24 | Event Listener Manager | ui | ui/shared-components.test.js |
+| 25 | Grid Creation Performance | performance | performance/performance.test.js |
+| 26 | Cell Counting Performance | performance | performance/more-performance.test.js |
+| 27 | Drawing Performance | performance | performance/more-performance.test.js |
+| 28 | Update Performance | performance | performance/performance.test.js |
+| 29 | Simulation Switching | integration | integration/integration.test.js |
+| 30 | State Preservation | integration | integration/integration.test.js |
+| 31 | Modal Management | integration | integration/modal-manager.test.js |
+| 32 | Control Management | integration | integration/control-management.test.js |
+| 33 | Initial Controls Visibility on Page Load | ui | ui/control-manager-visibility.test.js |
+| 34 | Controls Visibility Timing | ui | integration/control-management.test.js |
+| 35 | Termite Slider Integration | termite | UNMAPPED |
+| 36 | Modal Template Manager - Content Templates | ui | integration/modal-template-manager.test.js |
+| 37 | Modal Template Manager - HTML Generation | ui | ui/modal-template-html.test.js |
+| 38 | Modal Template Manager - Content Injection | ui | ui/modal-template-injection.test.js |
+| 39 | Dynamic Modal System - Integration | conway | ui/dynamic-modal-integration.test.js |
+| 40 | Learn Modal Content Verification | conway | UNMAPPED |
+| 41 | Learn Modal Shows Correct Content for Current Simulation | ui | ui/learn-modal-content.test.js |
+| 42 | UnifiedModalSystem opens custom content | ui | ui/unified-modal-system.test.js |
+| 43 | Modal Scroll Position Management | conway | ui/modal-scroll-position.test.js |
+| 44 | Dynamic Speed Slider Initialization | dynamic-speed-slider | ui/dynamic-speed-slider.test.js |
+| 45 | Dynamic Speed Slider Simulation Switching | dynamic-speed-slider | ui/dynamic-speed-slider.test.js |
+| 46 | Dynamic Speed Slider Global Value | dynamic-speed-slider | ui/dynamic-speed-slider.test.js |
+| 47 | Dynamic Speed Slider Event Handling | dynamic-speed-slider | ui/dynamic-speed-slider.test.js |
+| 48 | Dynamic Speed Slider Speed Adjustment | dynamic-speed-slider | ui/dynamic-speed-slider.test.js |
+| 49 | Dynamic Speed Slider Hide/Show | dynamic-speed-slider | ui/dynamic-speed-slider.test.js |
+| 50 | Dynamic Fill Button Class Exists | dynamic-fill-button | UNMAPPED |
+| 51 | Dynamic Fill Button Simulation Switching | dynamic-fill-button | UNMAPPED |
+| 52 | Dynamic Fill Button Show/Hide | dynamic-fill-button | ui/dynamic-fill-button.test.js |
+| 53 | Dynamic Fill Button Event Handling | dynamic-fill-button | UNMAPPED |
+| 54 | Dynamic Fill Button Initial Visibility After App Load | dynamic-fill-button | UNMAPPED |
+| 55 | Dynamic Fill Coverage Statistical Bounds (±2σ, r=2) | dynamic-fill-button | UNMAPPED |
+| 56 | Fill Button Equal Cell Activation Probability (Variance Test) | dynamic-fill-button | UNMAPPED |
+| 57 | Keyboard Handler | integration | integration/keyboard-handler.test.js |
+| 58 | Fade-to-Black Effect | visual | visual/fade-visual-tests.test.js |
+| 59 | Comprehensive Fade Functionality | visual | visual/fade-visual-tests.test.js |
+| 60 | Visual Regression Test | visual | visual/fade-visual-tests.test.js |
+| 61 | Full Simulation Lifecycle Test | integration | integration/full-lifecycle.test.js |
+| 62 | Console Warning Detection | system | system/console-and-canvas.test.js |
+| 63 | Test Canvas Configuration | system | system/console-and-canvas.test.js |
+| 64 | Fade Progression Debug | system | system/fade-progression-debug.test.js |
+| 65 | ControlVisibilityManager Initialization | control-visibility | ui/control-visibility-manager.test.js |
+| 66 | ControlVisibilityManager CSS Classes | control-visibility | ui/control-visibility-manager.test.js |
+| 67 | ControlVisibilityManager Conway Simulation | control-visibility | ui/control-visibility-manager.test.js |
+| 68 | ControlVisibilityManager Termite Simulation | control-visibility | ui/control-visibility-manager.test.js |
+| 69 | ControlVisibilityManager Langton Simulation | control-visibility | ui/control-visibility-manager.test.js |
+| 70 | ControlVisibilityManager State Clearing | control-visibility | ui/control-visibility-manager.test.js |
+| 71 | ControlVisibilityManager Backward Compatibility | control-visibility | ui/control-visibility-manager.test.js |
+| 72 | ControlVisibilityManager Control Visibility Check | control-visibility | ui/control-visibility-manager.test.js |
+| 73 | ControlVisibilityManager Extensibility | control-visibility | ui/control-visibility-manager.test.js |
+| 74 | ControlManager Integration with ControlVisibilityManager | control-visibility | ui/control-visibility-manager.test.js |
+| 75 | EventFramework Declarative Registration | event-framework | ui/event-framework-declarative.test.js |
+| 76 | EventFramework Delegated Registration | event-framework | ui/event-framework-declarative.test.js |
+| 77 | EventHandlerFactory Initialization | event-handler-factory | ui/event-handler-factory-extra.test.js |
+| 78 | EventHandlerFactory Simulation Handlers Creation | event-handler-factory | UNMAPPED |
+| 79 | EventHandlerFactory Slider Handler Creation | event-handler-factory | UNMAPPED |
+| 80 | EventHandlerFactory Button Handler Creation | event-handler-factory | UNMAPPED |
+| 81 | EventHandlerFactory Control Setup | event-handler-factory | UNMAPPED |
+| 82 | EventHandlerFactory Custom Handler Creation | event-handler-factory | UNMAPPED |
+| 83 | EventHandlerFactory Cleanup | event-handler-factory | ui/event-handler-factory-extra.test.js |
+| 84 | EventHandlerFactory Integration with ControlManager | event-handler-factory | UNMAPPED |
+| 85 | UI Component Library Constructor | ui-component-library | UNMAPPED |
+| 86 | UI Component Library Default Configurations | ui-component-library | UNMAPPED |
+| 87 | UI Component Library Slider Creation | ui-component-library | UNMAPPED |
+| 88 | UI Component Library Slider State Management | ui-component-library | UNMAPPED |
+| 89 | UI Component Library Button Creation | ui-component-library | UNMAPPED |
+| 90 | UI Component Library Button State Management | ui-component-library | UNMAPPED |
+| 91 | UI Component Library Select Creation | ui-component-library | UNMAPPED |
+| 92 | UI Component Library Select Options Management | ui-component-library | UNMAPPED |
+| 93 | UI Component Library Control Group Creation | ui-component-library | UNMAPPED |
+| 94 | UI Component Library Control Group Layout Management | ui-component-library | UNMAPPED |
+| 95 | UI Component Library Status Display Creation | ui-component-library | UNMAPPED |
+| 96 | UI Component Library Status Display Value Management | ui-component-library | UNMAPPED |
+| 97 | UI Component Library Modal Creation | ui-component-library | UNMAPPED |
+| 98 | UI Component Library Modal State Management | Updated Title | UNMAPPED |
+| 99 | UI Component Library Label Creation | ui-component-library | UNMAPPED |
+| 100 | UI Component Library Container Creation | ui-component-library | UNMAPPED |
+| 101 | UI Component Library Lifecycle Hooks | ui-component-library | UNMAPPED |
+| 102 | UI Component Library Batch Operations | ui-component-library | UNMAPPED |
+| 103 | UI Component Library Factory Methods | ui-component-library | UNMAPPED |
+| 104 | UI Component Library Component Management | ui-component-library | UNMAPPED |
