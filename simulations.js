@@ -2457,10 +2457,7 @@ class LangtonsAnt extends BaseSimulation {
       const startAngle = this.#edgeAngle(entryEdge);
       const cx = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
       const cy = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
-      const startX = cx + (this.cellSize / 2) * Math.cos(startAngle);
-      const startY = cy + (this.cellSize / 2) * Math.sin(startAngle);
-      // Update trail at the entry edge midpoint before moving
-      this.updateActorTrail(ant, startX, startY);
+      const radius = this.cellSize / 2;
 
       // Flip the cell
       this.grid[ant.y][ant.x] = !currentCell;
@@ -2478,11 +2475,26 @@ class LangtonsAnt extends BaseSimulation {
         type: "arc",
         cx,
         cy,
-        radius: this.cellSize / 2,
+        radius,
         startAngle,
         endAngle,
         turn: turnRight ? 1 : -1, // 1 => right (CW), -1 => left (CCW)
       };
+
+      // Increase trail sampling frequency along the arc to approximate termite density
+      const termiteStep =
+        typeof AppConstants !== "undefined"
+          ? (AppConstants.TermiteDefaults && AppConstants.TermiteDefaults.MOVE_SPEED) || 2
+          : 2;
+      const pathLength = Math.abs(endAngle - startAngle) * radius; // quarter-arc length
+      const samples = Math.max(1, Math.round(pathLength / Math.max(1, termiteStep)));
+      for (let i = 0; i <= samples; i++) {
+        const t = i / samples;
+        const angle = startAngle + (endAngle - startAngle) * t;
+        const sx = cx + radius * Math.cos(angle);
+        const sy = cy + radius * Math.sin(angle);
+        this.updateActorTrail(ant, sx, sy);
+      }
 
       // Apply the direction change after planning path
       ant.direction = newDirection;
@@ -2588,7 +2600,9 @@ class LangtonsAnt extends BaseSimulation {
     // Add a new ant at the specified or random position
     const ctor = typeof GridActor !== "undefined" ? GridActor : null;
     const dir = Math.floor(Math.random() * 4);
-    const ant = ctor ? new ctor(x, y, dir, { trail: [] }) : { x, y, direction: dir, trail: [] };
+    const ant = ctor
+      ? new ctor(x, y, dir, { trail: [] })
+      : { x, y, direction: dir, trail: [] };
     this.ants.push(ant);
 
     // Draw immediately so the ant is visible even when paused
@@ -2606,7 +2620,9 @@ class LangtonsAnt extends BaseSimulation {
     const y = Math.max(0, Math.min(this.rows - 1, gridPos.row));
     const ctor = typeof GridActor !== "undefined" ? GridActor : null;
     const dir = Math.floor(Math.random() * 4);
-    const ant = ctor ? new ctor(x, y, dir, { trail: [] }) : { x, y, direction: dir, trail: [] };
+    const ant = ctor
+      ? new ctor(x, y, dir, { trail: [] })
+      : { x, y, direction: dir, trail: [] };
     this.ants.push(ant);
     this.draw();
   }
@@ -2625,7 +2641,9 @@ class LangtonsAnt extends BaseSimulation {
         const y = Math.floor(Math.random() * this.rows);
         const ctor = typeof GridActor !== "undefined" ? GridActor : null;
         const dir = Math.floor(Math.random() * 4);
-        const ant = ctor ? new ctor(x, y, dir, { trail: [] }) : { x, y, direction: dir, trail: [] };
+        const ant = ctor
+          ? new ctor(x, y, dir, { trail: [] })
+          : { x, y, direction: dir, trail: [] };
         this.ants.push(ant);
       }
     } else {
