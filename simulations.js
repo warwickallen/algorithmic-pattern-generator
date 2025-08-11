@@ -2069,7 +2069,7 @@ class TermiteAlgorithm extends BaseSimulation {
   constructor(canvas, ctx) {
     super(canvas, ctx, "termite");
     this.termites = [];
-    this.woodChips = new Set();
+    this.grid = this.createGrid(this.rows || 1, this.cols || 1, false);
     this.maxTermites = 50;
     this.speed =
       typeof AppConstants !== "undefined"
@@ -2084,34 +2084,42 @@ class TermiteAlgorithm extends BaseSimulation {
         ? AppConstants.SimulationDefaults.CELL_SIZE_DEFAULT
         : 10;
 
-    // Register serializer for wood chips and termites state preservation
+    // Register serializer for active grid and termites state preservation
     this.stateManager.registerSerializer({
       capture: (sim) => {
-        return {
-          woodChips: Array.from(sim.woodChips),
-          termites: sim.termites.map((t) => ({
-            x: t.x,
-            y: t.y,
-            angle: t.angle,
-            carrying: !!t.carrying,
-            trail: t.trail || [],
-          })),
-        };
+        const extra = {};
+        if (sim.grid) extra.grid = sim.grid.map((row) => [...row]);
+        extra.termites = sim.termites.map((t) => ({
+          x: t.x,
+          y: t.y,
+          angle: t.angle,
+          isCarrying: !!(t.isCarrying || t.carrying),
+          trail: t.trail || [],
+        }));
+        return extra;
       },
       restore: (sim, state) => {
-        if (Array.isArray(state.woodChips)) {
-          sim.woodChips = new Set(state.woodChips);
+        if (state.grid) {
+          // Recreate grid for current dimensions
+          sim.grid = sim.createGrid(sim.rows, sim.cols, false);
+          const minRows = Math.min(state.grid.length, sim.rows);
+          const minCols = Math.min(state.grid[0]?.length || 0, sim.cols);
+          for (let row = 0; row < minRows; row++) {
+            for (let col = 0; col < minCols; col++) {
+              sim.grid[row][col] = state.grid[row][col];
+            }
+          }
         }
         if (Array.isArray(state.termites)) {
           sim.termites = state.termites.map((t) => ({
             x: Math.max(0, Math.min(t.x, sim.canvas.width)),
             y: Math.max(0, Math.min(t.y, sim.canvas.height)),
             angle: t.angle || 0,
-            carrying: !!t.carrying,
+            isCarrying: !!(t.isCarrying || t.carrying),
             trail: t.trail || [],
           }));
         }
-        sim.cellCount = sim.woodChips.size;
+        sim.cellCount = sim.countLiveCells(sim.grid || []);
       },
     });
   }
@@ -2123,7 +2131,7 @@ class TermiteAlgorithm extends BaseSimulation {
 
   initData() {
     this.initTermites();
-    this.initWoodChips();
+    this.initActiveGrid();
   }
 
   initTermites() {
@@ -2139,27 +2147,16 @@ class TermiteAlgorithm extends BaseSimulation {
     }
   }
 
-  initWoodChips() {
-    // Defensive check to ensure woodChips is initialized
-    if (!this.woodChips) {
-      this.woodChips = new Set();
-    }
-    this.woodChips.clear();
+  initActiveGrid() {
+    // Initialize active grid of cells representing chips
+    this.grid = this.createGrid(this.rows, this.cols, false);
     const defaultCoverage =
       typeof AppConstants !== "undefined"
         ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
         : 0.3;
-    const numChips = Math.floor(this.cols * this.rows * defaultCoverage);
-
-    for (let i = 0; i < numChips; i++) {
-      const col = Math.floor(Math.random() * this.cols);
-      const row = Math.floor(Math.random() * this.rows);
-      const x = this.gridOffsetX + col * this.cellSize;
-      const y = this.gridOffsetY + row * this.cellSize;
-      this.woodChips.add(`${x},${y}`);
-    }
-    // Ensure cell count reflects initial wood chips even when paused
-    this.cellCount = this.woodChips.size;
+    // Use shared randomizeGrid for consistency
+    this.randomizeGrid(this.grid, defaultCoverage);
+    this.cellCount = this.countLiveCells(this.grid);
   }
 
   // Override lifecycle methods
@@ -2171,12 +2168,8 @@ class TermiteAlgorithm extends BaseSimulation {
 
   clear() {
     super.clear();
-    // Defensive check to ensure woodChips is initialized
-    if (!this.woodChips) {
-      this.woodChips = new Set();
-    }
-    this.woodChips.clear();
-    this.termites.forEach((termite) => (termite.carrying = false));
+    this.grid = this.createGrid(this.rows, this.cols, false);
+    this.termites.forEach((termite) => (termite.isCarrying = false));
     this.draw();
   }
 
@@ -2186,24 +2179,11 @@ class TermiteAlgorithm extends BaseSimulation {
   }
 
   update() {
-    // Create a virtual grid for fade state tracking
-    const virtualGrid = this.createGrid(this.rows, this.cols, false);
-
-    // Mark active cells in virtual grid
-    this.woodChips.forEach((chipKey) => {
-      const [x, y] = chipKey.split(",").map(Number);
-      const { col, row } = this.screenToGrid(x, y);
-      if (this.isValidGridPosition(row, col)) {
-        virtualGrid[row][col] = true;
-      }
-    });
-
-    // Update fade states before incrementing generation
-    // This ensures we can properly track initial inactive cells on generation 0
-    this.updateFadeStates(virtualGrid);
+    // Update fade states based on active grid before incrementing generation
+    this.updateFadeStates(this.grid);
 
     this.generation++;
-    this.cellCount = this.woodChips.size;
+    this.cellCount = this.countLiveCells(this.grid);
 
     this.termites.forEach((termite) => {
       // Update trail before moving
@@ -2221,27 +2201,24 @@ class TermiteAlgorithm extends BaseSimulation {
       termite.x = (termite.x + this.canvas.width) % this.canvas.width;
       termite.y = (termite.y + this.canvas.height) % this.canvas.height;
 
-      // Check for wood chips (snap to nearest cell accounting for grid offset)
+      // Determine current grid cell under the termite
       let gridCol = Math.floor((termite.x - this.gridOffsetX) / this.cellSize);
       let gridRow = Math.floor((termite.y - this.gridOffsetY) / this.cellSize);
       // Clamp to valid grid bounds to avoid off-grid chip positions
       gridCol = Math.max(0, Math.min(this.cols - 1, gridCol));
       gridRow = Math.max(0, Math.min(this.rows - 1, gridRow));
-      const gridX = this.gridOffsetX + gridCol * this.cellSize;
-      const gridY = this.gridOffsetY + gridRow * this.cellSize;
-      const chipKey = `${gridX},${gridY}`;
-
-      if (termite.carrying) {
-        // Drop wood chip if on empty space
-        if (!this.woodChips.has(chipKey)) {
-          this.woodChips.add(chipKey);
-          termite.carrying = false;
+      const isActive = this.grid[gridRow][gridCol];
+      if (termite.isCarrying) {
+        // Drop chip if current cell is inactive
+        if (!isActive) {
+          this.grid[gridRow][gridCol] = true;
+          termite.isCarrying = false;
         }
       } else {
-        // Pick up wood chip if on wood chip
-        if (this.woodChips.has(chipKey)) {
-          this.woodChips.delete(chipKey);
-          termite.carrying = true;
+        // Pick up chip if current cell is active
+        if (isActive) {
+          this.grid[gridRow][gridCol] = false;
+          termite.isCarrying = true;
         }
       }
 
@@ -2260,24 +2237,12 @@ class TermiteAlgorithm extends BaseSimulation {
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Create a virtual grid for fade state tracking
-    const virtualGrid = this.createGrid(this.rows, this.cols, false);
-
-    // Mark active cells in virtual grid
-    this.woodChips.forEach((chipKey) => {
-      const [x, y] = chipKey.split(",").map(Number);
-      const { col, row } = this.screenToGrid(x, y);
-      if (this.isValidGridPosition(row, col)) {
-        virtualGrid[row][col] = true;
-      }
-    });
-
     // Draw the entire grid so fading of inactive cells is visible
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
         const x = this.gridOffsetX + col * this.cellSize;
         const y = this.gridOffsetY + row * this.cellSize;
-        const isActive = virtualGrid[row][col];
+        const isActive = this.grid[row][col];
         this.drawCell(x, y, null, isActive);
       }
     }
@@ -2331,33 +2296,15 @@ class TermiteAlgorithm extends BaseSimulation {
     const { col, row } = this.screenToGrid(x, y);
 
     if (this.isValidGridPosition(row, col)) {
-      const gridX = this.gridOffsetX + col * this.cellSize;
-      const gridY = this.gridOffsetY + row * this.cellSize;
-      const chipKey = `${gridX},${gridY}`;
-
-      const wasActive = this.woodChips.has(chipKey);
-
-      if (wasActive) {
-        this.woodChips.delete(chipKey);
-      } else {
-        this.woodChips.add(chipKey);
-      }
-
-      this.cellCount = this.woodChips.size;
+      const wasActive = this.grid[row][col];
+      this.grid[row][col] = !wasActive;
+      this.cellCount = this.countLiveCells(this.grid);
 
       // Unified brightness handling
-      this.applyToggleBrightness(row, col, !wasActive);
+      this.applyToggleBrightness(row, col, this.grid[row][col]);
 
       // Update fade states before drawing to ensure proper fade behavior
-      const virtualGrid = this.createGrid(this.rows, this.cols, false);
-      this.woodChips.forEach((chipKey) => {
-        const [x, y] = chipKey.split(",").map(Number);
-        const { col, row } = this.screenToGrid(x, y);
-        if (this.isValidGridPosition(row, col)) {
-          virtualGrid[row][col] = true;
-        }
-      });
-      this.updateFadeStates(virtualGrid);
+      this.updateFadeStates(this.grid);
       this.draw();
     }
   }
@@ -2367,46 +2314,16 @@ class TermiteAlgorithm extends BaseSimulation {
       ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
       : 0.3
   ) {
-    // Defensive check to ensure woodChips is initialized
-    if (!this.woodChips) {
-      this.woodChips = new Set();
-    }
-    this.woodChips.clear();
-
-    // Create a virtual grid and use the base randomizeGrid method for consistency
-    const virtualGrid = [];
-    for (let row = 0; row < this.rows; row++) {
-      virtualGrid[row] = new Array(this.cols).fill(false);
-    }
-
-    // Use the base class randomizeGrid method (no coordinate conversion!)
-    const activatedCells = this.randomizeGrid(virtualGrid, likelihood);
-
-    // Convert the virtual grid results to woodChips using grid coordinates
-    let convertedChips = 0;
-    for (let row = 0; row < this.rows; row++) {
-      for (let col = 0; col < this.cols; col++) {
-        if (virtualGrid[row][col]) {
-          const x = this.gridOffsetX + col * this.cellSize;
-          const y = this.gridOffsetY + row * this.cellSize;
-          this.woodChips.add(`${x},${y}`);
-          convertedChips++;
-        }
-      }
-    }
-    // Update cell count to match wood chips
-    this.cellCount = this.woodChips.size;
+    // Create/clear grid then randomize
+    this.grid = this.createGrid(this.rows, this.cols, false);
+    this.randomizeGrid(this.grid, likelihood);
+    this.cellCount = this.countLiveCells(this.grid);
 
     // Reset termites to not carrying anything
-    this.termites.forEach((termite) => (termite.carrying = false));
+    this.termites.forEach((termite) => (termite.isCarrying = false));
 
     // Reinitialise brightness using unified helper
-    this.resetBrightnessFromActiveGrid((row, col) => {
-      const gridX = this.gridOffsetX + col * this.cellSize;
-      const gridY = this.gridOffsetY + row * this.cellSize;
-      const chipKey = `${gridX},${gridY}`;
-      return this.woodChips.has(chipKey);
-    });
+    this.resetBrightnessFromActiveGrid((row, col) => this.grid[row][col]);
 
     // Redraw to show the new random pattern
     this.draw();
