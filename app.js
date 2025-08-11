@@ -2230,7 +2230,7 @@ class AppMetadataLoader {
             meta.name
           )} • <a href="https://github.com/warwickallen/algorithmic-pattern-generator#algorithmic-pattern-generator" target="_blank" rel="noopener noreferrer">About</a> • Build ${safe(
       meta.build
-    )} • Licence: ${safe(meta.licenceName)}
+    )} • ${safe(meta.licenceName)}
         </span>
       </div>
     `;
