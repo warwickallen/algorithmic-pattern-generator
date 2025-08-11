@@ -162,6 +162,44 @@
   );
 
   runner.addTest(
+    "Dynamic Fill Button Simulation Switching",
+    async () => {
+      if (typeof DynamicFillButton === "undefined") {
+        return {
+          skip: true,
+          details: "Skipped: DynamicFillButton not available",
+        };
+      }
+      const button = ensureFillButtonDom();
+      const eventFramework = new EventFramework();
+      const dynamicFillButton = new DynamicFillButton(eventFramework);
+      try {
+        const mockApp = { handleRandomPattern: () => {} };
+        dynamicFillButton.init();
+        dynamicFillButton.switchToSimulation("conway", mockApp);
+        const cVisible = button.style.display === "inline-block";
+        dynamicFillButton.switchToSimulation("termite", mockApp);
+        const tVisible = button.style.display === "inline-block";
+        dynamicFillButton.switchToSimulation("langton", mockApp);
+        const lVisible = button.style.display === "inline-block";
+        dynamicFillButton.switchToSimulation("unknown", mockApp);
+        const hidden = button.style.display === "none";
+        return {
+          passed: cVisible && tVisible && lVisible && hidden,
+          details: `conway=${cVisible}, termite=${tVisible}, langton=${lVisible}, otherHidden=${hidden}`,
+        };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        dynamicFillButton.cleanup();
+        eventFramework.cleanup && eventFramework.cleanup();
+        if (button && button.parentNode) button.parentNode.removeChild(button);
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
     "Dynamic Fill Button activates cells approximately",
     async () => {
       if (typeof AlgorithmicPatternGenerator === "undefined") {
@@ -209,6 +247,78 @@
       } finally {
         [canvas, btn, like, likeVal].forEach(
           (el) => el.parentNode && el.parentNode.removeChild(el)
+        );
+      }
+    },
+    "ui"
+  );
+
+  runner.addTest(
+    "Dynamic Fill Button equal activation probability (variance)",
+    async () => {
+      if (typeof AlgorithmicPatternGenerator === "undefined") {
+        return { skip: true, details: "Skipped: app class not available" };
+      }
+      // Small grid for speed and stability
+      const canvas = document.createElement("canvas");
+      canvas.id = "canvas";
+      canvas.width = 20;
+      canvas.height = 20;
+      document.body.appendChild(canvas);
+      const btn = document.createElement("button");
+      btn.id = "dynamic-fill-btn";
+      document.body.appendChild(btn);
+      const like = document.createElement("input");
+      like.type = "range";
+      like.id = "likelihood-slider";
+      like.value = "30";
+      const likeVal = document.createElement("span");
+      likeVal.id = "likelihood-value";
+      likeVal.textContent = "30%";
+      document.body.appendChild(like);
+      document.body.appendChild(likeVal);
+      let app = null;
+      try {
+        app = new AlgorithmicPatternGenerator();
+        await new Promise((r) => setTimeout(r, 30));
+        const sim = app.currentSimulation;
+        if (!sim || !sim.rows || !sim.cols || !sim.grids) {
+          return { skip: true, details: "Skipped: conway grid not available" };
+        }
+        const rows = sim.rows;
+        const cols = sim.cols;
+        const counts = new Array(rows * cols).fill(0);
+        const indexOf = (r, c) => r * cols + c;
+        const trials = 40;
+        for (let k = 0; k < trials; k++) {
+          btn.click();
+          const grid = app.currentSimulation.grids.current;
+          for (let r = 0; r < rows; r++) {
+            const row = grid[r];
+            for (let c = 0; c < cols; c++) {
+              if (row[c]) counts[indexOf(r, c)] += 1;
+            }
+          }
+        }
+        const mean = counts.reduce((a, b) => a + b, 0) / counts.length;
+        const variance =
+          counts.reduce((acc, x) => acc + (x - mean) * (x - mean), 0) /
+          counts.length;
+        const stdev = Math.sqrt(variance);
+        // Loose bound to avoid flakes: coefficient of variation under 0.5
+        const passed = mean > 0 && stdev / mean < 0.5;
+        return {
+          passed,
+          details: `cells=${counts.length}, trials=${trials}, mean=${mean.toFixed(
+            2
+          )}, stdev=${stdev.toFixed(2)}, cv=${(stdev / mean).toFixed(2)}`,
+        };
+      } catch (e) {
+        return { passed: false, details: e.message };
+      } finally {
+        if (app) app.cleanup();
+        [canvas, btn, like, likeVal].forEach(
+          (el) => el && el.parentNode && el.parentNode.removeChild(el)
         );
       }
     },

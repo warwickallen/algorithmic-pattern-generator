@@ -66,7 +66,7 @@ Key files already ported (non-exhaustive):
 - system:
   - `system.tests.js`, `test-utilities.test.js`
 
-The test manifest (`tests/manifest.js`) is auto-generated and currently includes 42 test files, with 99 total tests.
+The test manifest (`tests/manifest.js`) is auto-generated and currently includes 43 test files, with 102 total tests.
 
 ### 3. Test File Format
 
@@ -227,27 +227,14 @@ After porting, verify:
 
 ### 9. Known Issues / Next Steps
 
-✅ **RESOLVED**: The failing test `Learn Modal Shows Correct Content for Current Simulation` (category `ui`) has been fixed.
+✅ All previously unmapped items from the old suite have now been ported:
 
-- **Solution implemented**: Added dynamic modal mount element creation in the test, increased wait times, and ensured proper cleanup.
-- What’s been tried:
-- **Changes made**:
-  - Created `#dynamic-modal` with required structure before app initialization
-  - Increased wait from 50ms to 100ms after `showLearnModal()`
-  - Added proper cleanup of both canvas and modal mount elements
-- **All tests now pass or are skipped as expected**.
+- Dynamic Fill Button: class existence, simulation switching, event handling, initial visibility, coverage bounds, and equal-probability variance — ported into `tests/ui/dynamic-fill-button.test.js` (using loose bounds to minimise flakiness).
+- Termite Slider Integration — added as `tests/integration/termite-slider-integration.test.js` and wired via `EventHandlerFactory` and `ConfigurationManager`.
+- EventHandlerFactory gaps — covered in `tests/ui/event-handler-factory.test.js` and `tests/ui/event-handler-factory-extra.test.js` (simulation/slider/button handler creation, control setup, custom handler, ControlManager integration).
+- UI Component Library gaps — covered across `tests/ui/ui-component-library-2.test.js` and `tests/ui/ui-component-library-extra.test.js`.
 
-Further items to port (tracked and being migrated incrementally):
-
-- Dynamic Speed Slider: Global value behaviour across simulation switches — added
-- Dynamic Fill Button: Statistical coverage check — added (reduced/loose bounds)
-- Event Handler Factory: Control setup — added; custom handler binding — added; cleanup — added; ControlManager integration — added
-- UI Component Library: Status display — added; modal state management — added; lifecycle hooks and batch operations — added; factory methods — added; component management retrieval tests — added
-- Keyboard handler coverage — added (tests/integration/keyboard-handler.test.js)
-- Fade/visual tests ported — added (tests/visual/fade-visual-tests.test.js)
-- Console warnings + canvas configuration — added (tests/system/console-and-canvas.test.js)
-- Fade progression debug — added (tests/system/fade-progression-debug.test.js)
-- Full lifecycle test — added (tests/integration/full-lifecycle.test.js)
+All tests now pass or are skipped as expected.
 
 ### 10. Suite/UI Enhancements Implemented
 
