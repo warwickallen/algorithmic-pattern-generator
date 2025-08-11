@@ -997,35 +997,15 @@ Termite simulation with wood chip manipulation:
 
 - Configurable termite count
 - Wood chip pickup and drop mechanics
-- Visual termite representation with direction indicators
-- Trail system for visual effects
+- Chips represented directly as active cells on a grid (no separate `woodChips` set)
+- Visual termites with direction indicators and continuous trail effects
 - Performance optimised for large numbers of termites
 - Legacy fade system adapted to use new brightness approach
-- Serialiser preserves wood chips and termites (including trails)
+- Serialiser preserves active grid and termites (including trails and carrying state)
 
 **Rendering Strategy:**
 
-The Termite simulation constructs a virtual grid of active cells from `woodChips` and renders the entire grid so faded cells remain visible:
-
-```javascript
-// Build virtual grid of active cells
-const virtualGrid = this.createGrid(this.rows, this.cols, false);
-this.woodChips.forEach((chipKey) => {
-  const [x, y] = chipKey.split(",").map(Number);
-  const { col, row } = this.screenToGrid(x, y);
-  if (this.isValidGridPosition(row, col)) virtualGrid[row][col] = true;
-});
-
-// Render full grid so inactive cells can fade visually
-for (let row = 0; row < this.rows; row++) {
-  for (let col = 0; col < this.cols; col++) {
-    const x = col * this.cellSize;
-    const y = row * this.cellSize;
-    const isActive = virtualGrid[row][col];
-    this.drawCell(x, y, null, isActive);
-  }
-}
-```
+The Termite simulation renders the entire active grid so fading of inactive cells remains visible each frame.
 
 #### Langton's Ant
 
@@ -1034,11 +1014,16 @@ Ant simulation with multiple ant support:
 **Features:**
 
 - Multiple ants with independent movement
-- Mouse-based ant placement
-- Random ant addition
+- Mouse-based ant placement and ant-count slider (1-100)
+- Smooth Bézier-interpolated motion between cell edge midpoints with entry/exit tangents matched to facing
+- Dense trail sampling along the per-cell curve to mimic continuous trails
 - State preservation and restoration
-- Visual ant representation with direction
+- Visual ant representation with direction indicators (toggle supported globally)
 - Serialiser preserves grid and ants (including trails)
+
+**Direction Indicator Override:**
+
+- A shared option `showDirectionIndicator` controls visibility across actor-based simulations. It can be forced via URL parameters `?dir=0|1`, `showDir`, or `showDirectionIndicator`.
 
 #### Simulation Factory
 

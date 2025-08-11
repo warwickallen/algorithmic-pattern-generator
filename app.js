@@ -1391,7 +1391,7 @@ class ControlVisibilityManager {
     this.controlGroups = new Map([
       ["conway", ["conway-controls"]],
       ["termite", ["termite-controls", "termites-container"]],
-      ["langton", ["langton-controls"]],
+      ["langton", ["langton-controls", "ants-container"]],
     ]);
 
     // Define visibility states for each simulation
@@ -1739,6 +1739,7 @@ class EventHandlerFactory {
       showLearnModal: this.createShowLearnModalHandler.bind(this),
       addAnt: this.createAddAntHandler.bind(this),
       termiteCountChange: this.createTermiteCountChangeHandler.bind(this),
+      antCountChange: this.createAntCountChangeHandler.bind(this),
       brightnessChange: this.createBrightnessChangeHandler.bind(this),
       likelihoodChange: this.createLikelihoodChangeHandler.bind(this),
     });
@@ -1757,6 +1758,7 @@ class EventHandlerFactory {
       showLearnModal: () => app.showLearnModal(), // No simType parameter needed
       addAnt: () => app.handleAddAnt(simType),
       termiteCountChange: (count) => app.handleTermiteCountChange(count),
+      antCountChange: (count) => app.handleAntCountChange(count),
       brightnessChange: (value) => app.setBrightness(value),
       likelihoodChange: (value) => app.setLikelihood(value),
     };
@@ -1810,6 +1812,8 @@ class EventHandlerFactory {
           handlers.speedChange(parseFloat(e.target.value));
         } else if (config.id.includes("termites")) {
           handlers.termiteCountChange(parseInt(e.target.value));
+        } else if (config.id.includes("ants")) {
+          handlers.antCountChange(parseInt(e.target.value));
         } else if (config.id.includes("brightness")) {
           handlers.brightnessChange(parseFloat(e.target.value));
         } else if (config.id.includes("likelihood")) {
@@ -1886,6 +1890,15 @@ class EventHandlerFactory {
    */
   createTermiteCountChangeHandler(app) {
     return (count) => app.handleTermiteCountChange(count);
+  }
+
+  /**
+   * Create ant count change handler
+   * @param {Object} app - Application instance
+   * @returns {Function} Ant count change handler
+   */
+  createAntCountChangeHandler(app) {
+    return (count) => app.handleAntCountChange(count);
   }
 
   /**
@@ -2265,6 +2278,15 @@ class ControlTemplateManager {
       type: "button",
       label: "Add Ant",
     },
+    actorCountSlider: {
+      type: "slider",
+      min: 1,
+      max: 100,
+      step: 1,
+      value: 1,
+      label: "Ants",
+      format: (value) => value.toString(),
+    },
     termiteCountSlider: {
       type: "slider",
       min:
@@ -2318,9 +2340,10 @@ class ControlTemplateManager {
     langton: {
       controls: {
         // Speed control handled by DynamicSpeedSlider
-        addAnt: {
-          template: "addAntButton",
-          id: "add-ant-btn",
+        antCount: {
+          template: "actorCountSlider",
+          id: "ants-slider",
+          valueElementId: "ants-value",
         },
         // Fill button handled by DynamicFillButton
         learn: {
@@ -2816,7 +2839,7 @@ class ControlManager {
   // Show/hide action buttons based on simulation type
   showActionButtons(simType) {
     // Hide all action buttons first (except dynamic-fill-btn which manages its own visibility)
-    const actionButtons = ["add-ant-btn", "learn-btn"];
+    const actionButtons = ["learn-btn"];
 
     actionButtons.forEach((buttonId) => {
       const button = document.getElementById(buttonId);
@@ -2921,9 +2944,7 @@ class KeyboardHandler {
     this.shortcuts.set(".", () =>
       this.app.adjustSpeed(this.app.currentType, 1)
     );
-    this.shortcuts.set("a", () =>
-      this.app.handleAddAnt(this.app.currentType, true)
-    );
+    this.shortcuts.set("a", () => this.app.handleAddActorAtPointer());
     this.shortcuts.set("[", () => this.app.adjustBrightness(-0.1));
     this.shortcuts.set("]", () => this.app.adjustBrightness(0.1));
   }
@@ -3303,6 +3324,12 @@ class AlgorithmicPatternGenerator {
     this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
     this.dynamicFillButton = new DynamicFillButton(this.eventFramework);
 
+    // URL flag for direction indicator visibility (forced override)
+    this.forcedShowDirectionIndicator = null;
+
+    // Parse URL parameters for flags
+    this.parseUrlFlags();
+
     this.init();
   }
 
@@ -3331,6 +3358,26 @@ class AlgorithmicPatternGenerator {
 
     // Start title fade animation after 5 seconds
     this.startTitleFade();
+  }
+
+  parseUrlFlags() {
+    try {
+      const search = typeof window !== "undefined" ? window.location.search : "";
+      const params = new URLSearchParams(search || "");
+      // Accepted params: dir, showDir, showDirectionIndicator
+      const key = ["dir", "showDir", "showDirectionIndicator"].find((k) =>
+        params.has(k)
+      );
+      if (!key) return;
+      const raw = (params.get(key) || "").toLowerCase();
+      const truthy = ["1", "true", "on", "yes"].includes(raw);
+      const falsy = ["0", "false", "off", "no"].includes(raw);
+      if (truthy) this.forcedShowDirectionIndicator = true;
+      else if (falsy) this.forcedShowDirectionIndicator = false;
+      // Any other value leaves it as null (no override)
+    } catch (_) {
+      // ignore parsing errors
+    }
   }
 
   setupModals() {
@@ -3432,6 +3479,24 @@ class AlgorithmicPatternGenerator {
     this.eventHandlerFactory.setupSlider(likelihoodConfig, handlers);
   }
 
+  // Initialise slider displayed values for the current simulation controls
+  initVisibleSlidersFor(type) {
+    const config = ConfigurationManager.getConfig(type);
+    if (config && config.controls) {
+      Object.values(config.controls).forEach((control) => {
+        if (control.type === "slider") {
+          const slider = this.eventFramework.getElement(`#${control.id}`);
+          const valueElement = this.eventFramework.getElement(
+            `#${control.valueElementId}`
+          );
+          if (slider && valueElement && control.format) {
+            valueElement.textContent = control.format(slider.value);
+          }
+        }
+      });
+    }
+  }
+
   createSimulation(type) {
     if (this.currentSimulation) {
       this.currentSimulation.pause();
@@ -3444,6 +3509,14 @@ class AlgorithmicPatternGenerator {
       this.ctx
     );
     this.currentSimulation.init();
+
+    // Apply forced direction indicator override if specified
+    if (this.forcedShowDirectionIndicator !== null &&
+        typeof this.currentSimulation.setShowDirectionIndicator === "function") {
+      this.currentSimulation.setShowDirectionIndicator(
+        this.forcedShowDirectionIndicator
+      );
+    }
 
     // Set brightness on the new simulation
     if (this.currentSimulation.setBrightness) {
@@ -3458,11 +3531,13 @@ class AlgorithmicPatternGenerator {
     this.currentSimulation.draw();
 
     this.updateUI();
+    this.initVisibleSlidersFor(type);
   }
 
   switchSimulation(type) {
     this.createSimulation(type);
     this.controlManager.showControls(type);
+    this.initVisibleSlidersFor(type);
   }
 
   startSimulation() {
@@ -3692,18 +3767,19 @@ class AlgorithmicPatternGenerator {
     this.modalSystem.close();
   }
 
-  // Generic add ant handler
-  handleAddAnt(simType, useMousePosition = false) {
-    if (this.currentType !== simType || !this.currentSimulation) return;
-
-    if (this.currentSimulation.addAnt) {
-      if (useMousePosition) {
-        // Pass mouse coordinates for keyboard-triggered ant addition
-        this.currentSimulation.addAnt(this.mouseX, this.mouseY);
-      } else {
-        // Use random placement for button-triggered ant addition
-        this.currentSimulation.addAnt(null, null);
-      }
+  // Generic add actor-at-pointer handler
+  handleAddActorAtPointer() {
+    if (!this.currentSimulation) return;
+    const x = this.mouseX;
+    const y = this.mouseY;
+    if (typeof this.currentSimulation.addActorAt === "function") {
+      this.currentSimulation.addActorAt(x, y);
+    } else if (
+      this.currentType === "langton" &&
+      typeof this.currentSimulation.addAnt === "function"
+    ) {
+      // Back-compat during transition
+      this.currentSimulation.addAnt(x, y);
     }
   }
 
@@ -3730,6 +3806,33 @@ class AlgorithmicPatternGenerator {
     }
 
     // Force a redraw to show termite count changes immediately, even when paused
+    if (this.currentSimulation.draw) {
+      this.currentSimulation.draw();
+    }
+  }
+
+  // Generic ant count change handler
+  handleAntCountChange(count) {
+    if (this.currentType !== "langton" || !this.currentSimulation) return;
+
+    if (typeof this.currentSimulation.setAntCount === "function") {
+      this.currentSimulation.setAntCount(count);
+    }
+
+    // Update the display value
+    const config = ConfigurationManager.getConfig("langton");
+    if (config) {
+      const antControl = config.controls.antCount;
+      if (antControl) {
+        const valueElement = this.elementCache.get(
+          `#${antControl.valueElementId}`
+        );
+        if (valueElement && antControl.format) {
+          valueElement.textContent = antControl.format(count);
+        }
+      }
+    }
+
     if (this.currentSimulation.draw) {
       this.currentSimulation.draw();
     }

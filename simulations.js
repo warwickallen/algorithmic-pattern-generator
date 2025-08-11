@@ -855,6 +855,9 @@ class BaseSimulation {
     this.gridOffsetX = 0;
     this.gridOffsetY = 0;
 
+    // Shared actor rendering options
+    this.showDirectionIndicator = true;
+
     // Lifecycle framework integration
     this.stateManager = simulationLifecycleFramework.createStateManager({
       isRunning: false,
@@ -1105,6 +1108,15 @@ class BaseSimulation {
     this.brightness = Math.max(0.1, Math.min(2.0, value));
     // Clear color cache when brightness changes
     this.colorCache.clear();
+  }
+
+  // Shared actor rendering toggles
+  setShowDirectionIndicator(enabled) {
+    this.showDirectionIndicator = !!enabled;
+  }
+
+  getShowDirectionIndicator() {
+    return !!this.showDirectionIndicator;
   }
 
   // Fade-to-black configuration methods
@@ -2057,7 +2069,7 @@ class TermiteAlgorithm extends BaseSimulation {
   constructor(canvas, ctx) {
     super(canvas, ctx, "termite");
     this.termites = [];
-    this.woodChips = new Set();
+    this.grid = this.createGrid(this.rows || 1, this.cols || 1, false);
     this.maxTermites = 50;
     this.speed =
       typeof AppConstants !== "undefined"
@@ -2072,34 +2084,42 @@ class TermiteAlgorithm extends BaseSimulation {
         ? AppConstants.SimulationDefaults.CELL_SIZE_DEFAULT
         : 10;
 
-    // Register serializer for wood chips and termites state preservation
+    // Register serializer for active grid and termites state preservation
     this.stateManager.registerSerializer({
       capture: (sim) => {
-        return {
-          woodChips: Array.from(sim.woodChips),
-          termites: sim.termites.map((t) => ({
-            x: t.x,
-            y: t.y,
-            angle: t.angle,
-            carrying: !!t.carrying,
-            trail: t.trail || [],
-          })),
-        };
+        const extra = {};
+        if (sim.grid) extra.grid = sim.grid.map((row) => [...row]);
+        extra.termites = sim.termites.map((t) => ({
+          x: t.x,
+          y: t.y,
+          angle: t.angle,
+          isCarrying: !!(t.isCarrying || t.carrying),
+          trail: t.trail || [],
+        }));
+        return extra;
       },
       restore: (sim, state) => {
-        if (Array.isArray(state.woodChips)) {
-          sim.woodChips = new Set(state.woodChips);
+        if (state.grid) {
+          // Recreate grid for current dimensions
+          sim.grid = sim.createGrid(sim.rows, sim.cols, false);
+          const minRows = Math.min(state.grid.length, sim.rows);
+          const minCols = Math.min(state.grid[0]?.length || 0, sim.cols);
+          for (let row = 0; row < minRows; row++) {
+            for (let col = 0; col < minCols; col++) {
+              sim.grid[row][col] = state.grid[row][col];
+            }
+          }
         }
         if (Array.isArray(state.termites)) {
           sim.termites = state.termites.map((t) => ({
             x: Math.max(0, Math.min(t.x, sim.canvas.width)),
             y: Math.max(0, Math.min(t.y, sim.canvas.height)),
             angle: t.angle || 0,
-            carrying: !!t.carrying,
+            isCarrying: !!(t.isCarrying || t.carrying),
             trail: t.trail || [],
           }));
         }
-        sim.cellCount = sim.woodChips.size;
+        sim.cellCount = sim.countLiveCells(sim.grid || []);
       },
     });
   }
@@ -2111,7 +2131,7 @@ class TermiteAlgorithm extends BaseSimulation {
 
   initData() {
     this.initTermites();
-    this.initWoodChips();
+    this.initActiveGrid();
   }
 
   initTermites() {
@@ -2127,27 +2147,16 @@ class TermiteAlgorithm extends BaseSimulation {
     }
   }
 
-  initWoodChips() {
-    // Defensive check to ensure woodChips is initialized
-    if (!this.woodChips) {
-      this.woodChips = new Set();
-    }
-    this.woodChips.clear();
+  initActiveGrid() {
+    // Initialize active grid of cells representing chips
+    this.grid = this.createGrid(this.rows, this.cols, false);
     const defaultCoverage =
       typeof AppConstants !== "undefined"
         ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
         : 0.3;
-    const numChips = Math.floor(this.cols * this.rows * defaultCoverage);
-
-    for (let i = 0; i < numChips; i++) {
-      const col = Math.floor(Math.random() * this.cols);
-      const row = Math.floor(Math.random() * this.rows);
-      const x = this.gridOffsetX + col * this.cellSize;
-      const y = this.gridOffsetY + row * this.cellSize;
-      this.woodChips.add(`${x},${y}`);
-    }
-    // Ensure cell count reflects initial wood chips even when paused
-    this.cellCount = this.woodChips.size;
+    // Use shared randomizeGrid for consistency
+    this.randomizeGrid(this.grid, defaultCoverage);
+    this.cellCount = this.countLiveCells(this.grid);
   }
 
   // Override lifecycle methods
@@ -2159,12 +2168,8 @@ class TermiteAlgorithm extends BaseSimulation {
 
   clear() {
     super.clear();
-    // Defensive check to ensure woodChips is initialized
-    if (!this.woodChips) {
-      this.woodChips = new Set();
-    }
-    this.woodChips.clear();
-    this.termites.forEach((termite) => (termite.carrying = false));
+    this.grid = this.createGrid(this.rows, this.cols, false);
+    this.termites.forEach((termite) => (termite.isCarrying = false));
     this.draw();
   }
 
@@ -2174,24 +2179,11 @@ class TermiteAlgorithm extends BaseSimulation {
   }
 
   update() {
-    // Create a virtual grid for fade state tracking
-    const virtualGrid = this.createGrid(this.rows, this.cols, false);
-
-    // Mark active cells in virtual grid
-    this.woodChips.forEach((chipKey) => {
-      const [x, y] = chipKey.split(",").map(Number);
-      const { col, row } = this.screenToGrid(x, y);
-      if (this.isValidGridPosition(row, col)) {
-        virtualGrid[row][col] = true;
-      }
-    });
-
-    // Update fade states before incrementing generation
-    // This ensures we can properly track initial inactive cells on generation 0
-    this.updateFadeStates(virtualGrid);
+    // Update fade states based on active grid before incrementing generation
+    this.updateFadeStates(this.grid);
 
     this.generation++;
-    this.cellCount = this.woodChips.size;
+    this.cellCount = this.countLiveCells(this.grid);
 
     this.termites.forEach((termite) => {
       // Update trail before moving
@@ -2209,27 +2201,24 @@ class TermiteAlgorithm extends BaseSimulation {
       termite.x = (termite.x + this.canvas.width) % this.canvas.width;
       termite.y = (termite.y + this.canvas.height) % this.canvas.height;
 
-      // Check for wood chips (snap to nearest cell accounting for grid offset)
+      // Determine current grid cell under the termite
       let gridCol = Math.floor((termite.x - this.gridOffsetX) / this.cellSize);
       let gridRow = Math.floor((termite.y - this.gridOffsetY) / this.cellSize);
       // Clamp to valid grid bounds to avoid off-grid chip positions
       gridCol = Math.max(0, Math.min(this.cols - 1, gridCol));
       gridRow = Math.max(0, Math.min(this.rows - 1, gridRow));
-      const gridX = this.gridOffsetX + gridCol * this.cellSize;
-      const gridY = this.gridOffsetY + gridRow * this.cellSize;
-      const chipKey = `${gridX},${gridY}`;
-
-      if (termite.carrying) {
-        // Drop wood chip if on empty space
-        if (!this.woodChips.has(chipKey)) {
-          this.woodChips.add(chipKey);
-          termite.carrying = false;
+      const isActive = this.grid[gridRow][gridCol];
+      if (termite.isCarrying) {
+        // Drop chip if current cell is inactive
+        if (!isActive) {
+          this.grid[gridRow][gridCol] = true;
+          termite.isCarrying = false;
         }
       } else {
-        // Pick up wood chip if on wood chip
-        if (this.woodChips.has(chipKey)) {
-          this.woodChips.delete(chipKey);
-          termite.carrying = true;
+        // Pick up chip if current cell is active
+        if (isActive) {
+          this.grid[gridRow][gridCol] = false;
+          termite.isCarrying = true;
         }
       }
 
@@ -2248,24 +2237,12 @@ class TermiteAlgorithm extends BaseSimulation {
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Create a virtual grid for fade state tracking
-    const virtualGrid = this.createGrid(this.rows, this.cols, false);
-
-    // Mark active cells in virtual grid
-    this.woodChips.forEach((chipKey) => {
-      const [x, y] = chipKey.split(",").map(Number);
-      const { col, row } = this.screenToGrid(x, y);
-      if (this.isValidGridPosition(row, col)) {
-        virtualGrid[row][col] = true;
-      }
-    });
-
     // Draw the entire grid so fading of inactive cells is visible
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
         const x = this.gridOffsetX + col * this.cellSize;
         const y = this.gridOffsetY + row * this.cellSize;
-        const isActive = virtualGrid[row][col];
+        const isActive = this.grid[row][col];
         this.drawCell(x, y, null, isActive);
       }
     }
@@ -2277,7 +2254,9 @@ class TermiteAlgorithm extends BaseSimulation {
 
       // Draw termite
       this.drawActor(termite.x, termite.y, 3);
-      this.drawDirectionIndicator(termite.x, termite.y, termite.angle);
+      if (this.getShowDirectionIndicator()) {
+        this.drawDirectionIndicator(termite.x, termite.y, termite.angle);
+      }
     });
   }
 
@@ -2299,37 +2278,33 @@ class TermiteAlgorithm extends BaseSimulation {
     this.initTermites();
   }
 
+  // Standardised add-actor API: place a termite under the pointer
+  addActorAt(mouseX, mouseY) {
+    if (typeof mouseX !== "number" || typeof mouseY !== "number") return;
+    const termite = {
+      x: Math.max(0, Math.min(this.canvas.width, mouseX)),
+      y: Math.max(0, Math.min(this.canvas.height, mouseY)),
+      angle: Math.random() * Math.PI * 2,
+      carrying: false,
+      trail: [],
+    };
+    this.termites.push(termite);
+    this.draw();
+  }
+
   toggleCell(x, y) {
     const { col, row } = this.screenToGrid(x, y);
 
     if (this.isValidGridPosition(row, col)) {
-      const gridX = this.gridOffsetX + col * this.cellSize;
-      const gridY = this.gridOffsetY + row * this.cellSize;
-      const chipKey = `${gridX},${gridY}`;
-
-      const wasActive = this.woodChips.has(chipKey);
-
-      if (wasActive) {
-        this.woodChips.delete(chipKey);
-      } else {
-        this.woodChips.add(chipKey);
-      }
-
-      this.cellCount = this.woodChips.size;
+      const wasActive = this.grid[row][col];
+      this.grid[row][col] = !wasActive;
+      this.cellCount = this.countLiveCells(this.grid);
 
       // Unified brightness handling
-      this.applyToggleBrightness(row, col, !wasActive);
+      this.applyToggleBrightness(row, col, this.grid[row][col]);
 
       // Update fade states before drawing to ensure proper fade behavior
-      const virtualGrid = this.createGrid(this.rows, this.cols, false);
-      this.woodChips.forEach((chipKey) => {
-        const [x, y] = chipKey.split(",").map(Number);
-        const { col, row } = this.screenToGrid(x, y);
-        if (this.isValidGridPosition(row, col)) {
-          virtualGrid[row][col] = true;
-        }
-      });
-      this.updateFadeStates(virtualGrid);
+      this.updateFadeStates(this.grid);
       this.draw();
     }
   }
@@ -2339,46 +2314,16 @@ class TermiteAlgorithm extends BaseSimulation {
       ? AppConstants.SimulationDefaults.COVERAGE_DEFAULT
       : 0.3
   ) {
-    // Defensive check to ensure woodChips is initialized
-    if (!this.woodChips) {
-      this.woodChips = new Set();
-    }
-    this.woodChips.clear();
-
-    // Create a virtual grid and use the base randomizeGrid method for consistency
-    const virtualGrid = [];
-    for (let row = 0; row < this.rows; row++) {
-      virtualGrid[row] = new Array(this.cols).fill(false);
-    }
-
-    // Use the base class randomizeGrid method (no coordinate conversion!)
-    const activatedCells = this.randomizeGrid(virtualGrid, likelihood);
-
-    // Convert the virtual grid results to woodChips using grid coordinates
-    let convertedChips = 0;
-    for (let row = 0; row < this.rows; row++) {
-      for (let col = 0; col < this.cols; col++) {
-        if (virtualGrid[row][col]) {
-          const x = this.gridOffsetX + col * this.cellSize;
-          const y = this.gridOffsetY + row * this.cellSize;
-          this.woodChips.add(`${x},${y}`);
-          convertedChips++;
-        }
-      }
-    }
-    // Update cell count to match wood chips
-    this.cellCount = this.woodChips.size;
+    // Create/clear grid then randomize
+    this.grid = this.createGrid(this.rows, this.cols, false);
+    this.randomizeGrid(this.grid, likelihood);
+    this.cellCount = this.countLiveCells(this.grid);
 
     // Reset termites to not carrying anything
-    this.termites.forEach((termite) => (termite.carrying = false));
+    this.termites.forEach((termite) => (termite.isCarrying = false));
 
     // Reinitialise brightness using unified helper
-    this.resetBrightnessFromActiveGrid((row, col) => {
-      const gridX = this.gridOffsetX + col * this.cellSize;
-      const gridY = this.gridOffsetY + row * this.cellSize;
-      const chipKey = `${gridX},${gridY}`;
-      return this.woodChips.has(chipKey);
-    });
+    this.resetBrightnessFromActiveGrid((row, col) => this.grid[row][col]);
 
     // Redraw to show the new random pattern
     this.draw();
@@ -2453,13 +2398,13 @@ class LangtonsAnt extends BaseSimulation {
   }
 
   resetAnts() {
+    const ctor = typeof GridActor !== "undefined" ? GridActor : null;
+    const cx = Math.floor(this.cols / 2);
+    const cy = Math.floor(this.rows / 2);
     this.ants = [
-      {
-        x: Math.floor(this.cols / 2),
-        y: Math.floor(this.rows / 2),
-        direction: 0,
-        trail: [], // Initialize empty trail
-      },
+      ctor
+        ? new ctor(cx, cy, 0, { trail: [] })
+        : { x: cx, y: cy, direction: 0, trail: [] },
     ];
   }
 
@@ -2507,21 +2452,90 @@ class LangtonsAnt extends BaseSimulation {
       // Get current cell state
       const currentCell = this.grid[ant.y][ant.x];
 
-      // Update trail before moving (convert grid coordinates to screen coordinates with offsets)
-      const antX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
-      const antY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
-      this.updateActorTrail(ant, antX, antY);
+      // Prepare smooth interpolation geometry within the current cell
+      const entryEdge = (ant.direction + 2) % 4; // Opposite of current facing
+      const startAngle = this.#edgeAngle(entryEdge);
+      const cx = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
+      const cy = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
+      const radius = this.cellSize / 2;
 
       // Flip the cell
       this.grid[ant.y][ant.x] = !currentCell;
 
       // Turn based on cell state
       const rule = this.rules[currentCell ? 1 : 0];
-      if (rule === "R") {
-        ant.direction = (ant.direction + 1) % 4;
-      } else {
-        ant.direction = (ant.direction + 3) % 4;
+      const turnRight = rule === "R";
+      const newDirection = turnRight
+        ? (ant.direction + 1) % 4
+        : (ant.direction + 3) % 4;
+      const exitAngle = this.#edgeAngle(newDirection);
+
+      // Compute cubic Bézier control points to ensure smooth entry/exit tangents
+      const p0x = cx + radius * Math.cos(startAngle);
+      const p0y = cy + radius * Math.sin(startAngle);
+      const p3x = cx + radius * Math.cos(exitAngle);
+      const p3y = cy + radius * Math.sin(exitAngle);
+
+      const dirToVec = (d) => {
+        switch (d) {
+          case 0:
+            return { x: 0, y: -1 };
+          case 1:
+            return { x: 1, y: 0 };
+          case 2:
+            return { x: 0, y: 1 };
+          case 3:
+          default:
+            return { x: -1, y: 0 };
+        }
+      };
+      const v0 = dirToVec(ant.direction);
+      const v1 = dirToVec(newDirection);
+      const k = 0.6 * this.cellSize; // control handle length tuned for smoothness
+      const p1x = p0x + v0.x * k;
+      const p1y = p0y + v0.y * k;
+      const p2x = p3x - v1.x * k;
+      const p2y = p3y - v1.y * k;
+
+      // Record render path for the duration until the next update
+      ant.renderPath = {
+        type: "bezier",
+        p0: { x: p0x, y: p0y },
+        p1: { x: p1x, y: p1y },
+        p2: { x: p2x, y: p2y },
+        p3: { x: p3x, y: p3y },
+      };
+
+      // Dense trail sampling along the curve similar to termite density
+      const termiteStep =
+        typeof AppConstants !== "undefined"
+          ? (AppConstants.TermiteDefaults &&
+              AppConstants.TermiteDefaults.MOVE_SPEED) ||
+            2
+          : 2;
+      const approxLength = Math.PI * radius * 0.5; // quarter-arc baseline
+      const samples = Math.max(
+        2,
+        Math.round(approxLength / Math.max(1, termiteStep))
+      );
+      for (let i = 0; i <= samples; i++) {
+        const t = i / samples;
+        const omt = 1 - t;
+        const sx =
+          omt * omt * omt * p0x +
+          3 * omt * omt * t * p1x +
+          3 * omt * t * t * p2x +
+          t * t * t * p3x;
+        const sy =
+          omt * omt * omt * p0y +
+          3 * omt * omt * t * p1y +
+          3 * omt * t * t * p2y +
+          t * t * t * p3y;
+        this.updateActorTrail(ant, sx, sy);
       }
+
+      // Apply the direction change after planning path
+      ant.direction = newDirection;
 
       // Move forward
       switch (ant.direction) {
@@ -2551,26 +2565,61 @@ class LangtonsAnt extends BaseSimulation {
     this.drawGrid(this.grid);
 
     // Draw each ant with trails
+    const now =
+      typeof performance !== "undefined" && performance.now
+        ? performance.now()
+        : Date.now();
+    const progress = this.isRunning
+      ? Math.max(
+          0,
+          Math.min(1, (now - this.lastUpdateTime) / this.updateInterval)
+        )
+      : 1;
+
     this.ants.forEach((ant) => {
-      const antX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
-      const antY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
+      let drawX, drawY, headingAngle;
+      if (ant.renderPath && ant.renderPath.type === "bezier") {
+        const { p0, p1, p2, p3 } = ant.renderPath;
+        const t = progress;
+        const omt = 1 - t;
+        // Position on curve
+        drawX =
+          omt * omt * omt * p0.x +
+          3 * omt * omt * t * p1.x +
+          3 * omt * t * t * p2.x +
+          t * t * t * p3.x;
+        drawY =
+          omt * omt * omt * p0.y +
+          3 * omt * omt * t * p1.y +
+          3 * omt * t * t * p2.y +
+          t * t * t * p3.y;
+        // Derivative for heading
+        const dx =
+          3 * omt * omt * (p1.x - p0.x) +
+          6 * omt * t * (p2.x - p1.x) +
+          3 * t * t * (p3.x - p2.x);
+        const dy =
+          3 * omt * omt * (p1.y - p0.y) +
+          6 * omt * t * (p2.y - p1.y) +
+          3 * t * t * (p3.y - p2.y);
+        headingAngle = Math.atan2(dy, dx);
+      } else {
+        drawX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
+        drawY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
+        headingAngle = (ant.direction * Math.PI) / 2;
+      }
 
-      // Draw trail first (behind the ant)
-      this.drawActorTrail(ant, this.cellSize / 4);
+      // Draw trail first (behind the ant) — match termite styling
+      this.drawActorTrail(ant, 2);
 
-      // Draw ant
-      this.drawActor(antX, antY, this.cellSize / 3);
+      // Draw ant — match termite sizing
+      this.drawActor(drawX, drawY, 3);
 
-      // Draw direction indicator using common utility
-      const directionAngle = (ant.direction * Math.PI) / 2;
-      this.drawDirectionIndicator(
-        antX,
-        antY,
-        directionAngle,
-        this.cellSize / 2,
-        "#ffffff",
-        2
-      );
+      // Draw direction indicator using shared toggle
+      if (this.getShowDirectionIndicator()) {
+        // Use default length/line width to match termite appearance
+        this.drawDirectionIndicator(drawX, drawY, headingAngle);
+      }
     });
   }
 
@@ -2604,16 +2653,77 @@ class LangtonsAnt extends BaseSimulation {
     }
 
     // Add a new ant at the specified or random position
-    const newAnt = {
-      x: x,
-      y: y,
-      direction: Math.floor(Math.random() * 4),
-      trail: [], // Initialize empty trail
-    };
-    this.ants.push(newAnt);
+    const ctor = typeof GridActor !== "undefined" ? GridActor : null;
+    const dir = Math.floor(Math.random() * 4);
+    const ant = ctor
+      ? new ctor(x, y, dir, { trail: [] })
+      : { x, y, direction: dir, trail: [] };
+    this.ants.push(ant);
 
     // Draw immediately so the ant is visible even when paused
     this.draw();
+  }
+
+  // Generic add-actor API for keyboard/UX
+  addActorAt(mouseX, mouseY) {
+    if (typeof mouseX !== "number" || typeof mouseY !== "number") {
+      this.addAnt(null, null);
+      return;
+    }
+    const gridPos = this.screenToGrid(mouseX, mouseY);
+    const x = Math.max(0, Math.min(this.cols - 1, gridPos.col));
+    const y = Math.max(0, Math.min(this.rows - 1, gridPos.row));
+    const ctor = typeof GridActor !== "undefined" ? GridActor : null;
+    const dir = Math.floor(Math.random() * 4);
+    const ant = ctor
+      ? new ctor(x, y, dir, { trail: [] })
+      : { x, y, direction: dir, trail: [] };
+    this.ants.push(ant);
+    this.draw();
+  }
+
+  // Set the number of ants (actor count) dynamically
+  setAntCount(count) {
+    const desired = Math.max(1, Math.min(100, parseInt(count, 10) || 1));
+    const current = this.ants.length;
+    if (desired === current) return;
+
+    if (desired > current) {
+      const toAdd = desired - current;
+      for (let i = 0; i < toAdd; i++) {
+        // Random placement at valid grid cell and random facing
+        const x = Math.floor(Math.random() * this.cols);
+        const y = Math.floor(Math.random() * this.rows);
+        const ctor = typeof GridActor !== "undefined" ? GridActor : null;
+        const dir = Math.floor(Math.random() * 4);
+        const ant = ctor
+          ? new ctor(x, y, dir, { trail: [] })
+          : { x, y, direction: dir, trail: [] };
+        this.ants.push(ant);
+      }
+    } else {
+      // Reduce from the end
+      this.ants.length = desired;
+    }
+
+    // Render updated count immediately
+    this.draw();
+  }
+
+  // Compute angle for a given edge midpoint around the cell centre
+  #edgeAngle(edgeIndex) {
+    // 0: top (-PI/2), 1: right (0), 2: bottom (PI/2), 3: left (PI)
+    switch (edgeIndex % 4) {
+      case 0:
+        return -Math.PI / 2;
+      case 1:
+        return 0;
+      case 2:
+        return Math.PI / 2;
+      case 3:
+      default:
+        return Math.PI;
+    }
   }
 
   toggleCell(x, y) {
