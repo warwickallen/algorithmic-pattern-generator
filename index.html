@@ -101,6 +101,41 @@
         >
           <!-- Speed control moved to dynamic container -->
         </div>
+
+        <!-- Reaction–Diffusion specific controls -->
+        <div
+          id="reaction-controls"
+          class="simulation-controls flex-center gap-lg"
+          data-simulation="reaction"
+          style="display: none"
+        >
+          <div class="control-group control-group--static">
+            <label for="reaction-feed-slider">Feed (F):</label>
+            <input
+              type="range"
+              id="reaction-feed-slider"
+              min="0"
+              max="0.1"
+              step="0.001"
+              value="0.06"
+              class="slider"
+            />
+            <span id="reaction-feed-value">0.060</span>
+          </div>
+          <div class="control-group control-group--static">
+            <label for="reaction-kill-slider">Kill (k):</label>
+            <input
+              type="range"
+              id="reaction-kill-slider"
+              min="0"
+              max="0.1"
+              step="0.001"
+              value="0.062"
+              class="slider"
+            />
+            <span id="reaction-kill-value">0.062</span>
+          </div>
+        </div>
       </div>
 
       <!-- Reset, Random buttons and likelihood slider (top) -->

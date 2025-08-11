@@ -1392,6 +1392,7 @@ class ControlVisibilityManager {
       ["conway", ["conway-controls"]],
       ["termite", ["termite-controls", "termites-container"]],
       ["langton", ["langton-controls", "ants-container"]],
+      ["reaction", ["reaction-controls"]],
     ]);
 
     // Define visibility states for each simulation
@@ -1403,6 +1404,7 @@ class ControlVisibilityManager {
           "termite-controls": "hidden",
           "langton-controls": "hidden",
           "termites-container": "hidden",
+          "reaction-controls": "hidden",
         },
       ],
       [
@@ -1412,6 +1414,7 @@ class ControlVisibilityManager {
           "termite-controls": "visible",
           "langton-controls": "hidden",
           "termites-container": "visible",
+          "reaction-controls": "hidden",
         },
       ],
       [
@@ -1422,6 +1425,17 @@ class ControlVisibilityManager {
           "langton-controls": "visible",
           "termites-container": "hidden",
           "ants-container": "visible",
+          "reaction-controls": "hidden",
+        },
+      ],
+      [
+        "reaction",
+        {
+          "conway-controls": "hidden",
+          "termite-controls": "hidden",
+          "langton-controls": "hidden",
+          "termites-container": "hidden",
+          "reaction-controls": "visible",
         },
       ],
     ]);
@@ -1743,6 +1757,7 @@ class EventHandlerFactory {
       antCountChange: this.createAntCountChangeHandler.bind(this),
       brightnessChange: this.createBrightnessChangeHandler.bind(this),
       likelihoodChange: this.createLikelihoodChangeHandler.bind(this),
+      reactionParamChange: this.createReactionParamChangeHandler.bind(this),
     });
   }
 
@@ -1762,6 +1777,8 @@ class EventHandlerFactory {
       antCountChange: (count) => app.handleAntCountChange(count),
       brightnessChange: (value) => app.setBrightness(value),
       likelihoodChange: (value) => app.setLikelihood(value),
+      reactionParamChange: (name, value) =>
+        app.handleReactionParamChange(name, value),
     };
 
     // Store handlers for cleanup
@@ -1819,6 +1836,10 @@ class EventHandlerFactory {
           handlers.brightnessChange(parseFloat(e.target.value));
         } else if (config.id.includes("likelihood")) {
           handlers.likelihoodChange(parseInt(e.target.value));
+        } else if (config.id.includes("reaction-feed")) {
+          handlers.reactionParamChange("feed", parseFloat(e.target.value));
+        } else if (config.id.includes("reaction-kill")) {
+          handlers.reactionParamChange("kill", parseFloat(e.target.value));
         }
       },
       16,
@@ -1900,6 +1921,15 @@ class EventHandlerFactory {
    */
   createAntCountChangeHandler(app) {
     return (count) => app.handleAntCountChange(count);
+  }
+
+  /**
+   * Create reaction parameter change handler
+   * @param {Object} app - Application instance
+   * @returns {Function} Reaction parameter change handler
+   */
+  createReactionParamChangeHandler(app) {
+    return (name, value) => app.handleReactionParamChange(name, value);
   }
 
   /**
@@ -2327,6 +2357,24 @@ class ControlTemplateManager {
       label: "Termites",
       format: (value) => value.toString(),
     },
+    reactionFeedSlider: {
+      type: "slider",
+      min: 0.0,
+      max: 0.1,
+      step: 0.001,
+      value: 0.06,
+      label: "Feed (F)",
+      format: (value) => parseFloat(value).toFixed(3),
+    },
+    reactionKillSlider: {
+      type: "slider",
+      min: 0.0,
+      max: 0.1,
+      step: 0.001,
+      value: 0.062,
+      label: "Kill (k)",
+      format: (value) => parseFloat(value).toFixed(3),
+    },
   };
 
   // Simulation-specific control configurations with overrides
@@ -2377,6 +2425,16 @@ class ControlTemplateManager {
         learn: {
           template: "learnButton",
           id: "learn-btn",
+        },
+        reactionFeed: {
+          template: "reactionFeedSlider",
+          id: "reaction-feed-slider",
+          valueElementId: "reaction-feed-value",
+        },
+        reactionKill: {
+          template: "reactionKillSlider",
+          id: "reaction-kill-slider",
+          valueElementId: "reaction-kill-value",
         },
       },
     },
@@ -3867,6 +3925,14 @@ class AlgorithmicPatternGenerator {
 
     if (this.currentSimulation.draw) {
       this.currentSimulation.draw();
+    }
+  }
+
+  // Reaction–Diffusion parameter change handler
+  handleReactionParamChange(name, value) {
+    if (this.currentType !== "reaction" || !this.currentSimulation) return;
+    if (typeof this.currentSimulation.setReactionParam === "function") {
+      this.currentSimulation.setReactionParam(name, value);
     }
   }
 

@@ -2779,6 +2779,40 @@ class ReactionDiffusion extends BaseSimulation {
     this.v = null; // rows x cols, floats
     this.uNext = null;
     this.vNext = null;
+
+    // Register serializer to preserve fields across resize
+    this.stateManager.registerSerializer({
+      capture: (sim) => {
+        const extra = {};
+        if (sim.u && sim.v) {
+          extra.u = sim.u.map((row) => row.slice());
+          extra.v = sim.v.map((row) => row.slice());
+        }
+        return extra;
+      },
+      restore: (sim, state) => {
+        if (state.u && state.v) {
+          // Recreate fields for current dimensions
+          sim.initFields();
+          const minRows = Math.min(state.u.length, sim.rows);
+          const minCols = Math.min(state.u[0]?.length || 0, sim.cols);
+          for (let r = 0; r < minRows; r++) {
+            for (let c = 0; c < minCols; c++) {
+              sim.u[r][c] = state.u[r][c];
+              sim.v[r][c] = state.v[r][c];
+            }
+          }
+          // Recompute cell count
+          let count = 0;
+          for (let r = 0; r < sim.rows; r++) {
+            for (let c = 0; c < sim.cols; c++) {
+              if (sim.v[r][c] > 0.5) count++;
+            }
+          }
+          sim.cellCount = count;
+        }
+      },
+    });
   }
 
   init() {
@@ -2835,8 +2869,8 @@ class ReactionDiffusion extends BaseSimulation {
   }
 
   resize() {
+    // Do not re-seed on resize; state is preserved via resizePreserveState()
     super.resize();
-    this.initData();
   }
 
   // Wrap-around accessor
@@ -2943,6 +2977,14 @@ class ReactionDiffusion extends BaseSimulation {
         this.ctx.fillStyle = finalColor;
         this.ctx.fillRect(x, y, this.cellSize - 1, this.cellSize - 1);
       }
+    }
+  }
+
+  setReactionParam(name, value) {
+    if (name === "feed") {
+      this.feedRate = Math.max(0, Math.min(0.1, value));
+    } else if (name === "kill") {
+      this.killRate = Math.max(0, Math.min(0.1, value));
     }
   }
 
