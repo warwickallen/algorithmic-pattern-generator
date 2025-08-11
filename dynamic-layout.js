@@ -17,6 +17,7 @@ class DynamicLayoutManager {
             'playback-container',
             'action-container',
             'termites-container',
+            'ants-container',
             'display-container'
         ];
 
