@@ -78,7 +78,7 @@
         if (button && button.parentNode) button.parentNode.removeChild(button);
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -114,7 +114,7 @@
         if (button && button.parentNode) button.parentNode.removeChild(button);
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -158,7 +158,7 @@
         if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -196,7 +196,7 @@
         if (button && button.parentNode) button.parentNode.removeChild(button);
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -250,7 +250,7 @@
         );
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -324,6 +324,6 @@
         );
       }
     },
-    "ui"
+    "ui.controls"
   );
 })();

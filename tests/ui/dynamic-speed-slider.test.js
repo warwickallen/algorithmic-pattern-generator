@@ -56,7 +56,7 @@
         return { passed: false, details: e.message };
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -111,7 +111,7 @@
         container.parentNode && container.parentNode.removeChild(container);
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -155,7 +155,7 @@
         container.parentNode && container.parentNode.removeChild(container);
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -199,7 +199,7 @@
         container.parentNode && container.parentNode.removeChild(container);
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -239,7 +239,7 @@
         container.parentNode && container.parentNode.removeChild(container);
       }
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -275,6 +275,6 @@
         container.parentNode && container.parentNode.removeChild(container);
       }
     },
-    "ui"
+    "ui.controls"
   );
 })();
