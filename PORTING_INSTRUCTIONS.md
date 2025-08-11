@@ -2,11 +2,11 @@
 
 See `PORTING_MAPPING.md` for a tabular mapping of old tests to new tests, including categories and files.
 
-# Porting Instructions: Complete test-suite-old.html to test-suite.html
+# Porting Instructions: Port test-suite-old.html to the new test-suite.html (Deprecated: test-suite-old.html)
 
 ## Overview
 
-You need to complete the port of all functionality from `test-suite-old.html` to the new `test-suite.html`. The new test suite has a modern jsTree-based interface and now contains a substantial portion of the ported tests. A few items remain to finish the port and to stabilise a small number of UI tests.
+The legacy `test-suite-old.html` is now deprecated. The live suite is `test-suite.html` with a jsTree-based interface and a manifest-driven file discovery model. All functionality has been ported to the new structure.
 
 ## Current State
 
@@ -39,7 +39,7 @@ The old test suite has tests organized into these categories (found in the HTML)
 - `event-handler-factory` - Event handling system
 - `ui-component-library` - UI component library tests
 
-### 2. Create Test Files in Appropriate Categories (Ported so far)
+### 2. Create Test Files in Appropriate Categories (Ported)
 
 For each test in `test-suite-old.html`, create a corresponding `.js` file in the `tests/` directory structure:
 
@@ -55,18 +55,18 @@ Key files already ported (non-exhaustive):
   - `performance.test.js`, `more-performance.test.js`
 - integration:
   - `integration.tests.js`, `modal-manager.test.js`, `control-management.test.js`
-- ui:
-  - `ui.tests.js`, `shared-components.test.js`, `control-manager-visibility.test.js`, `control-visibility-manager.test.js`, `element-cache.test.js`, `event-listener-manager.test.js`, `event-framework-declarative.test.js`
-  - Modal-related: `modal-template-html.test.js`, `modal-template-injection.test.js`, `dynamic-modal-integration.test.js`, `learn-modal-content.test.js`, `unified-modal-system.test.js`, `modal-scroll-position.test.js`
-  - Dynamic controls: `dynamic-speed-slider.test.js`, `dynamic-fill-button.test.js`
-  - Event system: `event-handler-factory.test.js`
-  - UI library: `ui-component-library-2.test.js`
+- ui (directory-defined sub-categories under `tests/ui/`):
+  - `components/`: `shared-components.test.js`, `ui-component-library-2.test.js`, `ui-component-library-extra.test.js`
+  - `controls/`: `control-manager-visibility.test.js`, `control-visibility-manager.test.js`, `dynamic-speed-slider.test.js`, `dynamic-fill-button.test.js`
+  - `event/`: `event-listener-manager.test.js`, `event-framework-declarative.test.js`, `event-handler-factory.test.js`, `event-handler-factory-extra.test.js`
+  - `modal/`: `modal-template-html.test.js`, `modal-template-injection.test.js`, `dynamic-modal-integration.test.js`, `learn-modal-content.test.js`, `unified-modal-system.test.js`, `modal-scroll-position.test.js`
+  - `misc/`: `config-validator.test.js`, `element-cache.test.js`, `ui.test.js`
 - visual:
   - `colour.tests.js`
 - system:
   - `system.tests.js`, `test-utilities.test.js`
 
-The test manifest (`tests/manifest.js`) is auto-generated and currently includes 43 test files, with 102 total tests.
+The test manifest (`tests/manifest.js`) is auto-generated and currently includes 43 test files, with 102 total tests. Categories and sub-categories are derived from the directory structure (e.g., `tests/ui/controls/*`).
 
 ### 3. Test File Format
 

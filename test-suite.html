@@ -608,11 +608,22 @@
           return true;
         });
 
-        // Group filtered results by category and count statuses
+        // Helper: derive category from source file path (directory-based)
+        const deriveCategoryFromPath = (p) => {
+          if (!p) return "general";
+          const parts = p.split("/");
+          const testsIdx = parts.indexOf("tests");
+          if (testsIdx === -1) return "general";
+          const dirParts = parts.slice(testsIdx + 1, parts.length - 1); // between tests/ and filename
+          return dirParts.length ? dirParts.join("/") : "general";
+        };
+
+        // Group filtered results by directory-derived category and count statuses
         const categoryResults = {};
         filteredResults.forEach((r, idx) => {
           const meta = (runner.tests && runner.tests[idx]) || {};
-          const category = meta.category || "general";
+          const source = meta.sourceFile || null;
+          const category = deriveCategoryFromPath(source);
           if (!categoryResults[category]) {
             categoryResults[category] = {
               passed: 0,
@@ -632,7 +643,8 @@
         // Render filtered results with category headings and counts
         filteredResults.forEach((r, idx) => {
           const meta = (runner.tests && runner.tests[idx]) || {};
-          const category = meta.category || "general";
+          const source = meta.sourceFile || null;
+          const category = deriveCategoryFromPath(source);
           if (category !== lastCategory) {
             const heading = document.createElement("div");
             heading.className = "group-heading";

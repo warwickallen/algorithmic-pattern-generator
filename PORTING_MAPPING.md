@@ -42,26 +42,26 @@ Note: Some items were consolidated across fewer, broader tests. Names matched by
 | 34  | Controls Visibility Timing                                    | ui                    | integration/control-management.test.js         |
 | 35  | Termite Slider Integration                                    | termite               | integration/termite-slider-integration.test.js |
 | 36  | Modal Template Manager - Content Templates                    | ui                    | integration/modal-template-manager.test.js     |
-| 37  | Modal Template Manager - HTML Generation                      | ui                    | ui/modal-template-html.test.js                 |
-| 38  | Modal Template Manager - Content Injection                    | ui                    | ui/modal-template-injection.test.js            |
-| 39  | Dynamic Modal System - Integration                            | conway                | ui/dynamic-modal-integration.test.js           |
+| 37  | Modal Template Manager - HTML Generation                      | ui                    | ui/modal/modal-template-html.test.js           |
+| 38  | Modal Template Manager - Content Injection                    | ui                    | ui/modal/modal-template-injection.test.js      |
+| 39  | Dynamic Modal System - Integration                            | conway                | ui/modal/dynamic-modal-integration.test.js     |
 | 40  | Learn Modal Content Verification                              | conway                | UNMAPPED                                       |
-| 41  | Learn Modal Shows Correct Content for Current Simulation      | ui                    | ui/learn-modal-content.test.js                 |
+| 41  | Learn Modal Shows Correct Content for Current Simulation      | ui                    | ui/modal/learn-modal-content.test.js           |
 | 42  | UnifiedModalSystem opens custom content                       | ui                    | ui/unified-modal-system.test.js                |
-| 43  | Modal Scroll Position Management                              | conway                | ui/modal-scroll-position.test.js               |
-| 44  | Dynamic Speed Slider Initialization                           | dynamic-speed-slider  | ui/dynamic-speed-slider.test.js                |
-| 45  | Dynamic Speed Slider Simulation Switching                     | dynamic-speed-slider  | ui/dynamic-speed-slider.test.js                |
-| 46  | Dynamic Speed Slider Global Value                             | dynamic-speed-slider  | ui/dynamic-speed-slider.test.js                |
-| 47  | Dynamic Speed Slider Event Handling                           | dynamic-speed-slider  | ui/dynamic-speed-slider.test.js                |
-| 48  | Dynamic Speed Slider Speed Adjustment                         | dynamic-speed-slider  | ui/dynamic-speed-slider.test.js                |
-| 49  | Dynamic Speed Slider Hide/Show                                | dynamic-speed-slider  | ui/dynamic-speed-slider.test.js                |
-| 50  | Dynamic Fill Button Class Exists                              | dynamic-fill-button   | ui/dynamic-fill-button.test.js                 |
-| 51  | Dynamic Fill Button Simulation Switching                      | dynamic-fill-button   | ui/dynamic-fill-button.test.js                 |
-| 52  | Dynamic Fill Button Show/Hide                                 | dynamic-fill-button   | ui/dynamic-fill-button.test.js                 |
-| 53  | Dynamic Fill Button Event Handling                            | dynamic-fill-button   | ui/dynamic-fill-button.test.js                 |
-| 54  | Dynamic Fill Button Initial Visibility After App Load         | dynamic-fill-button   | ui/dynamic-fill-button.test.js                 |
-| 55  | Dynamic Fill Coverage Statistical Bounds (±2σ, r=2)           | dynamic-fill-button   | ui/dynamic-fill-button.test.js                 |
-| 56  | Fill Button Equal Cell Activation Probability (Variance Test) | dynamic-fill-button   | ui/dynamic-fill-button.test.js                 |
+| 43  | Modal Scroll Position Management                              | conway                | ui/modal/modal-scroll-position.test.js         |
+| 44  | Dynamic Speed Slider Initialization                           | dynamic-speed-slider  | ui/controls/dynamic-speed-slider.test.js       |
+| 45  | Dynamic Speed Slider Simulation Switching                     | dynamic-speed-slider  | ui/controls/dynamic-speed-slider.test.js       |
+| 46  | Dynamic Speed Slider Global Value                             | dynamic-speed-slider  | ui/controls/dynamic-speed-slider.test.js       |
+| 47  | Dynamic Speed Slider Event Handling                           | dynamic-speed-slider  | ui/controls/dynamic-speed-slider.test.js       |
+| 48  | Dynamic Speed Slider Speed Adjustment                         | dynamic-speed-slider  | ui/controls/dynamic-speed-slider.test.js       |
+| 49  | Dynamic Speed Slider Hide/Show                                | dynamic-speed-slider  | ui/controls/dynamic-speed-slider.test.js       |
+| 50  | Dynamic Fill Button Class Exists                              | dynamic-fill-button   | ui/controls/dynamic-fill-button.test.js        |
+| 51  | Dynamic Fill Button Simulation Switching                      | dynamic-fill-button   | ui/controls/dynamic-fill-button.test.js        |
+| 52  | Dynamic Fill Button Show/Hide                                 | dynamic-fill-button   | ui/controls/dynamic-fill-button.test.js        |
+| 53  | Dynamic Fill Button Event Handling                            | dynamic-fill-button   | ui/controls/dynamic-fill-button.test.js        |
+| 54  | Dynamic Fill Button Initial Visibility After App Load         | dynamic-fill-button   | ui/controls/dynamic-fill-button.test.js        |
+| 55  | Dynamic Fill Coverage Statistical Bounds (±2σ, r=2)           | dynamic-fill-button   | ui/controls/dynamic-fill-button.test.js        |
+| 56  | Fill Button Equal Cell Activation Probability (Variance Test) | dynamic-fill-button   | ui/controls/dynamic-fill-button.test.js        |
 | 57  | Keyboard Handler                                              | integration           | integration/keyboard-handler.test.js           |
 | 58  | Fade-to-Black Effect                                          | visual                | visual/fade-visual-tests.test.js               |
 | 59  | Comprehensive Fade Functionality                              | visual                | visual/fade-visual-tests.test.js               |
@@ -80,33 +80,33 @@ Note: Some items were consolidated across fewer, broader tests. Names matched by
 | 72  | ControlVisibilityManager Control Visibility Check             | control-visibility    | ui/control-visibility-manager.test.js          |
 | 73  | ControlVisibilityManager Extensibility                        | control-visibility    | ui/control-visibility-manager.test.js          |
 | 74  | ControlManager Integration with ControlVisibilityManager      | control-visibility    | ui/control-visibility-manager.test.js          |
-| 75  | EventFramework Declarative Registration                       | event-framework       | ui/event-framework-declarative.test.js         |
-| 76  | EventFramework Delegated Registration                         | event-framework       | ui/event-framework-declarative.test.js         |
-| 77  | EventHandlerFactory Initialization                            | event-handler-factory | ui/event-handler-factory-extra.test.js         |
-| 78  | EventHandlerFactory Simulation Handlers Creation              | event-handler-factory | ui/event-handler-factory.test.js               |
-| 79  | EventHandlerFactory Slider Handler Creation                   | event-handler-factory | ui/event-handler-factory.test.js               |
-| 80  | EventHandlerFactory Button Handler Creation                   | event-handler-factory | ui/event-handler-factory.test.js               |
-| 81  | EventHandlerFactory Control Setup                             | event-handler-factory | ui/event-handler-factory.test.js               |
-| 82  | EventHandlerFactory Custom Handler Creation                   | event-handler-factory | ui/event-handler-factory.test.js               |
-| 83  | EventHandlerFactory Cleanup                                   | event-handler-factory | ui/event-handler-factory-extra.test.js         |
-| 84  | EventHandlerFactory Integration with ControlManager           | event-handler-factory | ui/event-handler-factory-extra.test.js         |
-| 85  | UI Component Library Constructor                              | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 86  | UI Component Library Default Configurations                   | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 87  | UI Component Library Slider Creation                          | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 88  | UI Component Library Slider State Management                  | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 89  | UI Component Library Button Creation                          | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 90  | UI Component Library Button State Management                  | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 91  | UI Component Library Select Creation                          | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 92  | UI Component Library Select Options Management                | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 93  | UI Component Library Control Group Creation                   | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 94  | UI Component Library Control Group Layout Management          | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 95  | UI Component Library Status Display Creation                  | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 96  | UI Component Library Status Display Value Management          | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 97  | UI Component Library Modal Creation                           | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 98  | UI Component Library Modal State Management                   | Updated Title         | ui/ui-component-library-2.test.js              |
-| 99  | UI Component Library Label Creation                           | ui-component-library  | ui/ui-component-library-extra.test.js          |
-| 100 | UI Component Library Container Creation                       | ui-component-library  | ui/ui-component-library-extra.test.js          |
-| 101 | UI Component Library Lifecycle Hooks                          | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 102 | UI Component Library Batch Operations                         | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 103 | UI Component Library Factory Methods                          | ui-component-library  | ui/ui-component-library-2.test.js              |
-| 104 | UI Component Library Component Management                     | ui-component-library  | ui/ui-component-library-2.test.js              |
+| 75  | EventFramework Declarative Registration                       | event-framework       | ui/event/event-framework-declarative.test.js   |
+| 76  | EventFramework Delegated Registration                         | event-framework       | ui/event/event-framework-declarative.test.js   |
+| 77  | EventHandlerFactory Initialization                            | event-handler-factory | ui/event/event-handler-factory-extra.test.js   |
+| 78  | EventHandlerFactory Simulation Handlers Creation              | event-handler-factory | ui/event/event-handler-factory.test.js         |
+| 79  | EventHandlerFactory Slider Handler Creation                   | event-handler-factory | ui/event/event-handler-factory.test.js         |
+| 80  | EventHandlerFactory Button Handler Creation                   | event-handler-factory | ui/event/event-handler-factory.test.js         |
+| 81  | EventHandlerFactory Control Setup                             | event-handler-factory | ui/event/event-handler-factory.test.js         |
+| 82  | EventHandlerFactory Custom Handler Creation                   | event-handler-factory | ui/event/event-handler-factory.test.js         |
+| 83  | EventHandlerFactory Cleanup                                   | event-handler-factory | ui/event/event-handler-factory-extra.test.js   |
+| 84  | EventHandlerFactory Integration with ControlManager           | event-handler-factory | ui/event/event-handler-factory-extra.test.js   |
+| 85  | UI Component Library Constructor                              | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 86  | UI Component Library Default Configurations                   | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 87  | UI Component Library Slider Creation                          | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 88  | UI Component Library Slider State Management                  | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 89  | UI Component Library Button Creation                          | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 90  | UI Component Library Button State Management                  | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 91  | UI Component Library Select Creation                          | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 92  | UI Component Library Select Options Management                | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 93  | UI Component Library Control Group Creation                   | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 94  | UI Component Library Control Group Layout Management          | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 95  | UI Component Library Status Display Creation                  | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 96  | UI Component Library Status Display Value Management          | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 97  | UI Component Library Modal Creation                           | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 98  | UI Component Library Modal State Management                   | Updated Title         | ui/components/ui-component-library-2.test.js   |
+| 99  | UI Component Library Label Creation                           | ui-component-library  | ui/components/ui-component-library-extra.test.js |
+| 100 | UI Component Library Container Creation                       | ui-component-library  | ui/components/ui-component-library-extra.test.js |
+| 101 | UI Component Library Lifecycle Hooks                          | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 102 | UI Component Library Batch Operations                         | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 103 | UI Component Library Factory Methods                          | ui-component-library  | ui/components/ui-component-library-2.test.js   |
+| 104 | UI Component Library Component Management                     | ui-component-library  | ui/components/ui-component-library-2.test.js   |
