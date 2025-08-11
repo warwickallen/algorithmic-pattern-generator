@@ -2226,7 +2226,7 @@ class AppMetadataLoader {
       <div class="modal-divider" aria-hidden="true"></div>
       <div class="modal-footer meta" role="contentinfo">
         <span class="app-meta">
-          ${safe(meta.name)} • Build ${safe(meta.build)} • Licence: ${safe(
+          ${safe(meta.name)} • <a href="https://github.com/warwickallen/algorithmic-pattern-generator#algorithmic-pattern-generator" target="_blank" rel="noopener noreferrer">About</a> • Build ${safe(meta.build)} • Licence: ${safe(
       meta.licenceName
     )}
         </span>
