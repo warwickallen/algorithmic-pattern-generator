@@ -674,12 +674,12 @@
           }
           const div = document.createElement("div");
           div.className = `result-item ${r.result}`;
-          const source =
+          const sourcePath =
             (runner.tests &&
               runner.tests[idx] &&
               runner.tests[idx].sourceFile) ||
             "";
-          div.innerHTML = `<span class=\"name\" title=\"${source}\">${
+          div.innerHTML = `<span class=\"name\" title=\"${sourcePath}\">${
             r.name
           }</span><span class=\"meta\">${r.duration.toFixed(2)}ms${
             r.details ? " — " + r.details : ""
