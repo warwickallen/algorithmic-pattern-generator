@@ -72,7 +72,6 @@ Additional tests specific to the Reaction–Diffusion simulation are located und
 - `controls-and-randomize.test.js` — Feed/Kill parameter updates and randomize likelihood behaviour
 - `resize-and-serialize.test.js` — State preservation across `resizePreserveState()` via serializer
 
-
 Then run tests from the browser console:
 
 ```javascript
