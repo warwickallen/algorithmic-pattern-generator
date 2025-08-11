@@ -169,9 +169,9 @@
         );
 
         speed.value = "15";
-        speed.dispatchEvent(new Event("change"));
+        speed.dispatchEvent(new Event("change", { bubbles: true }));
         like.value = "40";
-        like.dispatchEvent(new Event("change"));
+        like.dispatchEvent(new Event("change", { bubbles: true }));
 
         await new Promise((r) => setTimeout(r, 30));
 

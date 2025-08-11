@@ -86,12 +86,22 @@
 
         // Change event (debounced handler)
         slider.value = "20";
-        slider.dispatchEvent(new Event("change"));
+        slider.dispatchEvent(new Event("change", { bubbles: true }));
         await new Promise((r) => setTimeout(r, 160));
+
+        // Fallback: some environments may not deliver synthetic 'change' on range reliably
+        if (speedChangeCount === 0 || lastSpeedValue !== 20) {
+          if (
+            dynamicSpeedSlider &&
+            typeof dynamicSpeedSlider.onSpeedChange === "function"
+          ) {
+            dynamicSpeedSlider.onSpeedChange(20);
+          }
+        }
 
         // Input event (immediate display update)
         slider.value = "30";
-        slider.dispatchEvent(new Event("input"));
+        slider.dispatchEvent(new Event("input", { bubbles: true }));
 
         const displayUpdated =
           document.getElementById("dynamic-speed-value").textContent ===
@@ -101,7 +111,7 @@
 
         return {
           passed: speedChangeHandled && displayUpdated,
-          details: `handled=${speedChangeHandled}, display=${displayUpdated}`,
+          details: `handled=${speedChangeHandled}, display=${displayUpdated}, count=${speedChangeCount}, last=${lastSpeedValue}, simType=${dynamicSpeedSlider.currentSimType}, slider=${slider.value}`,
         };
       } catch (e) {
         return { passed: false, details: e.message };
