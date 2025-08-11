@@ -36,7 +36,7 @@ The test suite is organised into logical categories:
 
 ### 1. Visual Test Suite
 
-Open `test-suite.html` in your browser for comprehensive visual testing:
+Open `test-suite.html` in your browser for comprehensive visual testing. This is the live suite. The legacy `test-suite-old.html` is deprecated and retained only for historical reference.
 
 ```bash
 # Open in browser

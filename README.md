@@ -228,7 +228,7 @@ The application includes a comprehensive testing framework:
 
 ### Visual Test Suite
 
-Open `test-suite.html` in your browser for comprehensive visual testing:
+Open `test-suite.html` in your browser for comprehensive visual testing (live suite). `test-suite-old.html` is deprecated and retained only for historical reference.
 
 - Core simulation functionality
 - UI component testing
