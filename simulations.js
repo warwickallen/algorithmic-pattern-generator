@@ -2763,6 +2763,225 @@ class LangtonsAnt extends BaseSimulation {
   }
 }
 
+// Reaction-Diffusion (Gray-Scott) simulation
+class ReactionDiffusion extends BaseSimulation {
+  constructor(canvas, ctx) {
+    super(canvas, ctx, "reaction");
+    // Parameters (good starting set for Turing patterns)
+    this.diffusionU = 0.16;
+    this.diffusionV = 0.08;
+    this.feedRate = 0.06;
+    this.killRate = 0.062;
+    this.deltaTime = 1.0;
+
+    // Fields
+    this.u = null; // rows x cols, floats
+    this.v = null; // rows x cols, floats
+    this.uNext = null;
+    this.vNext = null;
+  }
+
+  init() {
+    super.init();
+    this.initData();
+  }
+
+  initData() {
+    this.initFields();
+    // Default seed: a small square in the centre
+    const cx = Math.floor(this.cols / 2);
+    const cy = Math.floor(this.rows / 2);
+    const radius = Math.max(
+      2,
+      Math.floor(Math.min(this.rows, this.cols) * 0.02)
+    );
+    for (let y = cy - radius; y <= cy + radius; y++) {
+      for (let x = cx - radius; x <= cx + radius; x++) {
+        const r = (y + this.rows) % this.rows;
+        const c = (x + this.cols) % this.cols;
+        this.u[r][c] = 0.0;
+        this.v[r][c] = 1.0;
+      }
+    }
+  }
+
+  initFields() {
+    this.u = this.createNumericGrid(this.rows, this.cols, 1.0);
+    this.v = this.createNumericGrid(this.rows, this.cols, 0.0);
+    this.uNext = this.createNumericGrid(this.rows, this.cols, 1.0);
+    this.vNext = this.createNumericGrid(this.rows, this.cols, 0.0);
+  }
+
+  // Helper to create numeric grids
+  createNumericGrid(rows, cols, defaultValue) {
+    const grid = new Array(rows);
+    for (let r = 0; r < rows; r++) {
+      grid[r] = new Array(cols);
+      for (let c = 0; c < cols; c++) grid[r][c] = defaultValue;
+    }
+    return grid;
+  }
+
+  reset() {
+    super.reset();
+    this.initData();
+    this.draw();
+  }
+
+  clear() {
+    super.clear();
+    this.initFields();
+    this.draw();
+  }
+
+  resize() {
+    super.resize();
+    this.initData();
+  }
+
+  // Wrap-around accessor
+  #idx(r, c) {
+    const row = (r + this.rows) % this.rows;
+    const col = (c + this.cols) % this.cols;
+    return { row, col };
+  }
+
+  // 3x3 Laplacian with standard Gray-Scott weights
+  #laplacian(grid, r, c) {
+    const { row: r0, col: c0 } = this.#idx(r, c);
+    let sum = -1.0 * grid[r0][c0];
+    const weightsOrth = 0.2;
+    const weightsDiag = 0.05;
+
+    const n = this.#idx(r0 - 1, c0);
+    const s = this.#idx(r0 + 1, c0);
+    const w = this.#idx(r0, c0 - 1);
+    const e = this.#idx(r0, c0 + 1);
+    sum +=
+      weightsOrth *
+      (grid[n.row][n.col] +
+        grid[s.row][s.col] +
+        grid[w.row][w.col] +
+        grid[e.row][e.col]);
+
+    const nw = this.#idx(r0 - 1, c0 - 1);
+    const ne = this.#idx(r0 - 1, c0 + 1);
+    const sw = this.#idx(r0 + 1, c0 - 1);
+    const se = this.#idx(r0 + 1, c0 + 1);
+    sum +=
+      weightsDiag *
+      (grid[nw.row][nw.col] +
+        grid[ne.row][ne.col] +
+        grid[sw.row][sw.col] +
+        grid[se.row][se.col]);
+
+    return sum;
+  }
+
+  update() {
+    this.generation++;
+
+    const du = this.diffusionU;
+    const dv = this.diffusionV;
+    const F = this.feedRate;
+    const k = this.killRate;
+    const dt = this.deltaTime;
+
+    for (let r = 0; r < this.rows; r++) {
+      for (let c = 0; c < this.cols; c++) {
+        const u = this.u[r][c];
+        const v = this.v[r][c];
+        const lapU = this.#laplacian(this.u, r, c);
+        const lapV = this.#laplacian(this.v, r, c);
+
+        const uvv = u * v * v;
+        let uNext = u + (du * lapU - uvv + F * (1 - u)) * dt;
+        let vNext = v + (dv * lapV + uvv - (F + k) * v) * dt;
+
+        // Clamp
+        if (uNext < 0) uNext = 0;
+        else if (uNext > 1) uNext = 1;
+        if (vNext < 0) vNext = 0;
+        else if (vNext > 1) vNext = 1;
+
+        this.uNext[r][c] = uNext;
+        this.vNext[r][c] = vNext;
+      }
+    }
+
+    // Swap buffers
+    [this.u, this.uNext] = [this.uNext, this.u];
+    [this.v, this.vNext] = [this.vNext, this.v];
+
+    // Update a rough cell count (number of cells above threshold)
+    let count = 0;
+    for (let r = 0; r < this.rows; r++) {
+      for (let c = 0; c < this.cols; c++) {
+        if (this.v[r][c] > 0.5) count++;
+      }
+    }
+    this.cellCount = count;
+  }
+
+  draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    for (let r = 0; r < this.rows; r++) {
+      for (let c = 0; c < this.cols; c++) {
+        const x = this.gridOffsetX + c * this.cellSize;
+        const y = this.gridOffsetY + r * this.cellSize;
+        const v = this.v[r][c];
+
+        // Map v -> colour using dynamic scheme mixed to black for contrast
+        const base = this.getGradientColor(x, y);
+        const color = this.interpolateColor(
+          base,
+          "#000000",
+          1 - Math.min(1, Math.max(0, v))
+        );
+        const finalColor = this.applyBrightness(color);
+
+        this.ctx.fillStyle = finalColor;
+        this.ctx.fillRect(x, y, this.cellSize - 1, this.cellSize - 1);
+      }
+    }
+  }
+
+  toggleCell(x, y) {
+    const { col, row } = this.screenToGrid(x, y);
+    if (!this.isValidGridPosition(row, col)) return;
+    // Inject V and consume U in a small neighbourhood
+    const radius = 2;
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        const p = this.#idx(row + dy, col + dx);
+        this.u[p.row][p.col] = 0.0;
+        this.v[p.row][p.col] = 1.0;
+      }
+    }
+    this.draw();
+  }
+
+  randomize(likelihood = 0.3) {
+    // Re-initialize then seed random V spots
+    this.initFields();
+    for (let r = 0; r < this.rows; r++) {
+      for (let c = 0; c < this.cols; c++) {
+        if (Math.random() < likelihood) {
+          this.u[r][c] = 0.0;
+          this.v[r][c] = 1.0;
+        }
+      }
+    }
+    this.generation = 0;
+    this.draw();
+  }
+
+  setLikelihood(value) {
+    // Keep for consistency with the app; not used directly between steps
+    this.likelihood = Math.max(0, Math.min(100, value));
+  }
+}
+
 // Simulation factory
 class SimulationFactory {
   static createSimulation(type, canvas, ctx) {
@@ -2773,6 +2992,8 @@ class SimulationFactory {
         return new TermiteAlgorithm(canvas, ctx);
       case "langton":
         return new LangtonsAnt(canvas, ctx);
+      case "reaction":
+        return new ReactionDiffusion(canvas, ctx);
       default:
         throw new Error(`Unknown simulation type: ${type}`);
     }

@@ -1342,7 +1342,7 @@ class DynamicFillButton {
     this.app = app;
 
     // Show button for simulations that support random patterns
-    if (["conway", "termite", "langton"].includes(simType)) {
+    if (["conway", "termite", "langton", "reaction"].includes(simType)) {
       this.show();
     } else {
       this.hide();
@@ -2165,6 +2165,24 @@ class ModalTemplateManager {
                 <p>Use the speed slider to control ant movement speed, the Add Ant button (or press 'a') to add new ants, and the random button to create a random pattern of white and black cells.</p>
             `,
     });
+
+    // Reaction–Diffusion content template
+    this.contentTemplates.set("reaction", {
+      title: "Reaction–Diffusion (Gray–Scott)",
+      content: `
+                <h3>How It Works</h3>
+                <p>The Gray–Scott model simulates two chemicals (U and V) that diffuse and react to form Turing patterns.</p>
+                <ul>
+                    <li><strong>Diffusion:</strong> U and V spread to neighbouring cells</li>
+                    <li><strong>Reaction:</strong> U + 2V → 3V converts U to V where V exists</li>
+                    <li><strong>Feed/kill:</strong> U is fed in, V is removed, stabilising patterns</li>
+                </ul>
+                <h3>Patterns</h3>
+                <p>By tuning feed and kill rates, stripes, spots, and labyrinths emerge.</p>
+                <h3>Controls</h3>
+                <p>Use Speed and Fill (coverage) to reseed random V regions. Click/drag on the canvas to seed V locally.</p>
+            `,
+    });
   }
 
   createModalContent(simType) {
@@ -2353,6 +2371,15 @@ class ControlTemplateManager {
         },
       },
     },
+    reaction: {
+      controls: {
+        // Speed via DynamicSpeedSlider, Fill via DynamicFillButton
+        learn: {
+          template: "learnButton",
+          id: "learn-btn",
+        },
+      },
+    },
   };
 
   // Generate complete control configuration from templates
@@ -2403,6 +2430,7 @@ class ControlTemplateManager {
       conway: "Conway's Game of Life",
       termite: "Termite Algorithm",
       langton: "Langton's Ant",
+      reaction: "Reaction–Diffusion",
     };
     return names[simType] || simType;
   }
