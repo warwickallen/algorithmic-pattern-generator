@@ -2542,22 +2542,16 @@ class LangtonsAnt extends BaseSimulation {
         headingAngle = (ant.direction * Math.PI) / 2;
       }
 
-      // Draw trail first (behind the ant)
-      this.drawActorTrail(ant, this.cellSize / 4);
+      // Draw trail first (behind the ant) — match termite styling
+      this.drawActorTrail(ant, 2);
 
-      // Draw ant
-      this.drawActor(drawX, drawY, this.cellSize / 3);
+      // Draw ant — match termite sizing
+      this.drawActor(drawX, drawY, 3);
 
       // Draw direction indicator using shared toggle
       if (this.getShowDirectionIndicator()) {
-        this.drawDirectionIndicator(
-          drawX,
-          drawY,
-          headingAngle,
-          this.cellSize / 2,
-          "#ffffff",
-          2
-        );
+        // Use default length/line width to match termite appearance
+        this.drawDirectionIndicator(drawX, drawY, headingAngle);
       }
     });
   }

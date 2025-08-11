@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1-consolidate-actors-e2d4228-20250811T072233",
+  "version": "0.0.1-consolidate-actors-f8368ee-20250811T072918",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
