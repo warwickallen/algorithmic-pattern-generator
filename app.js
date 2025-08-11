@@ -1546,6 +1546,19 @@ class ControlVisibilityManager {
       .forEach((element) => {
         element.classList.remove("active");
       });
+
+    // Defensive: also clear from known control IDs even if data-simulation is missing
+    const knownIds = [
+      "conway-controls",
+      "termite-controls",
+      "langton-controls",
+      "termites-container",
+      "reaction-controls",
+    ];
+    knownIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("active");
+    });
   }
 
   /**

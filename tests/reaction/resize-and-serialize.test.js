@@ -26,7 +26,8 @@
 
       // Check that count and presence of u/v arrays persisted reasonably
       const hasUV = !!(sim.u && sim.v);
-      const countStable = Math.abs(afterCount - beforeCount) <= Math.max(5, beforeCount * 0.1);
+      const countStable =
+        Math.abs(afterCount - beforeCount) <= Math.max(5, beforeCount * 0.1);
 
       return {
         passed: hasUV && countStable,
@@ -36,5 +37,3 @@
     "reaction"
   );
 })();
-
-

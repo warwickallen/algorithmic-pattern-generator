@@ -12,7 +12,10 @@
 
       const sim = SimulationFactory.createSimulation("reaction", canvas, ctx);
       return {
-        passed: sim && sim.constructor && sim.constructor.name === "ReactionDiffusion",
+        passed:
+          sim &&
+          sim.constructor &&
+          sim.constructor.name === "ReactionDiffusion",
         details: `Created ${sim && sim.constructor && sim.constructor.name}`,
       };
     },
@@ -43,5 +46,3 @@
     "reaction"
   );
 })();
-
-
