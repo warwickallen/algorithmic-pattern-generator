@@ -132,13 +132,6 @@
         >
           Fill
         </button>
-        <button
-          id="add-ant-btn"
-          class="btn secondary hover-lift"
-          style="display: none"
-        >
-          Add Ant
-        </button>
       </div>
 
       <!-- Termites Control (top) -->
@@ -160,6 +153,27 @@
             data-constants="AppConstants.UISliders.TERMITES"
           />
           <span id="termites-value">50</span>
+        </div>
+      </div>
+
+      <!-- Ants Control (top) -->
+      <div
+        id="ants-container"
+        class="control-group control-panel dynamic-position glass-light hover-lift"
+        data-simulation="langton"
+        style="display: none"
+      >
+        <div class="control-group control-group--static">
+          <label for="ants-slider">Ants:</label>
+          <input
+            type="range"
+            id="ants-slider"
+            min="1"
+            max="100"
+            value="1"
+            class="slider"
+          />
+          <span id="ants-value">1</span>
         </div>
       </div>
 

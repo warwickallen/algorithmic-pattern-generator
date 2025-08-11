@@ -2299,6 +2299,20 @@ class TermiteAlgorithm extends BaseSimulation {
     this.initTermites();
   }
 
+  // Standardised add-actor API: place a termite under the pointer
+  addActorAt(mouseX, mouseY) {
+    if (typeof mouseX !== "number" || typeof mouseY !== "number") return;
+    const termite = {
+      x: Math.max(0, Math.min(this.canvas.width, mouseX)),
+      y: Math.max(0, Math.min(this.canvas.height, mouseY)),
+      angle: Math.random() * Math.PI * 2,
+      carrying: false,
+      trail: [],
+    };
+    this.termites.push(termite);
+    this.draw();
+  }
+
   toggleCell(x, y) {
     const { col, row } = this.screenToGrid(x, y);
 
@@ -2457,6 +2471,7 @@ class LangtonsAnt extends BaseSimulation {
       {
         x: Math.floor(this.cols / 2),
         y: Math.floor(this.rows / 2),
+        // Start facing up; rendering will place the ant at the entry edge midpoint
         direction: 0,
         trail: [], // Initialize empty trail
       },
@@ -2507,21 +2522,40 @@ class LangtonsAnt extends BaseSimulation {
       // Get current cell state
       const currentCell = this.grid[ant.y][ant.x];
 
-      // Update trail before moving (convert grid coordinates to screen coordinates with offsets)
-      const antX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
-      const antY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
-      this.updateActorTrail(ant, antX, antY);
+      // Prepare smooth interpolation geometry within the current cell
+      const entryEdge = (ant.direction + 2) % 4; // Opposite of current facing
+      const startAngle = this.#edgeAngle(entryEdge);
+      const cx = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
+      const cy = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
+      const startX = cx + (this.cellSize / 2) * Math.cos(startAngle);
+      const startY = cy + (this.cellSize / 2) * Math.sin(startAngle);
+      // Update trail at the entry edge midpoint before moving
+      this.updateActorTrail(ant, startX, startY);
 
       // Flip the cell
       this.grid[ant.y][ant.x] = !currentCell;
 
       // Turn based on cell state
       const rule = this.rules[currentCell ? 1 : 0];
-      if (rule === "R") {
-        ant.direction = (ant.direction + 1) % 4;
-      } else {
-        ant.direction = (ant.direction + 3) % 4;
-      }
+      const turnRight = rule === "R";
+      const newDirection = turnRight
+        ? (ant.direction + 1) % 4
+        : (ant.direction + 3) % 4;
+      const endAngle = startAngle + (turnRight ? -Math.PI / 2 : Math.PI / 2);
+
+      // Record render path for the duration until the next update
+      ant.renderPath = {
+        type: "arc",
+        cx,
+        cy,
+        radius: this.cellSize / 2,
+        startAngle,
+        endAngle,
+        turn: turnRight ? 1 : -1, // 1 => right (CW), -1 => left (CCW)
+      };
+
+      // Apply the direction change after planning path
+      ant.direction = newDirection;
 
       // Move forward
       switch (ant.direction) {
@@ -2551,22 +2585,44 @@ class LangtonsAnt extends BaseSimulation {
     this.drawGrid(this.grid);
 
     // Draw each ant with trails
+    const now =
+      typeof performance !== "undefined" && performance.now
+        ? performance.now()
+        : Date.now();
+    const progress = this.isRunning
+      ? Math.max(
+          0,
+          Math.min(1, (now - this.lastUpdateTime) / this.updateInterval)
+        )
+      : 1;
+
     this.ants.forEach((ant) => {
-      const antX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
-      const antY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
+      let drawX, drawY, headingAngle;
+      const hasPath = ant.renderPath && ant.renderPath.type === "arc";
+      if (hasPath) {
+        const { cx, cy, radius, startAngle, endAngle, turn } = ant.renderPath;
+        const angle = startAngle + (endAngle - startAngle) * progress;
+        drawX = cx + radius * Math.cos(angle);
+        drawY = cy + radius * Math.sin(angle);
+        // Tangent direction along arc
+        headingAngle = angle + (turn === 1 ? -Math.PI / 2 : Math.PI / 2);
+      } else {
+        drawX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
+        drawY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
+        headingAngle = (ant.direction * Math.PI) / 2;
+      }
 
       // Draw trail first (behind the ant)
       this.drawActorTrail(ant, this.cellSize / 4);
 
       // Draw ant
-      this.drawActor(antX, antY, this.cellSize / 3);
+      this.drawActor(drawX, drawY, this.cellSize / 3);
 
       // Draw direction indicator using common utility
-      const directionAngle = (ant.direction * Math.PI) / 2;
       this.drawDirectionIndicator(
-        antX,
-        antY,
-        directionAngle,
+        drawX,
+        drawY,
+        headingAngle,
         this.cellSize / 2,
         "#ffffff",
         2
@@ -2614,6 +2670,68 @@ class LangtonsAnt extends BaseSimulation {
 
     // Draw immediately so the ant is visible even when paused
     this.draw();
+  }
+
+  // Generic add-actor API for keyboard/UX
+  addActorAt(mouseX, mouseY) {
+    if (typeof mouseX !== "number" || typeof mouseY !== "number") {
+      this.addAnt(null, null);
+      return;
+    }
+    const gridPos = this.screenToGrid(mouseX, mouseY);
+    const x = Math.max(0, Math.min(this.cols - 1, gridPos.col));
+    const y = Math.max(0, Math.min(this.rows - 1, gridPos.row));
+    this.ants.push({
+      x,
+      y,
+      direction: Math.floor(Math.random() * 4),
+      trail: [],
+    });
+    this.draw();
+  }
+
+  // Set the number of ants (actor count) dynamically
+  setAntCount(count) {
+    const desired = Math.max(1, Math.min(100, parseInt(count, 10) || 1));
+    const current = this.ants.length;
+    if (desired === current) return;
+
+    if (desired > current) {
+      const toAdd = desired - current;
+      for (let i = 0; i < toAdd; i++) {
+        // Random placement at valid grid cell and random facing
+        const x = Math.floor(Math.random() * this.cols);
+        const y = Math.floor(Math.random() * this.rows);
+        this.ants.push({
+          x,
+          y,
+          direction: Math.floor(Math.random() * 4),
+          trail: [],
+        });
+      }
+    } else {
+      // Reduce from the end
+      this.ants.length = desired;
+    }
+
+    // Render updated count immediately
+    this.draw();
+  }
+
+  // Compute angle for a given edge midpoint around the cell centre
+  #edgeAngle(edgeIndex) {
+    // 0: top (-PI/2), 1: right (0), 2: bottom (PI/2), 3: left (PI)
+    switch (edgeIndex % 4) {
+      case 0:
+        return -Math.PI / 2;
+      case 1:
+        return 0;
+      case 2:
+        return Math.PI / 2;
+      case 3:
+      default:
+        return Math.PI;
+    }
   }
 
   toggleCell(x, y) {
