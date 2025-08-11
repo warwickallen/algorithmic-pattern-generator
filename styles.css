@@ -952,6 +952,20 @@ body {
   opacity: 0.8;
 }
 
+/* Accessible link colour on dark backgrounds */
+.modal a:link,
+.modal a:visited,
+.modal-content a:link,
+.modal-content a:visited,
+.glass a:link,
+.glass a:visited,
+.glass-light a:link,
+.glass-light a:visited,
+.glass-hover a:link,
+.glass-hover a:visited {
+  color: skyblue;
+}
+
 /* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */
