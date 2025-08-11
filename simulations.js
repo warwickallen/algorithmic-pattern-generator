@@ -2468,36 +2468,66 @@ class LangtonsAnt extends BaseSimulation {
       const newDirection = turnRight
         ? (ant.direction + 1) % 4
         : (ant.direction + 3) % 4;
-      const endAngle = startAngle + (turnRight ? -Math.PI / 2 : Math.PI / 2);
+      const exitAngle = this.#edgeAngle(newDirection);
+
+      // Compute cubic Bézier control points to ensure smooth entry/exit tangents
+      const p0x = cx + radius * Math.cos(startAngle);
+      const p0y = cy + radius * Math.sin(startAngle);
+      const p3x = cx + radius * Math.cos(exitAngle);
+      const p3y = cy + radius * Math.sin(exitAngle);
+
+      const dirToVec = (d) => {
+        switch (d) {
+          case 0:
+            return { x: 0, y: -1 };
+          case 1:
+            return { x: 1, y: 0 };
+          case 2:
+            return { x: 0, y: 1 };
+          case 3:
+          default:
+            return { x: -1, y: 0 };
+        }
+      };
+      const v0 = dirToVec(ant.direction);
+      const v1 = dirToVec(newDirection);
+      const k = 0.6 * this.cellSize; // control handle length tuned for smoothness
+      const p1x = p0x + v0.x * k;
+      const p1y = p0y + v0.y * k;
+      const p2x = p3x - v1.x * k;
+      const p2y = p3y - v1.y * k;
 
       // Record render path for the duration until the next update
       ant.renderPath = {
-        type: "arc",
-        cx,
-        cy,
-        radius,
-        startAngle,
-        endAngle,
-        turn: turnRight ? 1 : -1, // 1 => right (CW), -1 => left (CCW)
+        type: "bezier",
+        p0: { x: p0x, y: p0y },
+        p1: { x: p1x, y: p1y },
+        p2: { x: p2x, y: p2y },
+        p3: { x: p3x, y: p3y },
       };
 
-      // Increase trail sampling frequency along the arc to approximate termite density
+      // Dense trail sampling along the curve similar to termite density
       const termiteStep =
         typeof AppConstants !== "undefined"
           ? (AppConstants.TermiteDefaults &&
               AppConstants.TermiteDefaults.MOVE_SPEED) ||
             2
           : 2;
-      const pathLength = Math.abs(endAngle - startAngle) * radius; // quarter-arc length
-      const samples = Math.max(
-        1,
-        Math.round(pathLength / Math.max(1, termiteStep))
-      );
+      const approxLength = Math.PI * radius * 0.5; // quarter-arc baseline
+      const samples = Math.max(2, Math.round(approxLength / Math.max(1, termiteStep)));
       for (let i = 0; i <= samples; i++) {
         const t = i / samples;
-        const angle = startAngle + (endAngle - startAngle) * t;
-        const sx = cx + radius * Math.cos(angle);
-        const sy = cy + radius * Math.sin(angle);
+        const omt = 1 - t;
+        const sx =
+          omt * omt * omt * p0x +
+          3 * omt * omt * t * p1x +
+          3 * omt * t * t * p2x +
+          t * t * t * p3x;
+        const sy =
+          omt * omt * omt * p0y +
+          3 * omt * omt * t * p1y +
+          3 * omt * t * t * p2y +
+          t * t * t * p3y;
         this.updateActorTrail(ant, sx, sy);
       }
 
@@ -2545,14 +2575,27 @@ class LangtonsAnt extends BaseSimulation {
 
     this.ants.forEach((ant) => {
       let drawX, drawY, headingAngle;
-      const hasPath = ant.renderPath && ant.renderPath.type === "arc";
-      if (hasPath) {
-        const { cx, cy, radius, startAngle, endAngle, turn } = ant.renderPath;
-        const angle = startAngle + (endAngle - startAngle) * progress;
-        drawX = cx + radius * Math.cos(angle);
-        drawY = cy + radius * Math.sin(angle);
-        // Tangent direction along arc
-        headingAngle = angle + (turn === 1 ? -Math.PI / 2 : Math.PI / 2);
+      if (ant.renderPath && ant.renderPath.type === "bezier") {
+        const { p0, p1, p2, p3 } = ant.renderPath;
+        const t = progress;
+        const omt = 1 - t;
+        // Position on curve
+        drawX =
+          omt * omt * omt * p0.x +
+          3 * omt * omt * t * p1.x +
+          3 * omt * t * t * p2.x +
+          t * t * t * p3.x;
+        drawY =
+          omt * omt * omt * p0.y +
+          3 * omt * omt * t * p1.y +
+          3 * omt * t * t * p2.y +
+          t * t * t * p3.y;
+        // Derivative for heading
+        const dx =
+          3 * omt * omt * (p1.x - p0.x) + 6 * omt * t * (p2.x - p1.x) + 3 * t * t * (p3.x - p2.x);
+        const dy =
+          3 * omt * omt * (p1.y - p0.y) + 6 * omt * t * (p2.y - p1.y) + 3 * t * t * (p3.y - p2.y);
+        headingAngle = Math.atan2(dy, dx);
       } else {
         drawX = this.gridOffsetX + ant.x * this.cellSize + this.cellSize / 2;
         drawY = this.gridOffsetY + ant.y * this.cellSize + this.cellSize / 2;
