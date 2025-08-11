@@ -34,12 +34,13 @@
       const contentOk =
         !!bodyEl && bodyEl.innerHTML.includes("Custom body content");
       modalSystem.close();
-      if (created && modalEl.parentNode) modalEl.parentNode.removeChild(modalEl);
+      if (created && modalEl.parentNode)
+        modalEl.parentNode.removeChild(modalEl);
       return {
         passed: visible && titleOk && contentOk,
         details: `visible:${visible}, title:${titleOk}, content:${contentOk}`,
       };
     },
-    "ui"
+    "ui.modal"
   );
 })();

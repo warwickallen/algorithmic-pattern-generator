@@ -85,6 +85,6 @@
         details: `Conway restored: ${conwayScrollRestored}, Termite restored: ${termiteScrollRestored}, Langton initial: ${langtonInitialScroll}`,
       };
     },
-    "ui"
+    "ui.modal"
   );
 })();

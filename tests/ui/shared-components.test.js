@@ -35,7 +35,7 @@
         document.body.removeChild(wrapper);
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -60,7 +60,7 @@
         if (temp && temp.parentNode) temp.parentNode.removeChild(temp);
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -76,6 +76,6 @@
       canvas.click();
       return { passed: fired === true, details: "listener fired" };
     },
-    "ui"
+    "ui.components"
   );
 })();

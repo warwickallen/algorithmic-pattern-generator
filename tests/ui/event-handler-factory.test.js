@@ -31,7 +31,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.event"
   );
 
   runner.addTest(
@@ -65,7 +65,7 @@
         return { passed: false, details: e.message };
       }
     },
-    "ui"
+    "ui.event"
   );
 
   runner.addTest(
@@ -109,7 +109,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.event"
   );
 
   runner.addTest(
@@ -187,7 +187,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.event"
   );
 
   runner.addTest(
@@ -233,7 +233,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.event"
   );
 
   runner.addTest(
@@ -303,6 +303,6 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.event"
   );
 })();

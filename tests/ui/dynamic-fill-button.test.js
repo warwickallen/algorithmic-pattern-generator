@@ -309,9 +309,11 @@
         const passed = mean > 0 && stdev / mean < 0.5;
         return {
           passed,
-          details: `cells=${counts.length}, trials=${trials}, mean=${mean.toFixed(
+          details: `cells=${
+            counts.length
+          }, trials=${trials}, mean=${mean.toFixed(2)}, stdev=${stdev.toFixed(
             2
-          )}, stdev=${stdev.toFixed(2)}, cv=${(stdev / mean).toFixed(2)}`,
+          )}, cv=${(stdev / mean).toFixed(2)}`,
         };
       } catch (e) {
         return { passed: false, details: e.message };

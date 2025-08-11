@@ -40,6 +40,6 @@
         return { passed: false, details: e.message };
       }
     },
-    "ui"
+    "ui.modal"
   );
 })();

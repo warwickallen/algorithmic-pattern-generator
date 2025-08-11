@@ -53,6 +53,6 @@
       document.body.removeChild(container);
       return { passed: clicks === 1, details: `clicks=${clicks}` };
     },
-    "ui"
+    "ui.event"
   );
 })();

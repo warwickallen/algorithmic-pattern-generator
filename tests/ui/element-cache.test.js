@@ -20,6 +20,6 @@
         if (temp && temp.parentNode) temp.parentNode.removeChild(temp);
       }
     },
-    "ui"
+    "ui.misc"
   );
 })();

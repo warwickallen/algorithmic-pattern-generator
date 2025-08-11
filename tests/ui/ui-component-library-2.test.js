@@ -40,7 +40,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -82,7 +82,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -183,7 +183,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -234,7 +234,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -295,7 +295,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -337,7 +337,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -371,7 +371,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -403,7 +403,7 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -437,6 +437,6 @@
         eventFramework.cleanup && eventFramework.cleanup();
       }
     },
-    "ui"
+    "ui.components"
   );
 })();

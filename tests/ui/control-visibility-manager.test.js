@@ -47,7 +47,7 @@
         details: `init=${isInitialized}, groups=${hasControlGroups}, states=${hasVisibilityStates}`,
       };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -68,7 +68,7 @@
       visibilityManager.cleanup();
       return { passed: hasStyles, details: `styles=${hasStyles}` };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -110,7 +110,7 @@
         details: `conway=${isConwayVisible}, termiteHidden=${isTermiteHidden}, langtonHidden=${isLangtonHidden}, termitesHidden=${isTermitesHidden}, active=${active}`,
       };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -153,7 +153,7 @@
         details: `termite=${termiteVisible}, termites=${termitesVisible}, conwayHidden=${conwayHidden}, langtonHidden=${langtonHidden}, active=${active}`,
       };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -195,7 +195,7 @@
         details: `langton=${langtonVisible}, conwayHidden=${conwayHidden}, termiteHidden=${termiteHidden}, termitesHidden=${termitesHidden}, active=${active}`,
       };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -229,7 +229,7 @@
         details: `conwayActive=${conwayActive}, allHidden=${allHidden}, noActive=${noActive}`,
       };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -255,7 +255,7 @@
         details: `conwayActive=${conwayActive}, noActive=${noActive}`,
       };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -281,7 +281,7 @@
         details: `termite=${termiteVisible}, termites=${termitesVisible}, conway=${conwayVisible}`,
       };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(
@@ -314,7 +314,7 @@
       const ok = active === "test-sim";
       return { passed: ok, details: `active=${active}` };
     },
-    "ui"
+    "ui.controls"
   );
 
   runner.addTest(

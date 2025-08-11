@@ -32,7 +32,7 @@
         details: `created=${!!label}, text=${el && el.textContent}`,
       };
     },
-    "ui"
+    "ui.components"
   );
 
   runner.addTest(
@@ -54,6 +54,6 @@
       const ok = !!container && before !== after && after === "vertical";
       return { passed: ok, details: `before=${before}, after=${after}` };
     },
-    "ui"
+    "ui.components"
   );
 })();

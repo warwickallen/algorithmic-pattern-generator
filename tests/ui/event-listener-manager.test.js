@@ -15,6 +15,6 @@
       el.click();
       return { passed: fired === true, details: "listener fired" };
     },
-    "ui"
+    "ui.event"
   );
 })();

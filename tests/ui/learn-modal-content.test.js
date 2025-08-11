@@ -62,6 +62,6 @@
       }
       return { passed: cOk && tOk, details: `conway=${cOk}, termite=${tOk}` };
     },
-    "ui"
+    "ui.modal"
   );
 })();

@@ -23,6 +23,6 @@
         details: `conway=${conwayActive}, termite=${termiteActive}, langton=${langtonActive}`,
       };
     },
-    "ui"
+    "ui.controls"
   );
 })();

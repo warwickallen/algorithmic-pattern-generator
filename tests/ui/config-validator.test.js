@@ -31,6 +31,6 @@
       const notOk = !ConfigValidator.validate("slider", bad).valid;
       return { passed: ok && notOk, details: `ok=${ok}, notOk=${notOk}` };
     },
-    "ui"
+    "ui.misc"
   );
 })();

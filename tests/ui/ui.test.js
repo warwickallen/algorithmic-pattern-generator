@@ -15,7 +15,7 @@
           : "missing configs",
       };
     },
-    "ui"
+    "ui.misc"
   );
 
   runner.addTest(
@@ -29,7 +29,7 @@
         details: "debounce/throttle available",
       };
     },
-    "ui"
+    "ui.misc"
   );
 
   runner.addTest(
@@ -56,6 +56,6 @@
       const visible = !!(el.classList && el.classList.contains("active"));
       return { passed: visible, details: `visible=${visible}` };
     },
-    "ui"
+    "ui.controls"
   );
 })();
