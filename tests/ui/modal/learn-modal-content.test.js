@@ -11,6 +11,7 @@
       // Guard: app expects a canvas with id="canvas" present
       let created = false;
       let createdModal = false;
+      let createdFillBtn = false;
       if (!document.getElementById("canvas")) {
         const canvas = document.createElement("canvas");
         canvas.id = "canvas";
@@ -29,6 +30,14 @@
           '<div class="modal-content"><div class="modal-header"><h2 data-modal-title></h2><button class="modal-close">&times;</button></div><div class="modal-body" data-modal-content></div></div>';
         document.body.appendChild(mount);
         createdModal = true;
+      }
+      // Ensure dynamic fill button exists to avoid init warnings in app
+      if (!document.getElementById("dynamic-fill-btn")) {
+        const btn = document.createElement("button");
+        btn.id = "dynamic-fill-btn";
+        btn.style.display = "none";
+        document.body.appendChild(btn);
+        createdFillBtn = true;
       }
       const app = new AlgorithmicPatternGenerator();
       app.init();
@@ -59,6 +68,10 @@
       }
       if (createdModal && mount && mount.parentNode) {
         mount.parentNode.removeChild(mount);
+      }
+      if (createdFillBtn) {
+        const b = document.getElementById("dynamic-fill-btn");
+        if (b && b.parentNode) b.parentNode.removeChild(b);
       }
       return { passed: cOk && tOk, details: `conway=${cOk}, termite=${tOk}` };
     },

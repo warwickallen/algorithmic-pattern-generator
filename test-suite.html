@@ -304,6 +304,40 @@
     </style>
   </head>
   <body>
+    <!-- Hidden scaffold to satisfy app UI components during tests -->
+    <div
+      id="test-scaffold"
+      style="
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      "
+    >
+      <div class="speed-control">
+        <div class="control-group">
+          <input
+            type="range"
+            id="dynamic-speed-slider"
+            min="1"
+            max="60"
+            value="30"
+          />
+          <span id="dynamic-speed-value">30 steps/s</span>
+        </div>
+      </div>
+      <button id="dynamic-fill-btn" style="display: none">Random</button>
+      <div id="dynamic-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 data-modal-title></h2>
+            <button class="modal-close" type="button">&times;</button>
+          </div>
+          <div class="modal-body" data-modal-content></div>
+        </div>
+      </div>
+    </div>
     <div class="layout">
       <header class="panel">
         <div>
@@ -385,6 +419,32 @@
     </div>
 
     <script>
+      // Narrow console filtering to avoid expected-noise warnings from specific negative cases
+      (function setupConsoleFilters() {
+        const originalWarn = console.warn ? console.warn.bind(console) : null;
+        const originalError = console.error
+          ? console.error.bind(console)
+          : null;
+        const suppressPatterns = [
+          /No template found for simulation type:\s*invalid/i,
+          /No content template found for simulation type:\s*invalid/i,
+        ];
+        const shouldSuppress = (msg) =>
+          suppressPatterns.some((re) => re.test(String(msg)));
+        if (originalWarn) {
+          console.warn = function (...args) {
+            if (args.length && shouldSuppress(args[0])) return;
+            return originalWarn(...args);
+          };
+        }
+        if (originalError) {
+          console.error = function (...args) {
+            if (args.length && shouldSuppress(args[0])) return;
+            return originalError(...args);
+          };
+        }
+      })();
+
       // Create a global runner instance that test files will register into
       const runner = new TestRunner();
       window.testRunner = runner;
