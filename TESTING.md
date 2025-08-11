@@ -78,6 +78,14 @@ testRunner.runTestsByCategory("control-visibility");
 testRunner.runTestsByCategory("system"); // includes ErrorHandler tests
 ```
 
+### Additional Behaviour Tests
+
+Programmatic checks include:
+
+- URL parameter override of direction indicators across actor-based simulations (`?dir`, `showDir`, `showDirectionIndicator`).
+- Ants slider responsiveness (`setAntCount`) to ensure dynamic actor-count changes apply immediately.
+- Termite pick-up/drop edge cases verifying chip-to-grid normalisation and correct carrying logic.
+
 ### 3. Using the Visual Test Suite Interface
 
 The visual test suite (`test-suite.html`) provides an intuitive interface for test selection:

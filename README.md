@@ -7,17 +7,17 @@ A sophisticated web application featuring three classic algorithmic simulations:
 ### Three Simulations
 
 1. **Conway's Game of Life** - A cellular automaton where cells live or die based on their neighbours
-2. **Termite Algorithm** - Termites that pick up and drop wood chips, creating fascinating patterns
-3. **Langton's Ant** - A simple ant following basic rules that creates complex highways. New ants can be added randomly (button) or under the mouse pointer (keyboard) for precise placement.
+2. **Termite Algorithm** - Termites that pick up and drop wood chips (active cells), creating fascinating patterns
+3. **Langton's Ant** - Ants now move with smooth Bézier-interpolated paths across each cell, visually matching termites. Add ants under the pointer with the keyboard.
 
 ### Key Features
 
 - **Simulation Selector** - Switch between the three algorithms seamlessly
 - **Immersive Mode** - Hide controls for a full-screen experience
 - **Internationalisation** - Support for UK English and US English (easily extensible)
-- **Interactive Controls** - Click to toggle cells in Conway's Game of Life, add ants randomly or under mouse pointer in Langton's Ant
+- **Interactive Controls** - Click to toggle cells in Conway's Game of Life; add ants under the pointer (Langton) and adjust actor counts via sliders
 - **Real-time Statistics** - Generation count, cell count, and FPS display
-- **Keyboard Shortcuts** - Space to start/pause, Ctrl+R to reset, Ctrl+C to clear, Ctrl+I for immersive mode
+- **Keyboard Shortcuts** - Space to start/pause, Ctrl+R to reset, Ctrl+C to clear, Ctrl+I for immersive mode, 'A' to add an actor under the pointer (where supported)
 - **Dynamic Colour Scheme** - Time-based four-corner hue rotation with smooth interpolation
 - **Performance Optimised** - Hardware acceleration, debounced inputs, and efficient rendering
 - **Responsive Design** - Works on desktop, tablet, and mobile devices
@@ -94,15 +94,18 @@ Ensure `constants.js` is loaded before other scripts (already referenced in `ind
 
 ### Termite Algorithm
 
-- **Mechanics**: Termites pick up and drop wood chips based on simple rules
-- **Controls**: Speed, Termite count (1-100), Random wood chip placement
-- **Features**: Visual termite representation with direction indicators, trail effects
+- **Mechanics**: Termites pick up and drop wood chips (represented as active cells) based on simple rules
+- **Controls**: Speed, Termite count (1-100), Random chip placement
+- **Features**: Visual termites with direction indicators, continuous trail effects
 
 ### Langton's Ant
 
 - **Rules**: Ants follow simple rules: turn right on white, left on black, flip cell colour
-- **Controls**: Speed, Add ant (random or mouse position), Random pattern generation
-- **Features**: Multiple ant support, state preservation, visual ant representation
+- **Controls**: Speed, Ant count (1-100), Add ant under pointer, Random pattern generation
+- **Features**: Multiple ant support, state preservation, continuous trail effects, and Bézier-curved motion between cell edges with matched entry/exit tangents
+
+URL parameter overrides:
+- `?dir=0|1` (or `showDir`, `showDirectionIndicator`) forces direction indicator visibility across actor-based simulations.
 
 ## Advanced Features
 
