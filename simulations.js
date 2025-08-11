@@ -2398,14 +2398,13 @@ class LangtonsAnt extends BaseSimulation {
   }
 
   resetAnts() {
+    const ctor = typeof GridActor !== "undefined" ? GridActor : null;
+    const cx = Math.floor(this.cols / 2);
+    const cy = Math.floor(this.rows / 2);
     this.ants = [
-      {
-        x: Math.floor(this.cols / 2),
-        y: Math.floor(this.rows / 2),
-        // Start facing up; rendering will place the ant at the entry edge midpoint
-        direction: 0,
-        trail: [], // Initialize empty trail
-      },
+      ctor
+        ? new ctor(cx, cy, 0, { trail: [] })
+        : { x: cx, y: cy, direction: 0, trail: [] },
     ];
   }
 
@@ -2593,13 +2592,10 @@ class LangtonsAnt extends BaseSimulation {
     }
 
     // Add a new ant at the specified or random position
-    const newAnt = {
-      x: x,
-      y: y,
-      direction: Math.floor(Math.random() * 4),
-      trail: [], // Initialize empty trail
-    };
-    this.ants.push(newAnt);
+    const ctor = typeof GridActor !== "undefined" ? GridActor : null;
+    const dir = Math.floor(Math.random() * 4);
+    const ant = ctor ? new ctor(x, y, dir, { trail: [] }) : { x, y, direction: dir, trail: [] };
+    this.ants.push(ant);
 
     // Draw immediately so the ant is visible even when paused
     this.draw();
@@ -2614,12 +2610,10 @@ class LangtonsAnt extends BaseSimulation {
     const gridPos = this.screenToGrid(mouseX, mouseY);
     const x = Math.max(0, Math.min(this.cols - 1, gridPos.col));
     const y = Math.max(0, Math.min(this.rows - 1, gridPos.row));
-    this.ants.push({
-      x,
-      y,
-      direction: Math.floor(Math.random() * 4),
-      trail: [],
-    });
+    const ctor = typeof GridActor !== "undefined" ? GridActor : null;
+    const dir = Math.floor(Math.random() * 4);
+    const ant = ctor ? new ctor(x, y, dir, { trail: [] }) : { x, y, direction: dir, trail: [] };
+    this.ants.push(ant);
     this.draw();
   }
 
@@ -2635,12 +2629,10 @@ class LangtonsAnt extends BaseSimulation {
         // Random placement at valid grid cell and random facing
         const x = Math.floor(Math.random() * this.cols);
         const y = Math.floor(Math.random() * this.rows);
-        this.ants.push({
-          x,
-          y,
-          direction: Math.floor(Math.random() * 4),
-          trail: [],
-        });
+        const ctor = typeof GridActor !== "undefined" ? GridActor : null;
+        const dir = Math.floor(Math.random() * 4);
+        const ant = ctor ? new ctor(x, y, dir, { trail: [] }) : { x, y, direction: dir, trail: [] };
+        this.ants.push(ant);
       }
     } else {
       // Reduce from the end

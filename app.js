@@ -3324,6 +3324,12 @@ class AlgorithmicPatternGenerator {
     this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
     this.dynamicFillButton = new DynamicFillButton(this.eventFramework);
 
+    // URL flag for direction indicator visibility (forced override)
+    this.forcedShowDirectionIndicator = null;
+
+    // Parse URL parameters for flags
+    this.parseUrlFlags();
+
     this.init();
   }
 
@@ -3352,6 +3358,26 @@ class AlgorithmicPatternGenerator {
 
     // Start title fade animation after 5 seconds
     this.startTitleFade();
+  }
+
+  parseUrlFlags() {
+    try {
+      const search = typeof window !== "undefined" ? window.location.search : "";
+      const params = new URLSearchParams(search || "");
+      // Accepted params: dir, showDir, showDirectionIndicator
+      const key = ["dir", "showDir", "showDirectionIndicator"].find((k) =>
+        params.has(k)
+      );
+      if (!key) return;
+      const raw = (params.get(key) || "").toLowerCase();
+      const truthy = ["1", "true", "on", "yes"].includes(raw);
+      const falsy = ["0", "false", "off", "no"].includes(raw);
+      if (truthy) this.forcedShowDirectionIndicator = true;
+      else if (falsy) this.forcedShowDirectionIndicator = false;
+      // Any other value leaves it as null (no override)
+    } catch (_) {
+      // ignore parsing errors
+    }
   }
 
   setupModals() {
@@ -3483,6 +3509,14 @@ class AlgorithmicPatternGenerator {
       this.ctx
     );
     this.currentSimulation.init();
+
+    // Apply forced direction indicator override if specified
+    if (this.forcedShowDirectionIndicator !== null &&
+        typeof this.currentSimulation.setShowDirectionIndicator === "function") {
+      this.currentSimulation.setShowDirectionIndicator(
+        this.forcedShowDirectionIndicator
+      );
+    }
 
     // Set brightness on the new simulation
     if (this.currentSimulation.setBrightness) {
