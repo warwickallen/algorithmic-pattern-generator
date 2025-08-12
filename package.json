@@ -6,6 +6,7 @@
   "scripts": {
     "generate:test-manifest": "node tools/generate-test-manifest.js",
     "generate:porting-mapping": "node tools/generate-porting-mapping.js",
-    "install:hooks": "node tools/install-hooks.js"
+    "install:hooks": "node tools/install-hooks.js",
+    "start": "node tools/serve-static.js"
   }
 }
