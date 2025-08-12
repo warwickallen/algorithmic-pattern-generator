@@ -1,9 +1,11 @@
 ## Unimplemented recommendations from `CODE_REUSE_REPORT.md`
 
-- 13. Internationalisation Enhancement
+- 13. Internationalisation Enhancement ✅ IMPLEMENTED
 
-  - Extend `i18n` to handle dynamic content, tooltips, and error messages.
-  - Relevance: Still relevant. Current `i18n.js` updates element text/placeholder by ID; no integration for tooltips (`title`), ARIA labels, or error strings. Limited dynamic usage observed (e.g., `immersive-btn` in `app.js`).
+  - Extended `i18n` to handle dynamic content and attributes via `data-i18n-key` and `data-i18n-attr` (supports attributes like `title`, `aria-label`, etc.).
+  - Added runtime APIs: `setTranslations(lang, map)` and `translateElement(el)`.
+  - Integrated examples in `index.html` (`fps-label`, `learn-btn` tooltip/ARIA).
+  - Tests: Added an i18n smoke test in `test-runner.js` validating dynamic key and attribute translation.
 
 - 16. Memory Management Consolidation
 

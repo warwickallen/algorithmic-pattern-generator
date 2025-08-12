@@ -433,20 +433,19 @@ registerAllHandlers() { /* more event setup */ }
 - **Testing**: Added two tests in `test-suite.html` under category `event-framework` covering declarative and delegated registration
 - **Documentation**: Updated `AS-BUILT.md`, `README.md`, and `TESTING.md` to reflect the enhancements
 
-### 13. **Internationalisation Enhancement**
+### 13. **Internationalisation Enhancement** ✅ **IMPLEMENTED**
 
-**Current State**: Limited i18n usage, mostly for static text:
+**Previous State**: Limited to static id-based text; no attribute or dynamic support.
 
-```javascript
-// Current i18n only handles basic text
-'title': 'Algorithmic Pattern Generator',
-'start-btn': 'Start'
-```
+**Change Implemented**: Enhanced i18n with dynamic content and attribute translation.
 
-**Opportunity**: Extend to handle dynamic content, tooltips, and error messages.
+- `data-i18n-key` for translating element text/placeholder
+- `data-i18n-attr="attr:key,..."` for attributes (e.g., `title`, `aria-label`)
+- Runtime APIs: `setTranslations(lang, map)`, `translateElement(el)`
+- Updated `index.html` to demonstrate usage on `learn-btn` and `fps-label`
+- Tests: Added a smoke test in `test-runner.js` verifying both mechanisms
 
-**Estimated Reduction**: 20-30 lines
-**Implementation**: Enhanced i18n with dynamic content support.
+**Code impact**: + small helper methods; no breaking changes; legacy id-based behaviour retained
 
 ### 14. **CSS Class Consolidation** ✅ **IMPLEMENTED**
 

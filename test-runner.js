@@ -403,6 +403,33 @@ class PredefinedTestSuites {
       "ui"
     );
 
+    // i18n smoke tests (dynamic content & attributes)
+    runner.addTest(
+      "i18n: translates data-i18n-key and data-i18n-attr",
+      async () => {
+        if (typeof document === "undefined" || typeof i18n === "undefined") {
+          return { passed: true, details: "Skipped in non-DOM environment" };
+        }
+        const container = document.createElement("div");
+        container.innerHTML = `
+          <span id="fps-label" data-i18n-key="fps-label"></span>
+          <button id="learn-btn" data-i18n-attr="title:tooltip-learn,aria-label:tooltip-learn"></button>
+        `;
+        document.body.appendChild(container);
+        try {
+          i18n.updateElements();
+          const textOk = container.querySelector('#fps-label').textContent.trim().length > 0;
+          const btn = container.querySelector('#learn-btn');
+          const titleOk = !!btn.getAttribute('title');
+          const ariaOk = !!btn.getAttribute('aria-label');
+          return { passed: textOk && titleOk && ariaOk, details: `text=${textOk}, title=${titleOk}, aria=${ariaOk}` };
+        } finally {
+          document.body.removeChild(container);
+        }
+      },
+      "ui"
+    );
+
     // ConfigValidator smoke tests
     runner.addTest(
       "ConfigValidator: validates slider schema",

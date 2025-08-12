@@ -15,7 +15,10 @@ class I18n {
                 'immersive-btn': 'Immersive Mode',
                 'generation-label': 'Generation:',
                 'cell-count-label': 'Cells:',
-                'fps-label': 'FPS:'
+                'fps-label': 'FPS:',
+                // Attribute keys (example): use with data-i18n-attr
+                'tooltip-learn': 'Open information panel',
+                'aria-start': 'Start or pause the simulation'
             },
             'en-us': {
                 'title': 'Algorithmic Pattern Generator',
@@ -29,7 +32,9 @@ class I18n {
                 'immersive-btn': 'Immersive Mode',
                 'generation-label': 'Generation:',
                 'cell-count-label': 'Cells:',
-                'fps-label': 'FPS:'
+                'fps-label': 'FPS:',
+                'tooltip-learn': 'Open information panel',
+                'aria-start': 'Start or pause the simulation'
             }
         };
 
@@ -113,17 +118,54 @@ class I18n {
         this.updateElements();
     }
 
+    // Enhanced element updater supporting:
+    // - Legacy id-based translation
+    // - data-i18n-key for text/placeholder
+    // - data-i18n-attr="attrName:key,aria-label:key2,..." for attributes
     updateElements() {
-        const elements = document.querySelectorAll('[id]');
-        elements.forEach(element => {
+        if (typeof document === 'undefined') return;
+
+        // Legacy: translate by id
+        const legacy = document.querySelectorAll('[id]');
+        legacy.forEach((element) => {
             const key = element.id;
-            if (this.translations[this.currentLang][key]) {
+            const val = this.t(key);
+            if (val && val !== key) {
                 if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-                    element.placeholder = this.translations[this.currentLang][key];
+                    element.placeholder = val;
                 } else {
-                    element.textContent = this.translations[this.currentLang][key];
+                    element.textContent = val;
                 }
             }
+        });
+
+        // New: translate elements with data-i18n-key
+        const keyNodes = document.querySelectorAll('[data-i18n-key]');
+        keyNodes.forEach((el) => {
+            const key = el.getAttribute('data-i18n-key');
+            if (!key) return;
+            const val = this.t(key);
+            if (!val) return;
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.setAttribute('placeholder', val);
+            } else {
+                el.textContent = val;
+            }
+        });
+
+        // New: translate attributes via data-i18n-attr
+        const attrNodes = document.querySelectorAll('[data-i18n-attr]');
+        attrNodes.forEach((el) => {
+            const spec = el.getAttribute('data-i18n-attr');
+            if (!spec) return;
+            // Format: "title:tooltip-learn,aria-label:aria-start"
+            spec.split(',').forEach((pair) => {
+                const [attr, key] = pair.split(':').map((s) => (s || '').trim());
+                if (!attr || !key) return;
+                const val = this.t(key);
+                if (!val) return;
+                el.setAttribute(attr, val);
+            });
         });
     }
 
@@ -131,6 +173,35 @@ class I18n {
         return this.translations[this.currentLang][key] || key;
     }
 
+    // Allow runtime extension of translations
+    setTranslations(lang, map) {
+        if (!lang || !map || typeof map !== 'object') return;
+        this.translations[lang] = { ...(this.translations[lang] || {}), ...map };
+        if (lang === this.currentLang) this.updateElements();
+    }
+
+    // Translate a specific element on demand
+    translateElement(element) {
+        if (!element || typeof element.getAttribute !== 'function') return;
+        const key = element.getAttribute('data-i18n-key');
+        if (key) {
+            const val = this.t(key);
+            if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                element.setAttribute('placeholder', val);
+            } else {
+                element.textContent = val;
+            }
+        }
+        const spec = element.getAttribute('data-i18n-attr');
+        if (spec) {
+            spec.split(',').forEach((pair) => {
+                const [attr, aKey] = pair.split(':').map((s) => (s || '').trim());
+                if (!attr || !aKey) return;
+                const val = this.t(aKey);
+                element.setAttribute(attr, val);
+            });
+        }
+    }
 
 }
 
