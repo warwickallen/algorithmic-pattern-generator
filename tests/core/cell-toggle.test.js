@@ -4,7 +4,10 @@
 
   function makeCanvas() {
     if (typeof TestUtilityFactory !== "undefined") {
-      return TestUtilityFactory.createCanvasAndContext({ width: 120, height: 80 });
+      return TestUtilityFactory.createCanvasAndContext({
+        width: 120,
+        height: 80,
+      });
     }
     const canvas = document.createElement("canvas");
     canvas.width = 120;
