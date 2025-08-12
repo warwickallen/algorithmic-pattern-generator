@@ -106,6 +106,7 @@ Ensure `constants.js` is loaded before other scripts (already referenced in `ind
 - **Features**: Multiple ant support, state preservation, continuous trail effects, and Bézier-curved motion between cell edges with matched entry/exit tangents
 
 URL parameter overrides:
+
 - `?dir=0|1` (or `showDir`, `showDirectionIndicator`) forces direction indicator visibility across actor-based simulations.
 
 ## Advanced Features
@@ -165,13 +166,13 @@ The application uses a modular architecture with clear separation of concerns:
 - **`simulations.js`** - Simulation algorithms, rendering utilities, and base classes
 - **`styles.css`** - Responsive styling with immersive mode support
 - **`i18n.js`** - Internationalisation system
- - `logger.js` - Centralised logging
- - `resource-manager.js` - Listener/timer/RAF tracking and cleanup
- - `animation-manager.js` - Centralised RAF loop with target FPS control
- - `statistics-collector.js` - Pluggable metrics (e.g., FPS)
- - `canvas-manager.js` - Canvas/context setup and size management
- - `keyboard-shortcut-manager.js` - Declarative keyboard shortcut mapping
- - `type-guards.js` - Runtime type guards and helpers
+- `logger.js` - Centralised logging
+- `resource-manager.js` - Listener/timer/RAF tracking and cleanup
+- `animation-manager.js` - Centralised RAF loop with target FPS control
+- `statistics-collector.js` - Pluggable metrics (e.g., FPS)
+- `canvas-manager.js` - Canvas/context setup and size management
+- `keyboard-shortcut-manager.js` - Declarative keyboard shortcut mapping
+- `type-guards.js` - Runtime type guards and helpers
 - **`dynamic-layout.js`** - Dynamic layout management
 - **`constants.js`** - Centralised application constants (browser global `AppConstants`)
 - **`config-validator.js`** - Rule-based configuration validator used by configuration and UI systems

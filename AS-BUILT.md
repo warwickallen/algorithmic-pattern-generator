@@ -849,7 +849,8 @@ To reduce scattered `console.*` usage and provide a single place to adjust verbo
 Example:
 
 ```javascript
-if (typeof Logger !== "undefined") Logger.info("Performance monitoring started");
+if (typeof Logger !== "undefined")
+  Logger.info("Performance monitoring started");
 ```
 
 ##### TypeGuards (Runtime Type Guards)
