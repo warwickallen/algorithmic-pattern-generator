@@ -982,13 +982,13 @@ class UIComponentLibrary {
   // Lifecycle hook management
   registerLifecycleHooks(component) {
     const hooks = {
-      onMount: () => console.log(`Component ${component.id} mounted`),
-      onUnmount: () => console.log(`Component ${component.id} unmounted`),
-      onUpdate: () => console.log(`Component ${component.id} updated`),
-      onShow: () => console.log(`Component ${component.id} shown`),
-      onHide: () => console.log(`Component ${component.id} hidden`),
-      onEnable: () => console.log(`Component ${component.id} enabled`),
-      onDisable: () => console.log(`Component ${component.id} disabled`),
+      onMount: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} mounted`) : void 0),
+      onUnmount: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} unmounted`) : void 0),
+      onUpdate: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} updated`) : void 0),
+      onShow: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} shown`) : void 0),
+      onHide: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} hidden`) : void 0),
+      onEnable: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} enabled`) : void 0),
+      onDisable: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} disabled`) : void 0),
     };
 
     this.lifecycleHooks.set(component.id, hooks);
@@ -1394,7 +1394,7 @@ class DynamicFillButton {
 
     this.button = this.eventFramework.getElement("#dynamic-fill-btn");
     if (!this.button) {
-      console.warn("Dynamic fill button not found");
+      if (typeof Logger !== "undefined") Logger.warn("Dynamic fill button not found");
       return;
     }
 
@@ -3696,14 +3696,16 @@ class AlgorithmicPatternGenerator {
     // Register the dynamic modal with the modal manager
     this.modalManager.register(this.modalManager.dynamicModalId, {
       onShow: () => {
-        console.log(
-          `Dynamic modal opened for ${
-            this.modalManager.currentSimType || "unknown"
-          } simulation`
-        );
+        if (typeof Logger !== "undefined") {
+          Logger.info(
+            `Dynamic modal opened for ${
+              this.modalManager.currentSimType || "unknown"
+            } simulation`
+          );
+        }
       },
       onHide: () => {
-        console.log(`Dynamic modal closed`);
+        if (typeof Logger !== "undefined") Logger.info(`Dynamic modal closed`);
       },
     });
   }
@@ -4311,12 +4313,12 @@ class PerformanceMonitor {
     this.monitorFPS();
     this.monitorMemory();
 
-    console.log("Performance monitoring started");
+    if (typeof Logger !== "undefined") Logger.info("Performance monitoring started");
   }
 
   stop() {
     this.isMonitoring = false;
-    console.log("Performance monitoring stopped");
+    if (typeof Logger !== "undefined") Logger.info("Performance monitoring stopped");
   }
 
   monitorFPS() {
@@ -4405,7 +4407,7 @@ class PerformanceMonitor {
 
   logMetrics() {
     const metrics = this.getMetrics();
-    console.log("Performance Metrics:", {
+    if (typeof Logger !== "undefined") Logger.debug("Performance Metrics:", {
       "Average FPS": Math.round(metrics.averageFPS),
       "Average Memory (MB)": Math.round(metrics.averageMemory),
       "Sample Count": Object.keys(metrics.samples).map((key) => ({

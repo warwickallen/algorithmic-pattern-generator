@@ -335,15 +335,15 @@ class SimulationLifecycleFramework {
   // Register lifecycle hooks for a simulation
   registerLifecycleHooks(simulationId, hooks) {
     const defaultHooks = {
-      onInit: () => console.log(`Simulation ${simulationId} initialized`),
-      onStart: () => console.log(`Simulation ${simulationId} started`),
-      onPause: () => console.log(`Simulation ${simulationId} paused`),
-      onReset: () => console.log(`Simulation ${simulationId} reset`),
-      onClear: () => console.log(`Simulation ${simulationId} cleared`),
-      onResize: () => console.log(`Simulation ${simulationId} resized`),
-      onUpdate: () => console.log(`Simulation ${simulationId} updated`),
-      onDraw: () => console.log(`Simulation ${simulationId} drawn`),
-      onDestroy: () => console.log(`Simulation ${simulationId} destroyed`),
+      onInit: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} initialized`) : void 0),
+      onStart: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} started`) : void 0),
+      onPause: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} paused`) : void 0),
+      onReset: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} reset`) : void 0),
+      onClear: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} cleared`) : void 0),
+      onResize: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} resized`) : void 0),
+      onUpdate: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} updated`) : void 0),
+      onDraw: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} drawn`) : void 0),
+      onDestroy: () => (typeof Logger !== "undefined" ? Logger.debug(`Simulation ${simulationId} destroyed`) : void 0),
     };
 
     this.lifecycleHooks.set(simulationId, { ...defaultHooks, ...hooks });
