@@ -48,6 +48,7 @@
 
   - Unify common runtime type checks/guards.
   - Relevance: Partially relevant. `config-validator.js` centralises schema validation for configs, but generic runtime type guards remain scattered throughout the code.
+  - Progress: Introduced `type-guards.js` with common guards/utilities (`isFiniteNumber`, `clampNumber`, etc.) and loaded in app/tests. Initial usage to follow incrementally.
 
 - 26. Test Helper Consolidation
   - Consolidate repeated test helpers into shared utilities.

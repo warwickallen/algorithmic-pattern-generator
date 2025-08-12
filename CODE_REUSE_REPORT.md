@@ -718,7 +718,7 @@ Status: Initial pass complete; minor remaining console statements in docs/tests 
 
 ### 24. **Type Checking Consolidation**
 
-**Current State**: Similar validation patterns:
+**Current State (before)**: Similar validation patterns:
 
 ```javascript
 // Throughout codebase
@@ -728,6 +728,8 @@ if (typeof value !== "number") {
 ```
 
 **Estimated Reduction**: 15-25 lines
+
+Status: Added central `type-guards.js` with common guards (`isFiniteNumber`, `isInteger`, `clampNumber`, `inRange`, etc.) and included in app/tests. Adoption to proceed gradually alongside feature work.
 
 ### 25. **Documentation Consolidation** ✅ **IMPLEMENTED**
 

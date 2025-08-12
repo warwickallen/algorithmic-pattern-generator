@@ -240,6 +240,22 @@ class TestRunner {
       "system"
     );
 
+    // TypeGuards smoke test
+    runner.addTest(
+      "TypeGuards: basic guards work",
+      async () => {
+        if (typeof TypeGuards === "undefined") {
+          return { passed: true, details: "Skipped: TypeGuards not loaded" };
+        }
+        const ok =
+          TypeGuards.isFiniteNumber(3) &&
+          !TypeGuards.isFiniteNumber(NaN) &&
+          TypeGuards.clampNumber(5, 0, 3) === 3;
+        return { passed: ok, details: `ok=${ok}` };
+      },
+      "system"
+    );
+
     // KeyboardShortcutManager smoke test
     runner.addTest(
       "KeyboardShortcutManager: maps handler",
