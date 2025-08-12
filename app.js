@@ -4324,6 +4324,7 @@ class PerformanceMonitor {
 
     let frameCount = 0;
     let lastTime = performance.now();
+    let initialized = false;
 
     const measureFPS = () => {
       frameCount++;
@@ -4333,18 +4334,19 @@ class PerformanceMonitor {
       if (windowMs >= 1000) {
         const denom = windowMs > 0 ? windowMs : 1;
         const fps = Math.round((frameCount * 1000) / denom);
-        this.addMetric("fps", fps);
+        this.addMetric("fps", initialized ? fps : 0);
         try {
           if (
             window.statisticsCollector &&
             typeof window.statisticsCollector.addSample === "function"
           ) {
-            window.statisticsCollector.addSample("fps", fps);
+            window.statisticsCollector.addSample("fps", initialized ? fps : 0);
           }
         } catch (_) {}
 
         frameCount = 0;
         lastTime = currentTime;
+        initialized = true;
       }
 
       if (this.isMonitoring) {

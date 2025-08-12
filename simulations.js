@@ -821,6 +821,7 @@ class BaseSimulation {
     this.fps = 0;
     this.lastTime = 0; // legacy fps timer
     this.lastFpsTime = 0; // robust fps timer
+    this.fpsInitialized = false;
     this.frameCount = 0;
     this.fpsUpdateInterval = 30; // Update FPS every 30 frames
     this.brightness = 1.0; // Default brightness
@@ -1079,13 +1080,23 @@ class BaseSimulation {
     // Calculate FPS
     this.frameCount++;
     if (this.frameCount % this.fpsUpdateInterval === 0) {
-      const now = typeof currentTime === "number" && currentTime > 0 ? currentTime : (typeof performance !== "undefined" ? performance.now() : Date.now());
-      if (!this.lastFpsTime) this.lastFpsTime = now;
-      const elapsed = now - this.lastFpsTime;
-      const safeElapsed = elapsed > 0 ? elapsed : 1;
-      const fps = Math.round((this.fpsUpdateInterval * 1000) / safeElapsed);
-      this.fps = Number.isFinite(fps) && fps >= 0 ? fps : 0;
-      this.lastFpsTime = now;
+      const now =
+        typeof currentTime === "number" && currentTime > 0
+          ? currentTime
+          : typeof performance !== "undefined"
+          ? performance.now()
+          : Date.now();
+      if (!this.lastFpsTime) {
+        this.lastFpsTime = now;
+        this.fpsInitialized = false; // first sample primes the window
+      } else {
+        const elapsed = now - this.lastFpsTime;
+        const safeElapsed = elapsed > 0 ? elapsed : 1;
+        const fps = Math.round((this.fpsUpdateInterval * 1000) / safeElapsed);
+        this.fps = Number.isFinite(fps) && fps >= 0 ? fps : 0;
+        this.fpsInitialized = true;
+        this.lastFpsTime = now;
+      }
     }
 
     // For all simulations, control update frequency based on speed
@@ -1117,7 +1128,7 @@ class BaseSimulation {
     return {
       generation: this.generation,
       cellCount: this.cellCount,
-      fps: this.fps,
+      fps: this.fpsInitialized ? this.fps : "-",
     };
   }
 
