@@ -988,7 +988,8 @@ class BaseSimulation {
 
     // Ensure minimum canvas dimensions
     if (this.canvas.width <= 0 || this.canvas.height <= 0) {
-      if (typeof Logger !== "undefined") Logger.warn("Canvas dimensions are invalid, using fallback values");
+      if (typeof Logger !== "undefined")
+        Logger.warn("Canvas dimensions are invalid, using fallback values");
       else console.warn("Canvas dimensions are invalid, using fallback values");
       this.canvas.width = 800;
       this.canvas.height = 600;
@@ -1199,9 +1200,10 @@ class BaseSimulation {
 
     // Debug logging for timing issues
     if (window.DEBUG_FADE && currentGeneration > 0) {
-      if (typeof Logger !== "undefined") Logger.debug(
-        `updateFadeStates called for generation ${currentGeneration}`
-      );
+      if (typeof Logger !== "undefined")
+        Logger.debug(
+          `updateFadeStates called for generation ${currentGeneration}`
+        );
     }
 
     // Ensure initialInactiveCells is always initialized
@@ -1416,12 +1418,14 @@ class BaseSimulation {
       !Number.isInteger(cols) ||
       cols <= 0
     ) {
-      if (typeof Logger !== "undefined") Logger.warn(
-        `Invalid grid dimensions: rows=${rows}, cols=${cols}. Using minimum size of 1x1.`
-      );
-      else console.warn(
-        `Invalid grid dimensions: rows=${rows}, cols=${cols}. Using minimum size of 1x1.`
-      );
+      if (typeof Logger !== "undefined")
+        Logger.warn(
+          `Invalid grid dimensions: rows=${rows}, cols=${cols}. Using minimum size of 1x1.`
+        );
+      else
+        console.warn(
+          `Invalid grid dimensions: rows=${rows}, cols=${cols}. Using minimum size of 1x1.`
+        );
       rows = Math.max(1, Math.floor(rows) || 1);
       cols = Math.max(1, Math.floor(cols) || 1);
     }
@@ -1535,7 +1539,8 @@ class BaseSimulation {
       : 0.3
   ) {
     // Default implementation - subclasses can override if they need special behavior
-    if (typeof Logger !== "undefined") Logger.warn(`randomize() not implemented for ${this.simulationId}`);
+    if (typeof Logger !== "undefined")
+      Logger.warn(`randomize() not implemented for ${this.simulationId}`);
     else console.warn(`randomize() not implemented for ${this.simulationId}`);
   }
 
@@ -1563,12 +1568,14 @@ class BaseSimulation {
   // Generic cell toggling method - to be overridden by subclasses
   toggleCell(x, y) {
     // Default implementation - subclasses should override this
-    if (typeof Logger !== "undefined") Logger.warn(
-      `toggleCell not implemented for ${this.simulationId} simulation`
-    );
-    else console.warn(
-      `toggleCell not implemented for ${this.simulationId} simulation`
-    );
+    if (typeof Logger !== "undefined")
+      Logger.warn(
+        `toggleCell not implemented for ${this.simulationId} simulation`
+      );
+    else
+      console.warn(
+        `toggleCell not implemented for ${this.simulationId} simulation`
+      );
   }
 
   // Click-and-drag cell toggling functionality
