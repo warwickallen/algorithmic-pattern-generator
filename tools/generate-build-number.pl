@@ -17,6 +17,10 @@
 # character*, a parenthesis  ("(" or ")"), or a tilde is replaced with an
 # underscore ("_").
 #
+# ${VERSION} is sourced from a file named `VERSION` in the current directory.
+# Only the three-segment number is used from that file; other characters are
+# ignored.
+#
 # * A Unicode word character is a Unicode alphanumeric character, an underscore
 #   ("_") or other connector punctuation character, or a Unicode mark.
 
@@ -28,9 +32,7 @@ sub version {
   open FH, 'VERSION';
   local $_ = <FH>;
   close FH;
-  $_ = '~.~.~' unless defined;
-  chomp;
-  $_
+  /(\d+\.\d+\.\d+)/ ? $1 : '~.~.~'
 }
 sub git {
   local $_ = `git @_ 2>/dev/null`;

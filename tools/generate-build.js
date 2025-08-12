@@ -4,7 +4,7 @@
    ${VERSION}-${BRANCH}-${HASH}-${USER}-${HOST}-${TIMESTAMP}
 
  Rules:
- - VERSION: from VERSION file, else "~.~.~"
+ - VERSION: from VERSION file (using only the three-segment number), else "~.~.~"
  - BRANCH: current git branch, else "~"
  - HASH: short git hash, else "~"
  - USER: git user.name, else OS username, else "~"
@@ -24,7 +24,8 @@ function readVersion() {
     const p = path.join(projectRoot, "VERSION");
     if (!fs.existsSync(p)) return "~.~.~";
     const v = fs.readFileSync(p, "utf8").trim();
-    return v || "~.~.~";
+    const match = v.match(/(\d+\.\d+\.\d+)/);
+    return match ? match[1] : "~.~.~";
   } catch {
     return "~.~.~";
   }
