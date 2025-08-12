@@ -1,40 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-# Pre-commit hook to update VERSION file
-# This hook calls the appropriate script based on the platform
-
-# Check if we're on Windows and PowerShell is available
-if command -v pwsh >/dev/null 2>&1; then
-    # Use PowerShell script on Windows
-    pwsh .git/hooks/pre-commit.ps1
-else
-    # Fallback to bash script for Unix-like systems
-    # Get the current branch name
-    BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-    
-    # Get the short commit hash (7 characters)
-    SHORT_COMMIT_HASH=$(git rev-parse --short HEAD)
-    
-    # Get timestamp in format YYYYMMDDTHHMMSS (GMT/UTC)
-    TIMESTAMP=$(date -u +%Y%m%dT%H%M%S)
-    
-    # Read the current version from VERSION file
-    if [ -f "VERSION" ]; then
-        CURRENT_VERSION=$(cat VERSION | tr -d '\n\r')
-        
-        # Apply the regex transformation: s/(?<=\d+\.\d+\.\d+).*/-$BRANCH_NAME-$SHORT_COMMIT_HASH-$TIMESTAMP/
-        # This matches the pattern: keep the first three numbers (x.y.z) and replace everything after with the new suffix
-        NEW_VERSION=$(echo "$CURRENT_VERSION" | sed -E "s/([0-9]+\.[0-9]+\.[0-9]+).*/\1-$BRANCH_NAME-$SHORT_COMMIT_HASH-$TIMESTAMP/")
-        
-        # Write the new version back to the VERSION file
-        echo "$NEW_VERSION" > VERSION
-        
-        # Add the VERSION file to the commit
-        git add VERSION
-        
-        echo "Updated VERSION to: $NEW_VERSION"
-    else
-        echo "Warning: VERSION file not found"
-        exit 1
-    fi
-fi
+# Auto-generated pre-commit hook to keep tests manifest up to date
+set -euo pipefail
+node tools/generate-test-manifest.js
+git add tests/manifest.json tests/manifest.js
