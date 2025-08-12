@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Algorithmic Pattern Generator — Test Suite</title>
+
+    <!-- App runtime dependencies (same load order as app/index where relevant) -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- jsTree (for Select Tests tree) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/themes/default/style.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/jstree.min.js"></script>
+
+    <!-- Core app scripts required by tests -->
+    <script src="../src/constants.js"></script>
+    <script src="../src/types.js"></script>
+    <script src="../src/config-validator.js"></script>
+    <script src="../src/dynamic-layout.js"></script>
+    <script src="../src/logger.js"></script>
+    <script src="../src/i18n.js"></script>
+    <script src="../src/utils.js"></script>
+    <script src="../src/simulations.js"></script>
+    <script src="../src/app.js"></script>
+
+    <!-- Test utilities and runner -->
+    <script src="../src/test-utils.js"></script>
+    <script src="../src/test-runner.js"></script>
+
+    <!-- Generated manifest (pre-commit keeps up to date) -->
+    <script src="../tests/manifest.js"></script>
+
+    <style>
+      :root {
+        --panel-bg: rgba(30, 30, 30, 0.6);
+        --panel-border: rgba(255, 255, 255, 0.12);
+        --text: #f5f5f7;
+        --muted: #c0c0c7;
+        --accent: #6ea8fe;
+        --pass: #2ecc71;
+        --fail: #e74c3c;
+        --error: #e67e22;
+        --skip: #9aa0a6;
+      }
+      /* Override global app stylesheet to allow page-level scrolling on this suite page */
+      html,
+      body {
+        height: auto !important;
+        min-height: 100vh;
+        overflow: auto !important;
+      }
+      body {
+        background: #0f0f12;
+        color: var(--text);
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        grid-template-rows: auto auto;
+        grid-template-areas:
+          "header header"
+          "left right";
+        min-height: 100vh;
+        gap: 12px;
+        padding: 12px;
+        box-sizing: border-box;
+        /* Pack grid rows at the top instead of stretching them to fill height */
+        align-content: start;
+      }
+      header {
+        grid-area: header;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        border-radius: 10px;
+        align-self: start; /* prevent grid stretch; height fits content */
+      }
+      header .actions {
+        display: flex;
+        gap: 8px;
+      }
+      .panel {
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        border-radius: 10px;
+        padding: 10px;
+        /* revert width behaviour; allow natural width */
+      }
+      .left {
+        grid-area: left;
+        display: block; /* avoid intrinsic flex height stretching */
+        /* keep children stacked naturally */
+        gap: 12px;
+        align-self: start; /* top-align left panel */
+      }
+      .right {
+        grid-area: right;
+        display: block; /* avoid internal grid stretch; let children size themselves */
+        /* gaps managed by child panels' margins */
+        align-self: start; /* top-align right panel */
+        /* no align-content needed when not using grid here */
+      }
+      .btn {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--panel-border);
+        background: #1a1b1e;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .btn.primary {
+        background: #3b82f6;
+        border-color: #2563eb;
+        color: #ffffff;
+      }
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .legend {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .summary {
+        display: flex; /* keep previous width behaviour */
+        gap: 16px;
+        align-items: center;
+      }
+      .summary .badge {
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #1a1b1e;
+        border: 1px solid var(--panel-border);
+        font-size: 12px;
+      }
+      /* Slightly smaller font for version badge */
+      #badge-version {
+        font-size: 11px;
+        opacity: 0.9;
+      }
+      .summary .pass {
+        color: var(--pass);
+        border-color: rgba(46, 204, 113, 0.3);
+      }
+      .summary .fail {
+        color: var(--fail);
+        border-color: rgba(231, 76, 60, 0.3);
+      }
+      .summary .error {
+        color: var(--error);
+        border-color: rgba(230, 126, 34, 0.3);
+      }
+      .summary .skip {
+        color: var(--skip);
+        border-color: rgba(154, 160, 166, 0.3);
+      }
+      .results {
+        overflow: visible;
+      }
+      .result-item {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--panel-border);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+      }
+      .result-item .name {
+        color: var(--text);
+      }
+      .result-item .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .result-item.pass {
+        border-left: 3px solid var(--pass);
+      }
+      .result-item.fail {
+        border-left: 3px solid var(--fail);
+      }
+      .result-item.error {
+        border-left: 3px solid var(--error);
+      }
+      .result-item.skip {
+        border-left: 3px solid #9aa0a6;
+        opacity: 0.85;
+      }
+      .group-heading {
+        margin-top: 10px;
+        margin-bottom: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: #1a1b1e;
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+      }
+      .filter-controls {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        background: #1a1b1e;
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+      }
+      .filter-controls label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .filter-controls input[type="checkbox"] {
+        margin: 0;
+        cursor: pointer;
+      }
+      .filter-controls .pass {
+        color: var(--pass);
+      }
+      .filter-controls .fail {
+        color: var(--fail);
+      }
+      .filter-controls .skip {
+        color: var(--skip);
+      }
+      .filter-controls .error {
+        color: var(--error);
+      }
+      .tree-actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      #tree {
+        max-height: none;
+        overflow: visible;
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 6px;
+      }
+      /* Remove selection highlight to rely solely on checkboxes */
+      .jstree-default .jstree-clicked {
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      .jstree-default .jstree-hovered {
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      /* Allow long filenames to wrap within the tree panel and fix layout */
+      .jstree-default .jstree-node {
+        white-space: normal !important; /* allow wrapping */
+        min-height: 0 !important; /* let height grow with wrapped text */
+        line-height: 1.2 !important; /* reduce gaps between rows */
+        clear: both; /* ensure each node starts on a new line */
+      }
+      .jstree-default .jstree-anchor {
+        white-space: normal !important; /* allow wrapping */
+        overflow-wrap: anywhere; /* break long tokens */
+        word-break: break-word;
+        display: inline-block; /* allow height expansion */
+        vertical-align: top; /* align with toggle/checkbox icons */
+        height: auto !important;
+        line-height: 1.2 !important;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        max-width: calc(
+          100% - 28px
+        ); /* leave space for toggler at very deep levels */
+      }
+      .jstree-default .jstree-ocl,
+      .jstree-default .jstree-themeicon,
+      .jstree-default .jstree-checkbox,
+      .jstree-default .jstree-icon {
+        vertical-align: top; /* align icons to the top of multiline labels */
+        display: inline-block;
+        width: 18px; /* preserve icon box so theme sprites render */
+        height: 18px; /* avoid collapsing to 0 height */
+        margin-top: 2px; /* reduce perceived gap above filenames */
+      }
+      /* Show per-file test counts after filenames */
+      .jstree-default .jstree-anchor[data-count]:after {
+        content: " [" attr(data-count) "]";
+        font-style: italic;
+        color: var(--muted);
+        margin-left: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Hidden scaffold to satisfy app UI components during tests -->
+    <div
+      id="test-scaffold"
+      style="
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      "
+    >
+      <div class="speed-control">
+        <div class="control-group">
+          <input
+            type="range"
+            id="dynamic-speed-slider"
+            min="1"
+            max="60"
+            value="30"
+          />
+          <span id="dynamic-speed-value">30 steps/s</span>
+        </div>
+      </div>
+      <button id="dynamic-fill-btn" style="display: none">Random</button>
+      <div id="dynamic-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 data-modal-title></h2>
+            <button class="modal-close" type="button">&times;</button>
+          </div>
+          <div class="modal-body" data-modal-content></div>
+        </div>
+      </div>
+    </div>
+    <div class="layout">
+      <header class="panel">
+        <div>
+          <strong>Test Suite</strong>
+          <div class="legend">Select tests from the tree, then run them.</div>
+        </div>
+        <div class="actions">
+          <button id="btn-run" class="btn primary">Run selected</button>
+          <button id="btn-clear" class="btn">Clear results</button>
+          <button id="btn-copy-logs" class="btn">Copy logs</button>
+          <button id="btn-export-logs" class="btn">Export logs</button>
+          <span class="badge" id="badge-version" title="Tested version"
+            >ver: n/a</span
+          >
+        </div>
+      </header>
+
+      <div class="left">
+        <div class="panel">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 6px;
+            "
+          >
+            <strong>Select Tests</strong>
+            <span class="legend"
+              >Use checkboxes to select files or whole folders</span
+            >
+          </div>
+          <div class="tree-actions">
+            <button id="btn-expand" class="btn">Expand all</button>
+            <button id="btn-collapse" class="btn">Collapse all</button>
+            <span
+              id="selection-summary"
+              class="legend"
+              style="margin-left: 8px"
+            >
+              0 tests selected in 0 test files
+            </span>
+          </div>
+          <div id="tree"></div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="panel summary" id="summary">
+          <span class="badge" id="badge-total">Total: 0</span>
+          <span class="badge pass" id="badge-pass">Passed: 0</span>
+          <span class="badge fail" id="badge-fail">Failed: 0</span>
+          <span class="badge skip" id="badge-skip">Skipped: 0</span>
+          <span class="badge error" id="badge-error">Errors: 0</span>
+          <span class="badge" id="badge-duration">Duration: 0ms</span>
+        </div>
+        <div class="panel results" id="results">
+          <div class="filter-controls">
+            <label class="pass">
+              <input type="checkbox" id="filter-pass" checked />
+              Passed
+            </label>
+            <label class="fail">
+              <input type="checkbox" id="filter-fail" checked />
+              Failed
+            </label>
+            <label class="skip">
+              <input type="checkbox" id="filter-skip" checked />
+              Skipped
+            </label>
+            <label class="error">
+              <input type="checkbox" id="filter-error" checked />
+              Errors
+            </label>
+          </div>
+          <div id="results-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Narrow console filtering to avoid expected-noise warnings from specific negative cases
+      (function setupConsoleFilters() {
+        const originalWarn = console.warn ? console.warn.bind(console) : null;
+        const originalError = console.error
+          ? console.error.bind(console)
+          : null;
+        const suppressPatterns = [
+          /No template found for simulation type:\s*invalid/i,
+          /No content template found for simulation type:\s*invalid/i,
+        ];
+        const shouldSuppress = (msg) =>
+          suppressPatterns.some((re) => re.test(String(msg)));
+        if (originalWarn) {
+          console.warn = function (...args) {
+            if (args.length && shouldSuppress(args[0])) return;
+            return originalWarn(...args);
+          };
+        }
+        if (originalError) {
+          console.error = function (...args) {
+            if (args.length && shouldSuppress(args[0])) return;
+            return originalError(...args);
+          };
+        }
+      })();
+
+      // Create a global runner instance that test files will register into
+      const runner = new TestRunner();
+      window.testRunner = runner;
+
+      // Augment runner.addTest to capture the source file path for each test
+      (function attachSourceTracking() {
+        const originalAddTest = runner.addTest.bind(runner);
+        runner.addTest = function (name, testFunction, category) {
+          originalAddTest(name, testFunction, category);
+          const last = this.tests[this.tests.length - 1];
+          if (last && !last.sourceFile) {
+            last.sourceFile = window.__currentTestFile || null;
+          }
+        };
+      })();
+
+      function buildTreeDataFromManifest(manifest) {
+        const byId = { "#": { id: "#", children: [] } };
+        function ensureNode(id, text, parent) {
+          if (byId[id]) return byId[id];
+          const node = {
+            id,
+            text,
+            parent,
+            children: [],
+            data: undefined,
+            a_attr: undefined,
+            icon: undefined,
+          };
+          byId[id] = node;
+          if (byId[parent]) byId[parent].children.push(node);
+          return node;
+        }
+        const counts = (manifest && manifest.counts) || {};
+        (manifest.files || []).forEach((p) => {
+          const parts = p.split("/");
+          let parent = "#";
+          let acc = "";
+          for (let i = 0; i < parts.length; i++) {
+            acc = acc ? acc + "/" + parts[i] : parts[i];
+            const isFile = i === parts.length - 1;
+            const id = acc;
+            const label = parts[i];
+            const node = ensureNode(id, label, parent);
+            parent = id;
+            if (isFile) {
+              node.data = { path: p, isFile: true };
+              node.icon = "jstree-file";
+              node.a_attr = { "data-count": counts[p] ?? 0 };
+            }
+          }
+        });
+
+        // Compute directory counts as the sum of descendant file counts
+        function computeCounts(node) {
+          if (node.data && node.data.isFile && node.data.path) {
+            const c = counts[node.data.path] || 0;
+            node._sum = c;
+            return c;
+          }
+          let sum = 0;
+          for (const child of node.children) {
+            sum += computeCounts(child);
+          }
+          node._sum = sum;
+          // Set directory count on anchor attributes (exclude root)
+          if (node.id !== "#" && !(node.data && node.data.isFile)) {
+            node.a_attr = { ...(node.a_attr || {}), "data-count": sum };
+          }
+          return sum;
+        }
+        computeCounts(byId["#"]);
+
+        function flatten(node) {
+          const self =
+            node.id === "#"
+              ? []
+              : [
+                  {
+                    id: node.id,
+                    text: node.text,
+                    parent: node.parent || "#",
+                    data: node.data,
+                    a_attr: node.a_attr,
+                    icon: node.icon,
+                  },
+                ];
+
+          return self.concat(...node.children.map(flatten));
+        }
+        return flatten(byId["#"]);
+      }
+
+      function initTree() {
+        const data = buildTreeDataFromManifest(
+          window.TEST_MANIFEST || { files: [] }
+        );
+        const $tree = $("#tree");
+        $tree.jstree("destroy");
+        $tree.jstree({
+          core: {
+            data,
+            themes: { stripes: true },
+            multiple: true,
+            check_callback: true,
+          },
+          plugins: ["checkbox", "types", "state"],
+          checkbox: {
+            three_state: true,
+            whole_node: false,
+            tie_selection: false,
+          },
+        });
+
+        document.getElementById("btn-expand").onclick = () =>
+          $tree.jstree("open_all");
+        document.getElementById("btn-collapse").onclick = () =>
+          $tree.jstree("close_all");
+
+        // Update selection summary whenever checks change
+        const updateSelectionSummary = () => {
+          const files = getSelectedFilePaths();
+          const fileCount = files.length;
+          let testCount = 0;
+          if (window.TEST_MANIFEST && window.TEST_MANIFEST.counts) {
+            for (const f of files) {
+              testCount += window.TEST_MANIFEST.counts[f] || 0;
+            }
+          }
+          const summaryEl = document.getElementById("selection-summary");
+          if (summaryEl) {
+            summaryEl.textContent = `${testCount} tests selected in ${fileCount} test files.`;
+          }
+        };
+
+        // Listen to checkbox-specific events (tie_selection is false)
+        $tree.on(
+          "check_node.jstree uncheck_node.jstree check_all.jstree uncheck_all.jstree",
+          updateSelectionSummary
+        );
+        $tree.on("ready.jstree", updateSelectionSummary);
+        // Initial summary
+        updateSelectionSummary();
+
+        // Display version from manifest if available
+        try {
+          const ver =
+            (window.TEST_MANIFEST && window.TEST_MANIFEST.version) || null;
+          if (ver) {
+            const el = document.getElementById("badge-version");
+            if (el) el.textContent = `ver: ${ver}`;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      // Store current results for filtering
+      let currentResults = [];
+      let currentSummary = null;
+
+      function clearResultsUI() {
+        document.getElementById("results-list").innerHTML = "";
+        document.getElementById("badge-total").textContent = "Total: 0";
+        document.getElementById("badge-pass").textContent = "Passed: 0";
+        document.getElementById("badge-fail").textContent = "Failed: 0";
+        const skipEl = document.getElementById("badge-skip");
+        if (skipEl) skipEl.textContent = "Skipped: 0";
+        document.getElementById("badge-error").textContent = "Errors: 0";
+        document.getElementById("badge-duration").textContent = "Duration: 0ms";
+        currentResults = [];
+        currentSummary = null;
+      }
+
+      function renderResults(summary, results) {
+        // Store results for filtering
+        currentResults = results;
+        currentSummary = summary;
+
+        document.getElementById(
+          "badge-total"
+        ).textContent = `Total: ${summary.total}`;
+        document.getElementById(
+          "badge-pass"
+        ).textContent = `Passed: ${summary.passed}`;
+        document.getElementById(
+          "badge-fail"
+        ).textContent = `Failed: ${summary.failed}`;
+        const skipBadge = document.getElementById("badge-skip");
+        if (skipBadge)
+          skipBadge.textContent = `Skipped: ${summary.skipped || 0}`;
+        document.getElementById(
+          "badge-error"
+        ).textContent = `Errors: ${summary.errors}`;
+        const duration = (summary.endTime - summary.startTime).toFixed(2);
+        document.getElementById(
+          "badge-duration"
+        ).textContent = `Duration: ${duration}ms`;
+
+        renderFilteredResults();
+      }
+
+      function renderFilteredResults() {
+        if (!currentResults.length) return;
+
+        const container = document.getElementById("results-list");
+        container.innerHTML = "";
+        let lastCategory = null;
+        // Get filter states
+        const showPass = document.getElementById("filter-pass").checked;
+        const showFail = document.getElementById("filter-fail").checked;
+        const showSkip = document.getElementById("filter-skip").checked;
+        const showError = document.getElementById("filter-error").checked;
+
+        // Filter results based on checkbox states
+        const filteredResults = currentResults.filter((r, idx) => {
+          if (r.result === "pass" && !showPass) return false;
+          if (r.result === "fail" && !showFail) return false;
+          if (r.result === "skip" && !showSkip) return false;
+          if (r.result === "error" && !showError) return false;
+          return true;
+        });
+
+        // Helper: derive category from source file path (directory-based)
+        const deriveCategoryFromPath = (p) => {
+          if (!p) return "general";
+          const parts = p.split("/");
+          const testsIdx = parts.indexOf("tests");
+          if (testsIdx === -1) return "general";
+          const dirParts = parts.slice(testsIdx + 1, parts.length - 1); // between tests/ and filename
+          return dirParts.length ? dirParts.join("/") : "general";
+        };
+
+        // Group filtered results by directory-derived category and count statuses
+        const categoryResults = {};
+        filteredResults.forEach((r, idx) => {
+          const meta = (runner.tests && runner.tests[idx]) || {};
+          const source = meta.sourceFile || null;
+          const category = deriveCategoryFromPath(source);
+          if (!categoryResults[category]) {
+            categoryResults[category] = {
+              passed: 0,
+              failed: 0,
+              skipped: 0,
+              errors: 0,
+              total: 0,
+            };
+          }
+          categoryResults[category].total++;
+          if (r.result === "pass") categoryResults[category].passed++;
+          else if (r.result === "fail") categoryResults[category].failed++;
+          else if (r.result === "skip") categoryResults[category].skipped++;
+          else if (r.result === "error") categoryResults[category].errors++;
+        });
+
+        // Render filtered results with category headings and counts
+        filteredResults.forEach((r, idx) => {
+          const meta = (runner.tests && runner.tests[idx]) || {};
+          const source = meta.sourceFile || null;
+          const category = deriveCategoryFromPath(source);
+          if (category !== lastCategory) {
+            const heading = document.createElement("div");
+            heading.className = "group-heading";
+            heading.style.display = "flex";
+            heading.style.justifyContent = "space-between";
+
+            const categoryName = document.createElement("div");
+            categoryName.style.display = "inline-flex";
+            categoryName.style.flexDirection = "row-reverse";
+            categoryName.style.justifyContent = "flex-end";
+            categoryName.textContent = category.toUpperCase();
+
+            const counts = categoryResults[category];
+            const countsDiv = document.createElement("div");
+            countsDiv.style.display = "inline-flex";
+            countsDiv.style.flexDirection = "row";
+            countsDiv.style.justifyContent = "flex-end";
+
+            const countsText = document.createElement("div");
+            countsText.innerHTML = `(<span style="color: var(--pass);">${counts.passed}</span>+<span style="color: var(--fail);">${counts.failed}</span>+<span style="color: var(--skip);">${counts.skipped}</span>+<span style="color: var(--error);">${counts.errors}</span>)/${counts.total}`;
+
+            countsDiv.appendChild(countsText);
+            heading.appendChild(categoryName);
+            heading.appendChild(countsDiv);
+            container.appendChild(heading);
+            lastCategory = category;
+          }
+          const div = document.createElement("div");
+          div.className = `result-item ${r.result}`;
+          const sourcePath =
+            (runner.tests &&
+              runner.tests[idx] &&
+              runner.tests[idx].sourceFile) ||
+            "";
+          div.innerHTML = `<span class=\"name\" title=\"${sourcePath}\">${
+            r.name
+          }</span><span class=\"meta\">${r.duration.toFixed(2)}ms${
+            r.details ? " — " + r.details : ""
+          }</span>`;
+          container.appendChild(div);
+        });
+      }
+
+      function getResultsJsonString() {
+        try {
+          const exported = runner.exportResults();
+          if (window.TEST_MANIFEST && window.TEST_MANIFEST.version) {
+            exported.version = window.TEST_MANIFEST.version;
+          }
+          return JSON.stringify(exported, null, 2);
+        } catch (e) {
+          return JSON.stringify(
+            { error: e && e.message, fallback: true },
+            null,
+            2
+          );
+        }
+      }
+
+      async function handleCopyLogs() {
+        const text = getResultsJsonString();
+        try {
+          if (
+            navigator &&
+            navigator.clipboard &&
+            navigator.clipboard.writeText
+          ) {
+            await navigator.clipboard.writeText(text);
+            // Discrete toast (auto hides)
+            (function () {
+              const containerId = "toast-container";
+              let container = document.getElementById(containerId);
+              if (!container) {
+                container = document.createElement("div");
+                container.id = containerId;
+                container.style.position = "fixed";
+                container.style.right = "16px";
+                container.style.bottom = "16px";
+                container.style.display = "flex";
+                container.style.flexDirection = "column";
+                container.style.gap = "8px";
+                container.style.zIndex = "9999";
+                document.body.appendChild(container);
+              }
+              const el = document.createElement("div");
+              el.style.background = "#1a1b1e";
+              el.style.color = "#f5f5f7";
+              el.style.border = "1px solid rgba(255,255,255,0.12)";
+              el.style.borderLeft = "3px solid #2ecc71";
+              el.style.borderRadius = "8px";
+              el.style.padding = "8px 12px";
+              el.style.boxShadow = "0 6px 20px rgba(0,0,0,0.3)";
+              el.style.display = "flex";
+              el.style.alignItems = "center";
+              el.style.gap = "10px";
+              el.style.fontSize = "12px";
+              const textEl = document.createElement("span");
+              textEl.textContent = "Logs copied to clipboard";
+              const close = document.createElement("span");
+              close.textContent = "✕";
+              close.title = "Dismiss";
+              close.style.cursor = "pointer";
+              close.style.color = "#c0c0c7";
+              close.onclick = () => {
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+              };
+              el.appendChild(textEl);
+              el.appendChild(close);
+              container.appendChild(el);
+              setTimeout(() => {
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+              }, 3000);
+            })();
+            return;
+          }
+        } catch (e) {
+          // fall through to fallback
+        }
+        // Fallback: temporary textarea
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          (function () {
+            const containerId = "toast-container";
+            let container = document.getElementById(containerId);
+            if (!container) {
+              container = document.createElement("div");
+              container.id = containerId;
+              container.style.position = "fixed";
+              container.style.right = "16px";
+              container.style.bottom = "16px";
+              container.style.display = "flex";
+              container.style.flexDirection = "column";
+              container.style.gap = "8px";
+              container.style.zIndex = "9999";
+              document.body.appendChild(container);
+            }
+            const el = document.createElement("div");
+            el.style.background = "#1a1b1e";
+            el.style.color = "#f5f5f7";
+            el.style.border = "1px solid rgba(255,255,255,0.12)";
+            el.style.borderLeft = "3px solid #2ecc71";
+            el.style.borderRadius = "8px";
+            el.style.padding = "8px 12px";
+            el.style.boxShadow = "0 6px 20px rgba(0,0,0,0.3)";
+            el.style.display = "flex";
+            el.style.alignItems = "center";
+            el.style.gap = "10px";
+            el.style.fontSize = "12px";
+            const textEl = document.createElement("span");
+            textEl.textContent = "Logs copied to clipboard";
+            const close = document.createElement("span");
+            close.textContent = "✕";
+            close.title = "Dismiss";
+            close.style.cursor = "pointer";
+            close.style.color = "#c0c0c7";
+            close.onclick = () => {
+              if (el && el.parentNode) el.parentNode.removeChild(el);
+            };
+            el.appendChild(textEl);
+            el.appendChild(close);
+            container.appendChild(el);
+            setTimeout(() => {
+              if (el && el.parentNode) el.parentNode.removeChild(el);
+            }, 3000);
+          })();
+        } catch (e) {
+          // silent
+        } finally {
+          document.body.removeChild(ta);
+        }
+      }
+
+      function handleExportLogs() {
+        const text = getResultsJsonString();
+        const blob = new Blob([text], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const ts = new Date().toISOString().replace(/[:]/g, "-");
+        a.href = url;
+        a.download = `test-results-${ts}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+      }
+
+      function getSelectedFilePaths() {
+        const $tree = $("#tree");
+        const selected = $tree.jstree("get_checked", true); // checked via checkbox
+        const allNodes = $tree.jstree(true)._model.data;
+        const filePaths = new Set();
+        function addDescendantFiles(node) {
+          if (node.data && node.data.isFile && node.data.path) {
+            filePaths.add(node.data.path);
+          }
+          (node.children || []).forEach((cid) =>
+            addDescendantFiles(allNodes[cid])
+          );
+        }
+        selected.forEach((node) => addDescendantFiles(node));
+        return Array.from(filePaths);
+      }
+
+      function loadScript(path) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          // Resolve repo-relative paths (e.g., tests/...) from public/ to project root
+          s.src = path.startsWith("tests/") ? `../${path}` : path;
+          // Track current file so tests can record their source
+          window.__currentTestFile = path;
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error("Failed to load " + path));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function runSelected() {
+        const btn = document.getElementById("btn-run");
+        btn.disabled = true;
+        try {
+          clearResultsUI();
+          // Reset runner state and remove any previously injected test scripts
+          runner.tests = [];
+          // Collect files and load in deterministic order
+          const files = getSelectedFilePaths().sort();
+          if (files.length === 0) {
+            alert("No tests selected");
+            return;
+          }
+          for (const f of files) {
+            // eslint-disable-next-line no-await-in-loop
+            await loadScript(f);
+          }
+          const { summary, results } = await runner.runAllTests();
+          renderResults(summary, results);
+        } catch (e) {
+          console.error(e);
+          alert(e.message || String(e));
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      document.getElementById("btn-run").addEventListener("click", runSelected);
+      document.getElementById("btn-clear").addEventListener("click", () => {
+        clearResultsUI();
+        runner.tests = [];
+      });
+      document
+        .getElementById("btn-copy-logs")
+        .addEventListener("click", handleCopyLogs);
+      document
+        .getElementById("btn-export-logs")
+        .addEventListener("click", handleExportLogs);
+
+      // Add filter event listeners
+      document
+        .getElementById("filter-pass")
+        .addEventListener("change", renderFilteredResults);
+      document
+        .getElementById("filter-fail")
+        .addEventListener("change", renderFilteredResults);
+      document
+        .getElementById("filter-skip")
+        .addEventListener("change", renderFilteredResults);
+      document
+        .getElementById("filter-error")
+        .addEventListener("change", renderFilteredResults);
+
+      // Initialise tree on DOM ready and re-assert our runner in case other scripts set it
+      document.addEventListener("DOMContentLoaded", () => {
+        initTree();
+        window.testRunner = runner;
+      });
+    </script>
+  </body>
+</html>

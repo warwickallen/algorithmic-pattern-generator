@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+        canvas { border: 1px solid #000; }
+    </style>
+</head>
+<body>
+    <h1>Browser Debug Test</h1>
+    
+    <div class="debug-section">
+        <h2>Canvas Dimensions Test</h2>
+        <canvas id="canvas" width="800" height="600"></canvas>
+        <div id="canvas-info"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Termite Algorithm Test</h2>
+        <div id="termite-info"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Browser Information</h2>
+        <div id="browser-info"></div>
+    </div>
+
+    <script src="../src/simulations.js"></script>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const canvasInfo = document.getElementById("canvas-info");
+        const termiteInfo = document.getElementById("termite-info");
+        const browserInfo = document.getElementById("browser-info");
+
+        // Browser information
+        browserInfo.innerHTML = `
+            <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+            <p><strong>Platform:</strong> ${navigator.platform}</p>
+            <p><strong>Vendor:</strong> ${navigator.vendor}</p>
+        `;
+
+        // Canvas dimensions test
+        function testCanvasDimensions() {
+            const info = [];
+            info.push(`<p><strong>Canvas Properties:</strong></p>`);
+            info.push(`<p>width attribute: ${canvas.width}</p>`);
+            info.push(`<p>height attribute: ${canvas.height}</p>`);
+            info.push(`<p>clientWidth: ${canvas.clientWidth}</p>`);
+            info.push(`<p>clientHeight: ${canvas.clientHeight}</p>`);
+            info.push(`<p>offsetWidth: ${canvas.offsetWidth}</p>`);
+            info.push(`<p>offsetHeight: ${canvas.offsetHeight}</p>`);
+            
+            const rect = canvas.getBoundingClientRect();
+            info.push(`<p><strong>getBoundingClientRect():</strong></p>`);
+            info.push(`<p>width: ${rect.width}</p>`);
+            info.push(`<p>height: ${rect.height}</p>`);
+            
+            canvasInfo.innerHTML = info.join('');
+        }
+
+        // Termite Algorithm test
+        function testTermiteAlgorithm() {
+            try {
+                const termite = new TermiteAlgorithm(canvas, ctx);
+                termite.init();
+                termite.resize();
+                
+                const info = [];
+                info.push(`<p><strong>Initial State:</strong></p>`);
+                info.push(`<p>Rows: ${termite.rows}, Cols: ${termite.cols}</p>`);
+                info.push(`<p>Cell size: ${termite.cellSize}</p>`);
+                info.push(`<p>Wood chips before randomize: ${termite.woodChips.size}</p>`);
+                info.push(`<p>Cell count before randomize: ${termite.cellCount}</p>`);
+
+                // Test randomize
+                termite.randomize(0.3);
+                
+                info.push(`<p><strong>After randomize:</strong></p>`);
+                info.push(`<p>Wood chips after randomize: ${termite.woodChips.size}</p>`);
+                info.push(`<p>Cell count after randomize: ${termite.cellCount}</p>`);
+                info.push(`<p>Expected wood chips: ${Math.floor(termite.rows * termite.cols * 0.3)}</p>`);
+                
+                // Test getStats
+                const stats = termite.getStats();
+                info.push(`<p><strong>getStats():</strong></p>`);
+                info.push(`<p>cellCount from getStats: ${stats.cellCount}</p>`);
+                info.push(`<p>generation: ${stats.generation}</p>`);
+                
+                // Check if cellCount matches woodChips.size
+                if (termite.cellCount === termite.woodChips.size) {
+                    info.push(`<p class="success">✓ cellCount matches woodChips.size</p>`);
+                } else {
+                    info.push(`<p class="error">✗ cellCount (${termite.cellCount}) does not match woodChips.size (${termite.woodChips.size})</p>`);
+                }
+                
+                // Test cell activation detection
+                let activatedCells = 0;
+                for (let row = 0; row < termite.rows; row++) {
+                    for (let col = 0; col < termite.cols; col++) {
+                        const x = col * termite.cellSize;
+                        const y = row * termite.cellSize;
+                        const chipKey = `${x},${y}`;
+                        if (termite.woodChips.has(chipKey)) {
+                            activatedCells++;
+                        }
+                    }
+                }
+                info.push(`<p><strong>Manual cell count:</strong> ${activatedCells}</p>`);
+                
+                termiteInfo.innerHTML = info.join('');
+                
+            } catch (error) {
+                termiteInfo.innerHTML = `<p class="error">Error testing Termite Algorithm: ${error.message}</p>`;
+                console.error('Termite Algorithm test error:', error);
+            }
+        }
+
+        // Run tests
+        testCanvasDimensions();
+        testTermiteAlgorithm();
+    </script>
+</body>
+</html>
