@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2-main-4b98304-20250812T012823",
+  "version": "0.0.2-main-f5aa5ad-20250812T014215",
   "files": [
     "tests/core/cell-toggle.test.js",
     "tests/core/grid-initialization.test.js",
@@ -38,6 +38,7 @@
     "tests/ui/event/event-handler-factory.test.js",
     "tests/ui/event/event-listener-manager.test.js",
     "tests/ui/misc/config-validator.test.js",
+    "tests/ui/misc/css-utility.test.js",
     "tests/ui/misc/element-cache.test.js",
     "tests/ui/misc/ui.test.js",
     "tests/ui/modal/dynamic-modal-integration.test.js",
@@ -87,6 +88,7 @@
     "tests/ui/event/event-handler-factory.test.js": 6,
     "tests/ui/event/event-listener-manager.test.js": 1,
     "tests/ui/misc/config-validator.test.js": 1,
+    "tests/ui/misc/css-utility.test.js": 3,
     "tests/ui/misc/element-cache.test.js": 1,
     "tests/ui/misc/ui.test.js": 3,
     "tests/ui/modal/dynamic-modal-integration.test.js": 1,
@@ -98,5 +100,5 @@
     "tests/visual/colour.test.js": 3,
     "tests/visual/fade-visual-tests.test.js": 3
   },
-  "totalTests": 107
+  "totalTests": 110
 }

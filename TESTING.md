@@ -38,7 +38,7 @@ The test suite is organised into logical categories:
 
 ### 1. Visual Test Suite
 
-Open `test-suite.html` in your browser for comprehensive visual testing. This is the live suite. The legacy `test-suite-old.html` is deprecated and retained only for historical reference.
+Open `test-suite.html` in your browser for comprehensive visual testing. This is the live suite.
 
 ```bash
 # Open in browser
@@ -742,7 +742,7 @@ Tests the comprehensive UI component library with lifecycle management and state
 
 ### CSS Utility Tests
 
-Tests the CSS utility framework and design token system:
+Tests the CSS utility framework and design token system (integrated into the main suite as `tests/ui/misc/css-utility.test.js`):
 
 #### ✅ CSS Utility Design Tokens
 
