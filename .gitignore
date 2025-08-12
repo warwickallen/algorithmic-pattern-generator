@@ -145,3 +145,7 @@ vite.config.ts.timestamp-*
 
 # Vi
 *.sw[pq]
+
+# Generated build identifiers (do not track)
+BUILD
+public/BUILD

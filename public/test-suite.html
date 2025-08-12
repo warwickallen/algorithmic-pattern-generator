@@ -592,12 +592,22 @@
 
         // Display version from manifest if available
         try {
-          const ver =
-            (window.TEST_MANIFEST && window.TEST_MANIFEST.version) || null;
-          if (ver) {
-            const el = document.getElementById("badge-version");
-            if (el) el.textContent = `ver: ${ver}`;
-          }
+          // Fetch BUILD identifier at runtime for display
+          (async () => {
+            try {
+              const res = await fetch("../BUILD", { cache: "no-store" });
+              if (res && res.ok) {
+                const text = (await res.text()).trim();
+                if (text) {
+                  window.__BUILD_STRING = text;
+                  const el = document.getElementById("badge-version");
+                  if (el) el.textContent = `ver: ${text}`;
+                }
+              }
+            } catch (_) {
+              // ignore; fallback remains
+            }
+          })();
         } catch (e) {
           // ignore
         }
@@ -752,8 +762,8 @@
       function getResultsJsonString() {
         try {
           const exported = runner.exportResults();
-          if (window.TEST_MANIFEST && window.TEST_MANIFEST.version) {
-            exported.version = window.TEST_MANIFEST.version;
+          if (window.__BUILD_STRING) {
+            exported.build = window.__BUILD_STRING;
           }
           return JSON.stringify(exported, null, 2);
         } catch (e) {

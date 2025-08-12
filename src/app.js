@@ -2233,7 +2233,7 @@ class AppMetadataLoader {
       const [readme, version, licensePreferred, licenseFallback] =
         await Promise.all([
           readTextSafe("README.md"),
-          readTextSafe("VERSION"),
+          readTextSafe("BUILD"),
           readTextSafe("LICENSE"),
           readTextSafe("LICENCE"),
         ]);
