@@ -1162,7 +1162,11 @@ class BaseSimulation {
   }
 
   setBrightness(value) {
-    this.brightness = Math.max(0.1, Math.min(2.0, value));
+    if (typeof TypeGuards !== "undefined" && TypeGuards.clampNumber) {
+      this.brightness = TypeGuards.clampNumber(value, 0.1, 2.0);
+    } else {
+      this.brightness = Math.max(0.1, Math.min(2.0, value));
+    }
     // Clear color cache when brightness changes
     this.colorCache.clear();
   }
@@ -1856,7 +1860,11 @@ class BaseSimulation {
       typeof AppConstants !== "undefined"
         ? AppConstants.SimulationDefaults.SPEED_MAX
         : 60;
-    this.speed = Math.max(min, Math.min(max, stepsPerSecond));
+    if (typeof TypeGuards !== "undefined" && TypeGuards.clampNumber) {
+      this.speed = TypeGuards.clampNumber(stepsPerSecond, min, max);
+    } else {
+      this.speed = Math.max(min, Math.min(max, stepsPerSecond));
+    }
     this.updateInterval = 1000 / this.speed;
   }
 

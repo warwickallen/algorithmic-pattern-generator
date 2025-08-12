@@ -4129,7 +4129,10 @@ class AlgorithmicPatternGenerator {
     if (this.currentType !== simType || !this.currentSimulation) return;
 
     // Parse value as integer for all simulations (steps per second)
-    const parsedValue = parseInt(value);
+    const parsedValue =
+      typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+        ? Math.round(TypeGuards.toNumber(value, 30))
+        : parseInt(value);
 
     // Set speed on simulation
     this.currentSimulation.setSpeed(parsedValue);
@@ -4285,8 +4288,14 @@ class AlgorithmicPatternGenerator {
   adjustBrightness(delta) {
     const brightnessSlider = this.elementCache.get("#brightness-slider");
     if (brightnessSlider) {
-      const currentValue = parseFloat(brightnessSlider.value);
-      const newValue = Math.max(0.1, Math.min(2.0, currentValue + delta));
+      const currentValue =
+        typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+          ? TypeGuards.toNumber(brightnessSlider.value, 1.0)
+          : parseFloat(brightnessSlider.value);
+      const newValue =
+        typeof TypeGuards !== "undefined" && TypeGuards.clampNumber
+          ? TypeGuards.clampNumber(currentValue + delta, 0.1, 2.0)
+          : Math.max(0.1, Math.min(2.0, currentValue + delta));
       brightnessSlider.value = newValue;
       this.setBrightness(newValue);
     }
