@@ -80,6 +80,8 @@ The main application controller that orchestrates all components:
 - Performance monitoring
 - Modal management
 - Automatic event handler registration and cleanup
+- Centralised resource/loop/metrics: `ResourceManager`, `AnimationManager`, and `StatisticsCollector`
+- Centralised logging via `Logger` (guarded fallback to console)
 
 **Core Methods:**
 
@@ -835,6 +837,39 @@ Real-time performance monitoring:
 - Memory usage tracking
 - Performance metrics collection
 - Statistical analysis
+
+##### Logger (Centralised Logging)
+
+To reduce scattered `console.*` usage and provide a single place to adjust verbosity, the app uses a global `Logger`:
+
+- Levels: `silent`, `error`, `warn`, `info`, `debug` (default `info`)
+- Integration points include modal lifecycle messages, performance monitor start/stop/metrics, and missing element warnings; simulation lifecycle default hooks also log via `Logger.debug`
+- Test suite (`test-suite.html`) includes `logger.js` to keep output consistent during tests
+
+Example:
+
+```javascript
+if (typeof Logger !== "undefined") Logger.info("Performance monitoring started");
+```
+
+##### TypeGuards (Runtime Type Guards)
+
+Common runtime checks are centralised in `type-guards.js`:
+
+- Predicates: `isFiniteNumber`, `isInteger`, `isString`, `isBoolean`, `isFunction`, `isObject`, `isArray`, `isElement`
+- Helpers: `toNumber(value, fallback)`, `clampNumber(value, min, max)`, `inRange(value, min, max)`, `hasProps(obj, keys)`
+- Adoption examples:
+
+```javascript
+// app.js – parse speed slider to integer with default
+const parsedValue = Math.round(TypeGuards.toNumber(value, 30));
+
+// simulations.js – constrain brightness and speed to allowed ranges
+this.brightness = TypeGuards.clampNumber(value, 0.1, 2.0);
+this.speed = TypeGuards.clampNumber(stepsPerSecond, min, max);
+```
+
+All call sites are guarded to fall back to legacy logic if `TypeGuards` is not available (legacy/CI contexts).
 
 ### 2. Simulation Engine (`simulations.js`)
 
