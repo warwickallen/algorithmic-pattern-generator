@@ -3592,8 +3592,12 @@ class AlgorithmicPatternGenerator {
     this.canvas = document.getElementById("canvas");
     this.ctx = this.canvas.getContext("2d");
     // Optional consolidated managers
-    this.resources = typeof ResourceManager !== "undefined" ? new ResourceManager() : null;
-    this.canvasManager = typeof CanvasManager !== "undefined" ? new CanvasManager(this.canvas) : null;
+    this.resources =
+      typeof ResourceManager !== "undefined" ? new ResourceManager() : null;
+    this.canvasManager =
+      typeof CanvasManager !== "undefined"
+        ? new CanvasManager(this.canvas)
+        : null;
     this.currentSimulation = null;
     this.currentType = "conway";
     this.isImmersive = false;
@@ -3762,8 +3766,12 @@ class AlgorithmicPatternGenerator {
         if (e.ctrlKey || e.metaKey) this.toggleImmersiveMode();
       });
       this.shortcutManager.register("Escape", () => this.handleEscape());
-      this.shortcutManager.register(",", () => this.adjustSpeed(this.currentType, -1));
-      this.shortcutManager.register(".", () => this.adjustSpeed(this.currentType, 1));
+      this.shortcutManager.register(",", () =>
+        this.adjustSpeed(this.currentType, -1)
+      );
+      this.shortcutManager.register(".", () =>
+        this.adjustSpeed(this.currentType, 1)
+      );
       this.shortcutManager.register("a", () => this.handleAddActorAtPointer());
       this.shortcutManager.register("[", () => this.adjustBrightness(-0.1));
       this.shortcutManager.register("]", () => this.adjustBrightness(0.1));
@@ -4246,7 +4254,8 @@ class AlgorithmicPatternGenerator {
     this.modalManager.cleanup();
     this.dynamicSpeedSlider.cleanup();
     this.dynamicFillButton.cleanup();
-    if (this.shortcutManager && this.shortcutManager.cleanup) this.shortcutManager.cleanup();
+    if (this.shortcutManager && this.shortcutManager.cleanup)
+      this.shortcutManager.cleanup();
     if (this.resources) this.resources.cleanup();
     this.elementCache.clear();
     this.updateQueue.clear();
@@ -4276,7 +4285,8 @@ document.addEventListener("DOMContentLoaded", () => {
     PerformanceOptimizer.startMonitoring();
     // Global statistics collector (optional)
     if (typeof StatisticsCollector !== "undefined") {
-      if (!window.statisticsCollector) window.statisticsCollector = new StatisticsCollector();
+      if (!window.statisticsCollector)
+        window.statisticsCollector = new StatisticsCollector();
     }
   }
 });
@@ -4319,11 +4329,16 @@ class PerformanceMonitor {
       frameCount++;
       const currentTime = performance.now();
 
-      if (currentTime - lastTime >= 1000) {
-        const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+      const windowMs = currentTime - lastTime;
+      if (windowMs >= 1000) {
+        const denom = windowMs > 0 ? windowMs : 1;
+        const fps = Math.round((frameCount * 1000) / denom);
         this.addMetric("fps", fps);
         try {
-          if (window.statisticsCollector && typeof window.statisticsCollector.addSample === "function") {
+          if (
+            window.statisticsCollector &&
+            typeof window.statisticsCollector.addSample === "function"
+          ) {
             window.statisticsCollector.addSample("fps", fps);
           }
         } catch (_) {}

@@ -811,12 +811,16 @@ class BaseSimulation {
     this.canvas = canvas;
     this.ctx = ctx;
     this.simulationId = simulationId;
-    this.animationManager = typeof AnimationManager !== "undefined" ? new AnimationManager({ fps: 60 }) : null;
+    this.animationManager =
+      typeof AnimationManager !== "undefined"
+        ? new AnimationManager({ fps: 60 })
+        : null;
     this.isRunning = false;
     this.generation = 0;
     this.cellCount = 0;
     this.fps = 0;
-    this.lastTime = 0;
+    this.lastTime = 0; // legacy fps timer
+    this.lastFpsTime = 0; // robust fps timer
     this.frameCount = 0;
     this.fpsUpdateInterval = 30; // Update FPS every 30 frames
     this.brightness = 1.0; // Default brightness
@@ -1075,10 +1079,13 @@ class BaseSimulation {
     // Calculate FPS
     this.frameCount++;
     if (this.frameCount % this.fpsUpdateInterval === 0) {
-      this.fps = Math.round(
-        (this.fpsUpdateInterval * 1000) / (currentTime - this.lastTime)
-      );
-      this.lastTime = currentTime;
+      const now = typeof currentTime === "number" && currentTime > 0 ? currentTime : (typeof performance !== "undefined" ? performance.now() : Date.now());
+      if (!this.lastFpsTime) this.lastFpsTime = now;
+      const elapsed = now - this.lastFpsTime;
+      const safeElapsed = elapsed > 0 ? elapsed : 1;
+      const fps = Math.round((this.fpsUpdateInterval * 1000) / safeElapsed);
+      this.fps = Number.isFinite(fps) && fps >= 0 ? fps : 0;
+      this.lastFpsTime = now;
     }
 
     // For all simulations, control update frequency based on speed
@@ -1089,6 +1096,10 @@ class BaseSimulation {
 
     this.draw();
 
+    if (this.animationManager) {
+      // When using AnimationManager, avoid a second RAF chain
+      return;
+    }
     requestAnimationFrame((time) => this.animate(time));
   }
 
