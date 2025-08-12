@@ -44,11 +44,11 @@ A sophisticated web application featuring three classic algorithmic simulations:
 
 1. **Open the Application**
    ```bash
-   # Simply open index.html in a modern web browser
-   open index.html
+   # Open the static page from the public directory
+   open public/index.html
    ```
 
-Ensure `constants.js` is loaded before other scripts (already referenced in `index.html`).
+Ensure `src/constants.js` is loaded before other scripts (already referenced in `public/index.html`).
 
 2. **Select a Simulation**
 
@@ -162,21 +162,10 @@ The application uses a declarative CSS-based control visibility system:
 
 The application uses a modular architecture with clear separation of concerns:
 
-- **`app.js`** - Main application logic, UI management, and event handling
-- **`simulations.js`** - Simulation algorithms, rendering utilities, and base classes
-- **`styles.css`** - Responsive styling with immersive mode support
-- **`i18n.js`** - Internationalisation system
-- `logger.js` - Centralised logging
-- `resource-manager.js` - Listener/timer/RAF tracking and cleanup
-- `animation-manager.js` - Centralised RAF loop with target FPS control
-- `statistics-collector.js` - Pluggable metrics (e.g., FPS)
-- `canvas-manager.js` - Canvas/context setup and size management
-- `keyboard-shortcut-manager.js` - Declarative keyboard shortcut mapping
-- `type-guards.js` - Runtime type guards and helpers
-- **`dynamic-layout.js`** - Dynamic layout management
-- **`constants.js`** - Centralised application constants (browser global `AppConstants`)
-- **`config-validator.js`** - Rule-based configuration validator used by configuration and UI systems
-- **`test-runner.js`** - Programmatic testing framework
+Project directories now follow standard JS web app conventions:
+
+- `public/` — static assets and entry HTML: `index.html`, `test-suite.html`, `browser-debug.html`, favicons, `styles.css`
+- `src/` — JavaScript sources: `app.js`, `simulations.js`, `i18n.js`, `utils.js`, and supporting modules (`constants.js`, `dynamic-layout.js`, `logger.js`, `resource-manager.js`, `animation-manager.js`, `statistics-collector.js`, `canvas-manager.js`, `keyboard-shortcut-manager.js`, `type-guards.js`, `types.js`, `config-validator.js`, `test-runner.js`, `test-utils.js`)
 
 ### Core Components
 
@@ -240,7 +229,7 @@ The application includes a comprehensive testing framework:
 
 ### Visual Test Suite
 
-Open `test-suite.html` in your browser for comprehensive visual testing (live suite). `test-suite-old.html` is deprecated and retained only for historical reference.
+Open `public/test-suite.html` in your browser for comprehensive visual testing (live suite).
 
 - Core simulation functionality
 - UI component testing
@@ -252,7 +241,7 @@ Open `test-suite.html` in your browser for comprehensive visual testing (live su
 
 ### Programmatic Testing
 
-Use `test-runner.js` for automated testing:
+Use `src/test-runner.js` for automated testing:
 
 ```javascript
 // Run all tests

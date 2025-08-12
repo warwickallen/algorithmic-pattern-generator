@@ -8,11 +8,11 @@ The Algorithmic Pattern Generator includes a sophisticated testing framework wit
 
 ### Core Testing Components
 
-1. **`test-suite.html`** - Comprehensive visual test suite with interactive UI
-2. **`test-runner.js`** - Programmatic test runner for automation and CI/CD
-3. **`test-utils.js`** - TestUtilityFactory providing shared mocks and helpers
-4. **`utils.js`** - `ColorUtils` centralised colour utilities used by rendering tests
-5. **`logger.js`** - Centralised logger used by the app and tests (loaded by `test-suite.html`)
+1. **`public/test-suite.html`** - Comprehensive visual test suite with interactive UI
+2. **`src/test-runner.js`** - Programmatic test runner for automation and CI/CD
+3. **`src/test-utils.js`** - TestUtilityFactory providing shared mocks and helpers
+4. **`src/utils.js`** - `ColorUtils` centralised colour utilities used by rendering tests
+5. **`src/logger.js`** - Centralised logger used by the app and tests (loaded by `public/test-suite.html`)
 6. **`type-guards.js`** - Centralised runtime guards available in browser context
 
 ### Test Categories
@@ -38,11 +38,11 @@ The test suite is organised into logical categories:
 
 ### 1. Visual Test Suite
 
-Open `test-suite.html` in your browser for comprehensive visual testing. This is the live suite.
+Open `public/test-suite.html` in your browser for comprehensive visual testing. This is the live suite.
 
 ```bash
 # Open in browser
-open test-suite.html
+open public/test-suite.html
 ```
 
 **What it provides:**
@@ -57,18 +57,18 @@ open test-suite.html
 
 ### 2. Programmatic Test Runner
 
-Include `test-runner.js` in your HTML or use it programmatically:
+Include `src/test-runner.js` in your HTML or use it programmatically:
 
 ```html
-<script src="test-runner.js"></script>
-<script src="simulations.js"></script>
-<script src="app.js"></script>
-<script src="test-utils.js"></script>
+<script src="../src/test-runner.js"></script>
+<script src="../src/simulations.js"></script>
+<script src="../src/app.js"></script>
+<script src="../src/test-utils.js"></script>
 ```
 
 ### Reaction–Diffusion Tests
 
-Additional tests specific to the Reaction–Diffusion simulation are located under `tests/reaction/` and included in the manifest used by `test-suite.html`:
+Additional tests specific to the Reaction–Diffusion simulation are located under `tests/reaction/` and included in the manifest used by `public/test-suite.html`:
 
 - `creation-and-update.test.js` — Factory creation and basic update validity
 - `controls-and-randomize.test.js` — Feed/Kill parameter updates and randomize likelihood behaviour
@@ -98,7 +98,7 @@ Programmatic checks include:
 
 ### 3. Using the Visual Test Suite Interface
 
-The visual test suite (`test-suite.html`) provides an intuitive interface for test selection:
+The visual test suite (`public/test-suite.html`) provides an intuitive interface for test selection:
 
 1. **Select Test Groups**: Use the checkboxes to choose which test categories to run:
 

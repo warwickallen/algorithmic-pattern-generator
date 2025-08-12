@@ -19,20 +19,34 @@ The Algorithmic Pattern Generator is a sophisticated web application that combin
 
 ```
 algorithmic-pattern-generator/
-├── index.html              # Main application entry point
-├── app.js                  # Core application logic and UI management
-├── simulations.js          # Simulation algorithms and rendering utilities
-├── styles.css              # Responsive styling and immersive mode
-├── i18n.js                 # Internationalisation system
-├── dynamic-layout.js       # Dynamic layout management
-├── constants.js            # Centralised application constants (AppConstants)
-├── test-runner.js          # Programmatic test runner
-├── types.js                # Central JSDoc typedefs
-├── test-suite.html         # Comprehensive visual test suite
-├── LICENSE                 # MIT License
-├── README.md               # Usage instructions and overview
-├── AS-BUILT.md             # This comprehensive implementation guide
-└── TESTING.md              # Detailed testing instructions
+├── public/                 # Static assets and entry HTML
+│   ├── index.html          # Main application entry point
+│   ├── test-suite.html     # Comprehensive visual test suite
+│   ├── browser-debug.html  # Lightweight debug harness
+│   ├── styles.css          # Responsive styling and immersive mode
+│   ├── favicon.*           # Icons
+├── src/                    # JavaScript sources
+│   ├── app.js              # Core application logic and UI management
+│   ├── simulations.js      # Simulation algorithms and rendering utilities
+│   ├── i18n.js             # Internationalisation system
+│   ├── dynamic-layout.js   # Dynamic layout management
+│   ├── constants.js        # Centralised application constants (AppConstants)
+│   ├── logger.js           # Centralised logging
+│   ├── resource-manager.js # Listener/timer/RAF tracking and cleanup
+│   ├── animation-manager.js
+│   ├── statistics-collector.js
+│   ├── canvas-manager.js
+│   ├── keyboard-shortcut-manager.js
+│   ├── type-guards.js
+│   ├── types.js            # Central JSDoc typedefs
+│   ├── config-validator.js
+│   ├── test-runner.js      # Programmatic test runner
+│   └── test-utils.js       # Test helpers
+├── tests/                  # Test files (loaded by public/test-suite.html)
+├── tools/                  # Project tooling
+├── README.md
+├── AS-BUILT.md
+└── TESTING.md
 ```
 
 ## Reaction–Diffusion Integration Notes
@@ -1305,7 +1319,7 @@ positionElement(element) {
 
 ## Testing Architecture
 
-### 1. Test Suite (`test-suite.html`)
+### 1. Test Suite (`public/test-suite.html`)
 
 Comprehensive visual test suite with categories:
 
@@ -1319,7 +1333,7 @@ Comprehensive visual test suite with categories:
 - **Fade-to-Black Tests**: Re-engineered fading mechanism
 - **Control Visibility Tests**: CSS-based control visibility management
 
-### 2. Test Runner (`test-runner.js`)
+### 2. Test Runner (`src/test-runner.js`)
 
 Programmatic testing framework:
 
@@ -1335,9 +1349,9 @@ Programmatic testing framework:
 
 Comprehensive testing framework:
 
-- `test-suite.html`: Visual test suite with interactive UI
-- `test-runner.js`: Programmatic test runner for automation
-- `test-utils.js`: TestUtilityFactory with shared canvas/ctx mocks and helpers
+- `public/test-suite.html`: Visual test suite with interactive UI
+- `src/test-runner.js`: Programmatic test runner for automation
+- `src/test-utils.js`: TestUtilityFactory with shared canvas/ctx mocks and helpers
 - `TESTING.md`: Complete testing documentation and guide
 
 **New System Tests:**
@@ -1555,7 +1569,7 @@ positions:
 
 ### File Structure
 
-All files are self-contained and can be deployed to any static hosting service:
+All files are self-contained and can be deployed to any static hosting service. Serve `public/` as the web root:
 
 - GitHub Pages
 - Netlify
