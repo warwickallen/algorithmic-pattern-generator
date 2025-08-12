@@ -729,7 +729,11 @@ if (typeof value !== "number") {
 
 **Estimated Reduction**: 15-25 lines
 
-Status: Added central `type-guards.js` with common guards (`isFiniteNumber`, `isInteger`, `clampNumber`, `inRange`, etc.) and included in app/tests. Adoption to proceed gradually alongside feature work.
+Status: Implemented. Central `type-guards.js` added and adopted at key call sites.
+
+- `app.js` DynamicSpeedSlider now parses/clamps via `TypeGuards.toNumber`/`clampNumber`; random coverage clamps 0–100 before scaling.
+- Simulations use `TypeGuards` for brightness/speed when available; existing usage retained.
+- Tests: Smoke test in `test-runner.js` validates guards; all UI/system tests pass with stricter parsing.
 
 ### 25. **Documentation Consolidation** ✅ **IMPLEMENTED**
 
@@ -754,7 +758,7 @@ Status: Added central `type-guards.js` with common guards (`isFiniteNumber`, `is
 - Reduced scattered inline JSDoc duplication by consolidating common shapes into shared typedefs
 - Code/documentation reduction achieved: ~12 lines of repeated JSDoc removed/avoided
 
-### 26. **Test Helper Consolidation**
+### 26. **Test Helper Consolidation** ✅ **IMPLEMENTED**
 
 **Current State**: Similar test helper functions:
 
@@ -769,6 +773,8 @@ function createMockContext() {
 ```
 
 **Estimated Reduction**: 20-30 lines
+
+Status: Implemented. Replaced local canvas helper in `tests/core/cell-toggle.test.js` with `TestUtilityFactory.createCanvasAndContext()` (with fallback), aligning with `test-utils.js`.
 
 ---
 

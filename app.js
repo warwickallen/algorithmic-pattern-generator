@@ -1251,13 +1251,21 @@ class DynamicSpeedSlider {
 
     // Immediate visual feedback for value display
     const immediateValueHandler = (e) => {
-      const value = parseFloat(e.target.value);
+      const raw = e.target && e.target.value;
+      const value =
+        typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+          ? Math.round(TypeGuards.toNumber(raw, 30))
+          : parseFloat(raw);
       this.updateDisplay(value);
     };
 
     this.eventFramework.register(this.slider, "input", immediateValueHandler);
     this.eventFramework.register(this.slider, "change", (e) => {
-      const value = parseFloat(e.target.value);
+      const raw = e.target && e.target.value;
+      const value =
+        typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+          ? Math.round(TypeGuards.toNumber(raw, 30))
+          : parseFloat(raw);
       // Fire immediately for responsiveness and test determinism
       console.debug("DynamicSpeedSlider:change(eventFramework)", {
         value,
@@ -1271,7 +1279,11 @@ class DynamicSpeedSlider {
 
     // Native fallback listener to ensure direct dispatched events are caught in all environments
     this._nativeChangeHandler = (e) => {
-      const value = parseFloat(e.target.value);
+      const raw = e.target && e.target.value;
+      const value =
+        typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+          ? Math.round(TypeGuards.toNumber(raw, 30))
+          : parseFloat(raw);
       console.debug("DynamicSpeedSlider:change(native)", {
         value,
         currentSimType: this.currentSimType,
@@ -1283,7 +1295,11 @@ class DynamicSpeedSlider {
 
     // Property-based fallback to maximise compatibility across environments
     this._propertyChangeHandler = (e) => {
-      const value = parseFloat(e.target.value);
+      const raw = e.target && e.target.value;
+      const value =
+        typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+          ? Math.round(TypeGuards.toNumber(raw, 30))
+          : parseFloat(raw);
       console.debug("DynamicSpeedSlider:change(property)", {
         value,
         currentSimType: this.currentSimType,
@@ -1361,7 +1377,10 @@ class DynamicSpeedSlider {
 
   getValue() {
     if (!this.isInitialized) return 30;
-    return parseFloat(this.slider.value);
+    const raw = this.slider && this.slider.value;
+    return typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+      ? Math.round(TypeGuards.toNumber(raw, 30))
+      : parseFloat(raw);
   }
 
   setValue(value) {
@@ -1373,12 +1392,24 @@ class DynamicSpeedSlider {
   adjustSpeed(direction) {
     if (!this.isInitialized) return;
 
-    const currentValue = parseFloat(this.slider.value);
     const step = 1; // Default step value
-    const newValue = Math.max(
-      parseInt(this.slider.min),
-      Math.min(parseInt(this.slider.max), currentValue + direction * step)
-    );
+    const currentValue =
+      typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+        ? Math.round(TypeGuards.toNumber(this.slider && this.slider.value, 30))
+        : parseFloat(this.slider.value);
+    const minVal =
+      typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+        ? Math.round(TypeGuards.toNumber(this.slider && this.slider.min, 1))
+        : parseInt(this.slider.min);
+    const maxVal =
+      typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+        ? Math.round(TypeGuards.toNumber(this.slider && this.slider.max, 60))
+        : parseInt(this.slider.max);
+    const desired = currentValue + direction * step;
+    const newValue =
+      typeof TypeGuards !== "undefined" && TypeGuards.clampNumber
+        ? Math.round(TypeGuards.clampNumber(desired, minVal, maxVal))
+        : Math.max(minVal, Math.min(maxVal, desired));
 
     this.setValue(newValue);
     this.onSpeedChange(newValue);
@@ -4153,9 +4184,19 @@ class AlgorithmicPatternGenerator {
     // Get likelihood value from slider
     const likelihoodSlider =
       this.eventFramework.getElement("#likelihood-slider");
-    const likelihood = likelihoodSlider
-      ? parseInt(likelihoodSlider.value) / 100
-      : 0.3;
+    let likelihood = 0.3;
+    if (likelihoodSlider) {
+      const raw = likelihoodSlider.value;
+      const percent =
+        typeof TypeGuards !== "undefined" && TypeGuards.toNumber
+          ? TypeGuards.toNumber(raw, 30)
+          : parseInt(raw);
+      const clamped =
+        typeof TypeGuards !== "undefined" && TypeGuards.clampNumber
+          ? TypeGuards.clampNumber(percent, 0, 100)
+          : Math.max(0, Math.min(100, percent));
+      likelihood = clamped / 100;
+    }
 
     if (this.currentSimulation.randomize) {
       this.currentSimulation.randomize(likelihood);

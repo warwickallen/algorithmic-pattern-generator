@@ -44,12 +44,14 @@
 
   - Implemented `Logger` routing for key logs in `app.js` (modal/system/perf) and `simulations.js` (lifecycle hooks, warnings). Included in test environment. Remaining scattered console usage in docs/tests intentionally left as-is.
 
-- 24. Type Checking Consolidation
+- 24. Type Checking Consolidation ✅ IMPLEMENTED
 
   - Unify common runtime type checks/guards.
-  - Relevance: Partially relevant. `config-validator.js` centralises schema validation for configs, but generic runtime type guards remain scattered throughout the code.
-  - Progress: Introduced `type-guards.js` with common guards/utilities (`isFiniteNumber`, `clampNumber`, etc.) and loaded in app/tests. Initial usage to follow incrementally.
+  - Implemented `TypeGuards` adoption at targeted call sites:
+    - `app.js` `DynamicSpeedSlider` now uses `TypeGuards.toNumber` and `TypeGuards.clampNumber` for parsing/clamping, preventing NaN propagation and enforcing slider min/max; `handleRandomPattern` clamps coverage to 0–100.
+    - Simulations already used `TypeGuards` for brightness/speed where available.
+  - Tests: Existing smoke test in `test-runner.js` covers `TypeGuards`; UI/system tests pass with the stricter parsing.
 
-- 26. Test Helper Consolidation
+- 26. Test Helper Consolidation ✅ IMPLEMENTED
   - Consolidate repeated test helpers into shared utilities.
-  - Relevance: Mostly addressed. `test-utils.js` provides `TestUtilityFactory` used by tests; no duplicate `createMockCanvas`/`createMockContext` definitions found. Only minor tidy-ups may remain if any stray helpers exist.
+  - Adopted `TestUtilityFactory` in `tests/core/cell-toggle.test.js` to remove local canvas helper duplication, with a graceful fallback when factory is unavailable.

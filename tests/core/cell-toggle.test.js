@@ -3,6 +3,9 @@
   const runner = window.testRunner;
 
   function makeCanvas() {
+    if (typeof TestUtilityFactory !== "undefined") {
+      return TestUtilityFactory.createCanvasAndContext({ width: 120, height: 80 });
+    }
     const canvas = document.createElement("canvas");
     canvas.width = 120;
     canvas.height = 80;
