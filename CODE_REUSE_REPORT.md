@@ -550,7 +550,7 @@ cleanup() {
 **Estimated Reduction**: 40-60 lines
 **Implementation**: `ResourceManager` class with automatic cleanup tracking.
 
-Status: Scaffold added (global `ResourceManager`); integration pending.
+Status: Integrated into `AlgorithmicPatternGenerator` for window resize, timeouts, intervals, and global cleanup. Legacy fallbacks retained.
 
 ### 17. **Animation Frame Management**
 
@@ -571,7 +571,7 @@ animate(currentTime = 0) {
 **Estimated Reduction**: 25-40 lines
 **Implementation**: `AnimationManager` class with frame rate control.
 
-Status: Scaffold added (global `AnimationManager`); wiring into simulation animate loops planned.
+Status: Wired into `BaseSimulation.start/pause` to drive `animate()` with target FPS; retains direct RAF fallback.
 
 ### 18. **Statistics Collection Consolidation**
 
@@ -593,7 +593,7 @@ getStats() {
 **Estimated Reduction**: 30-45 lines
 **Implementation**: `StatisticsCollector` class with pluggable metrics.
 
-Status: Added; to integrate with `PerformanceMonitor` and per-simulation stats sources.
+Status: Global collector initialised; FPS samples fed from `PerformanceMonitor.monitorFPS()`.
 
 ### 19. **Canvas Management Consolidation**
 
@@ -614,7 +614,7 @@ constructor(canvas, ctx) {
 **Estimated Reduction**: 35-55 lines
 **Implementation**: `CanvasManager` class with common canvas operations.
 
-Status: Added; planned adoption in app initialisation and resize flows.
+Status: Used in app init and resize to ensure canvas sizing; legacy path kept.
 
 ### 20. **Keyboard Shortcut Management**
 
@@ -637,7 +637,7 @@ handleKeydown(e) {
 **Estimated Reduction**: 25-40 lines
 **Implementation**: `KeyboardShortcutManager` with configuration-based shortcuts.
 
-Status: Added; consider replacing/wrapping current `KeyboardHandler` for declarative mapping.
+Status: Registered core shortcuts declaratively; legacy handler remains as fallback.
 
 ---
 

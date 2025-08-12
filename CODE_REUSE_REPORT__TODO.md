@@ -7,35 +7,35 @@
   - Integrated examples in `index.html` (`fps-label`, `learn-btn` tooltip/ARIA).
   - Tests: Added an i18n smoke test in `test-runner.js` validating dynamic key and attribute translation.
 
-- 16. Memory Management Consolidation
+- 16. Memory Management Consolidation ✅ IMPLEMENTED (initial integration)
 
   - Centralise cleanup via a `ResourceManager` with automatic tracking.
   - Relevance: Still relevant. No `ResourceManager` present; listener/manager cleanup appears distributed across modules.
-  - Progress: `ResourceManager` added (not yet fully integrated across modules). Next: wire into `AlgorithmicPatternGenerator` and managers.
+  - Integrated `ResourceManager` in `AlgorithmicPatternGenerator` for resize listeners, timeouts, intervals, and global cleanup.
 
-- 17. Animation Frame Management
+- 17. Animation Frame Management ✅ IMPLEMENTED (initial integration)
 
   - Introduce `AnimationManager` for frame rate control and decoupled animation loops.
   - Relevance: Still relevant. `requestAnimationFrame` is invoked directly in `app.js` and `simulations.js`; no central animation controller exists.
-  - Progress: `AnimationManager` added (scaffold). Next: integrate with simulation loops to control FPS centrally.
+  - Wired `AnimationManager` into `BaseSimulation.start/pause` to drive the loop with FPS control; legacy path retained as fallback.
 
-- 18. Statistics Collection Consolidation
+- 18. Statistics Collection Consolidation ✅ IMPLEMENTED (initial integration)
 
   - Create `StatisticsCollector` with pluggable metrics across simulations.
   - Relevance: Still relevant. No `StatisticsCollector` found; stats are computed ad hoc where needed.
-  - Progress: `StatisticsCollector` added. Next: feed metrics from simulations and PerformanceMonitor.
+  - Added global `statisticsCollector` and feed FPS samples from `PerformanceMonitor.monitorFPS()`.
 
-- 19. Canvas Management Consolidation
+- 19. Canvas Management Consolidation ✅ IMPLEMENTED (initial integration)
 
   - Add `CanvasManager` for common canvas setup and operations.
   - Relevance: Still relevant. No `CanvasManager` present; canvas/context handling is performed per simulation/component.
-  - Progress: `CanvasManager` added. Next: use in app initialisation and simulation resize.
+  - Used `CanvasManager.ensureAttachedSize()` on init and on resize in `AlgorithmicPatternGenerator`.
 
-- 20. Keyboard Shortcut Management
+- 20. Keyboard Shortcut Management ✅ IMPLEMENTED (initial integration)
 
   - Implement `KeyboardShortcutManager` with declarative configuration.
   - Relevance: Still relevant. Global `keydown` handlers are attached in `app.js`; no declarative shortcut mapping or centralised manager detected.
-  - Progress: `KeyboardShortcutManager` added. Next: replace `KeyboardHandler` mapping with declarative manager or wrap it.
+  - Added `KeyboardShortcutManager` and registered shortcuts; preserved legacy handler fallback.
 
 - 23. Logging Consolidation
 

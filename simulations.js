@@ -811,6 +811,7 @@ class BaseSimulation {
     this.canvas = canvas;
     this.ctx = ctx;
     this.simulationId = simulationId;
+    this.animationManager = typeof AnimationManager !== "undefined" ? new AnimationManager({ fps: 60 }) : null;
     this.isRunning = false;
     this.generation = 0;
     this.cellCount = 0;
@@ -1035,13 +1036,18 @@ class BaseSimulation {
     this.isRunning = true;
     this.stateManager.setState({ isRunning: true });
     simulationLifecycleFramework.executeHook(this.simulationId, "onStart");
-    this.animate();
+    if (this.animationManager) {
+      this.animationManager.start((time) => this.animate(time));
+    } else {
+      this.animate();
+    }
   }
 
   pause() {
     this.isRunning = false;
     this.stateManager.setState({ isRunning: false });
     simulationLifecycleFramework.executeHook(this.simulationId, "onPause");
+    if (this.animationManager) this.animationManager.stop();
   }
 
   reset() {

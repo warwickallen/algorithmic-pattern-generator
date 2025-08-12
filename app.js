@@ -3591,6 +3591,9 @@ class AlgorithmicPatternGenerator {
   constructor() {
     this.canvas = document.getElementById("canvas");
     this.ctx = this.canvas.getContext("2d");
+    // Optional consolidated managers
+    this.resources = typeof ResourceManager !== "undefined" ? new ResourceManager() : null;
+    this.canvasManager = typeof CanvasManager !== "undefined" ? new CanvasManager(this.canvas) : null;
     this.currentSimulation = null;
     this.currentType = "conway";
     this.isImmersive = false;
@@ -3617,6 +3620,10 @@ class AlgorithmicPatternGenerator {
     this.eventHandlerFactory = new EventHandlerFactory(this.eventFramework);
     this.controlManager = new ControlManager(this.eventFramework);
     this.keyboardHandler = new KeyboardHandler(this);
+    this.shortcutManager =
+      typeof KeyboardShortcutManager !== "undefined"
+        ? new KeyboardShortcutManager(document)
+        : null;
     this.dynamicSpeedSlider = new DynamicSpeedSlider(this.eventFramework);
     this.dynamicFillButton = new DynamicFillButton(this.eventFramework);
 
@@ -3630,6 +3637,8 @@ class AlgorithmicPatternGenerator {
   }
 
   init() {
+    // Ensure canvas size via CanvasManager if available
+    if (this.canvasManager) this.canvasManager.ensureAttachedSize();
     this.setupEventListeners();
     this.setupModals();
     this.controlManager.registerAllHandlers(this);
@@ -3644,13 +3653,15 @@ class AlgorithmicPatternGenerator {
 
     // Handle window resize with throttling
     const throttledResize = PerformanceOptimizer.throttle(() => {
+      if (this.canvasManager) this.canvasManager.ensureAttachedSize();
       if (this.currentSimulation) {
         this.currentSimulation.resizePreserveState();
         this.currentSimulation.draw();
       }
     }, 250);
 
-    window.addEventListener("resize", throttledResize);
+    if (this.resources) this.resources.on(window, "resize", throttledResize);
+    else window.addEventListener("resize", throttledResize);
 
     // Start title fade animation after 5 seconds
     this.startTitleFade();
@@ -3737,10 +3748,30 @@ class AlgorithmicPatternGenerator {
       this.mouseY = e.clientY - rect.top;
     });
 
-    // Keyboard shortcuts
-    this.eventFramework.register(document, "keydown", (e) => {
-      this.keyboardHandler.handleKeydown(e);
-    });
+    // Keyboard shortcuts: prefer declarative manager if available
+    if (this.shortcutManager) {
+      this.shortcutManager.register(" ", () => this.toggleSimulation());
+      this.shortcutManager.register("r", (e) => {
+        if (e.ctrlKey || e.metaKey) this.resetSimulation();
+        else this.resetBrightness();
+      });
+      this.shortcutManager.register("c", (e) => {
+        if (e.ctrlKey || e.metaKey) this.clearSimulation?.();
+      });
+      this.shortcutManager.register("i", (e) => {
+        if (e.ctrlKey || e.metaKey) this.toggleImmersiveMode();
+      });
+      this.shortcutManager.register("Escape", () => this.handleEscape());
+      this.shortcutManager.register(",", () => this.adjustSpeed(this.currentType, -1));
+      this.shortcutManager.register(".", () => this.adjustSpeed(this.currentType, 1));
+      this.shortcutManager.register("a", () => this.handleAddActorAtPointer());
+      this.shortcutManager.register("[", () => this.adjustBrightness(-0.1));
+      this.shortcutManager.register("]", () => this.adjustBrightness(0.1));
+    } else {
+      this.eventFramework.register(document, "keydown", (e) => {
+        this.keyboardHandler.handleKeydown(e);
+      });
+    }
   }
 
   setupBrightnessControls() {
@@ -3899,9 +3930,11 @@ class AlgorithmicPatternGenerator {
       hint.classList.add("show");
 
       // Hide hint after 3 seconds
-      setTimeout(() => {
+      const hide = () => {
         this.hideImmersiveHint();
-      }, 3000);
+      };
+      if (this.resources) this.resources.setTimeout(hide, 3000);
+      else setTimeout(hide, 3000);
     }
   }
 
@@ -4201,7 +4234,8 @@ class AlgorithmicPatternGenerator {
       this.updateUI();
     }, 100);
 
-    setInterval(throttledUpdate, 100);
+    if (this.resources) this.resources.setInterval(throttledUpdate, 100);
+    else setInterval(throttledUpdate, 100);
   }
 
   // Cleanup method for memory management
@@ -4212,6 +4246,8 @@ class AlgorithmicPatternGenerator {
     this.modalManager.cleanup();
     this.dynamicSpeedSlider.cleanup();
     this.dynamicFillButton.cleanup();
+    if (this.shortcutManager && this.shortcutManager.cleanup) this.shortcutManager.cleanup();
+    if (this.resources) this.resources.cleanup();
     this.elementCache.clear();
     this.updateQueue.clear();
 
@@ -4238,6 +4274,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Performance monitoring
     PerformanceOptimizer.startMonitoring();
+    // Global statistics collector (optional)
+    if (typeof StatisticsCollector !== "undefined") {
+      if (!window.statisticsCollector) window.statisticsCollector = new StatisticsCollector();
+    }
   }
 });
 
@@ -4282,6 +4322,11 @@ class PerformanceMonitor {
       if (currentTime - lastTime >= 1000) {
         const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
         this.addMetric("fps", fps);
+        try {
+          if (window.statisticsCollector && typeof window.statisticsCollector.addSample === "function") {
+            window.statisticsCollector.addSample("fps", fps);
+          }
+        } catch (_) {}
 
         frameCount = 0;
         lastTime = currentTime;
