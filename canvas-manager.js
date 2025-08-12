@@ -12,8 +12,12 @@
       this.ctx = canvas && canvas.getContext ? canvas.getContext("2d") : null;
     }
 
-    getCanvas() { return this.canvas; }
-    getContext() { return this.ctx; }
+    getCanvas() {
+      return this.canvas;
+    }
+    getContext() {
+      return this.ctx;
+    }
 
     ensureAttachedSize() {
       if (!this.canvas) return { width: 0, height: 0 };
@@ -21,10 +25,15 @@
       let h = window.innerHeight;
       if (!w || !h || w > 5000 || h > 5000) {
         const rect = this.canvas.getBoundingClientRect();
-        w = rect.width; h = rect.height;
+        w = rect.width;
+        h = rect.height;
       }
-      if (!w || !h) { w = 800; h = 600; }
-      this.canvas.width = w; this.canvas.height = h;
+      if (!w || !h) {
+        w = 800;
+        h = 600;
+      }
+      this.canvas.width = w;
+      this.canvas.height = h;
       return { width: w, height: h };
     }
 
@@ -36,5 +45,3 @@
 
   return CanvasManager;
 });
-
-

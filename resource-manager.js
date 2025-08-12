@@ -27,7 +27,11 @@
       const idx = this.listeners.indexOf(record);
       if (idx >= 0) this.listeners.splice(idx, 1);
       try {
-        record.target.removeEventListener(record.event, record.handler, record.options);
+        record.target.removeEventListener(
+          record.event,
+          record.handler,
+          record.options
+        );
       } catch (_) {}
     }
 
@@ -115,5 +119,3 @@
 
   return ResourceManager;
 });
-
-

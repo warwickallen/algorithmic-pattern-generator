@@ -22,16 +22,22 @@
       this.map.set(key, handler);
     }
 
-    unregister(key) { this.map.delete(key); }
+    unregister(key) {
+      this.map.delete(key);
+    }
 
-    setEnabled(v) { this.enabled = !!v; }
+    setEnabled(v) {
+      this.enabled = !!v;
+    }
 
     handle(e) {
       if (!this.enabled) return;
       const handler = this.map.get(e.key);
       if (handler) {
         e.preventDefault();
-        try { handler(e); } catch (_) {}
+        try {
+          handler(e);
+        } catch (_) {}
       }
     }
 
@@ -45,5 +51,3 @@
 
   return KeyboardShortcutManager;
 });
-
-

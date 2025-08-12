@@ -159,7 +159,10 @@ class TestRunner {
       "ResourceManager: registers and cleans up listeners",
       async () => {
         if (typeof ResourceManager === "undefined") {
-          return { passed: true, details: "Skipped: ResourceManager not loaded" };
+          return {
+            passed: true,
+            details: "Skipped: ResourceManager not loaded",
+          };
         }
         const rm = new ResourceManager();
         const el = document.createElement("div");
@@ -170,7 +173,10 @@ class TestRunner {
         rm.cleanup();
         el.dispatchEvent(new Event("click"));
         const after = count === 1;
-        return { passed: before && after, details: `before=${before}, after=${after}` };
+        return {
+          passed: before && after,
+          details: `before=${before}, after=${after}`,
+        };
       },
       "system"
     );
@@ -180,11 +186,16 @@ class TestRunner {
       "AnimationManager: starts and stops",
       async () => {
         if (typeof AnimationManager === "undefined") {
-          return { passed: true, details: "Skipped: AnimationManager not loaded" };
+          return {
+            passed: true,
+            details: "Skipped: AnimationManager not loaded",
+          };
         }
         let ticks = 0;
         const am = new AnimationManager({ fps: 30 });
-        am.start(() => { ticks++; });
+        am.start(() => {
+          ticks++;
+        });
         await new Promise((r) => setTimeout(r, 50));
         am.stop();
         return { passed: ticks > 0, details: `ticks=${ticks}` };
@@ -197,11 +208,15 @@ class TestRunner {
       "StatisticsCollector: averages samples",
       async () => {
         if (typeof StatisticsCollector === "undefined") {
-          return { passed: true, details: "Skipped: StatisticsCollector not loaded" };
+          return {
+            passed: true,
+            details: "Skipped: StatisticsCollector not loaded",
+          };
         }
         const sc = new StatisticsCollector();
         sc.defineMetric("x", { maxSamples: 5 });
-        sc.addSample("x", 1); sc.addSample("x", 3);
+        sc.addSample("x", 1);
+        sc.addSample("x", 3);
         const avg = sc.getAverage("x");
         return { passed: avg === 2, details: `avg=${avg}` };
       },
@@ -216,7 +231,8 @@ class TestRunner {
           return { passed: true, details: "Skipped: CanvasManager not loaded" };
         }
         const canvas = document.createElement("canvas");
-        canvas.width = 10; canvas.height = 10;
+        canvas.width = 10;
+        canvas.height = 10;
         const cm = new CanvasManager(canvas);
         cm.clear();
         return { passed: true, details: "cleared" };
@@ -229,11 +245,16 @@ class TestRunner {
       "KeyboardShortcutManager: maps handler",
       async () => {
         if (typeof KeyboardShortcutManager === "undefined") {
-          return { passed: true, details: "Skipped: KeyboardShortcutManager not loaded" };
+          return {
+            passed: true,
+            details: "Skipped: KeyboardShortcutManager not loaded",
+          };
         }
         const mgr = new KeyboardShortcutManager(document);
         let called = false;
-        mgr.register("z", () => { called = true; });
+        mgr.register("z", () => {
+          called = true;
+        });
         const ev = new KeyboardEvent("keydown", { key: "z" });
         document.dispatchEvent(ev);
         mgr.cleanup();

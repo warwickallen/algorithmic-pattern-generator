@@ -32,7 +32,9 @@
         const delta = time - this.lastTime;
         if (delta >= this.frameInterval) {
           this.lastTime = time;
-          try { this.tick && this.tick(time); } catch (_) {}
+          try {
+            this.tick && this.tick(time);
+          } catch (_) {}
         }
         this.rafId = requestAnimationFrame(loop);
       };
@@ -48,5 +50,3 @@
 
   return AnimationManager;
 });
-
-
