@@ -55,6 +55,24 @@ open public/test-suite.html
 - Export capabilities for test results
 - Warning detection and reporting
 
+### Build identifier in the test suite
+
+- The suite fetches `../BUILD` at load and displays it in the header badge. This is the same identifier the app shows at runtime.
+- Exported logs include the build string under `build` when available.
+- The generated tests manifest no longer embeds a `version` field to avoid per-commit churn.
+
+To regenerate the build identifier manually (e.g., after switching branches), run:
+
+```bash
+node tools/generate-build.js
+```
+
+Ensure hooks are installed to keep it up to date automatically on `post-commit`, `post-merge`, and `post-checkout`:
+
+```bash
+node tools/install-hooks.js
+```
+
 ### 2. Programmatic Test Runner
 
 Include `src/test-runner.js` in your HTML or use it programmatically:

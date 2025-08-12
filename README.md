@@ -73,6 +73,40 @@ Ensure `src/constants.js` is loaded before other scripts (already referenced in 
    - Click "Immersive Mode" or press Ctrl+I for distraction-free viewing
    - Press Escape to exit immersive mode
 
+## Build identifier and versioning
+
+This project distinguishes between a tracked semantic version and an untracked, always-current build identifier:
+
+- `VERSION` (tracked): Manually maintained three-segment Semantic Version (e.g., `0.0.2`).
+- `BUILD` (untracked): Automatically generated per local `HEAD` and written to both `BUILD` (repo root) and `public/BUILD`.
+
+Format of `BUILD`:
+
+`${VERSION}-${BRANCH}-${HASH}-${USER}-${HOST}-${TIMESTAMP}`
+
+- `VERSION`: from `VERSION` file; falls back to `~.~.~`
+- `BRANCH`: current git branch; falls back to `~`
+- `HASH`: short commit hash; falls back to `~`
+- `USER`: `git config user.name`, falling back to OS user; falls back to `~`
+- `HOST`: machine hostname; falls back to `~`
+- `TIMESTAMP`: UTC `yyyymmddThhMMss`
+- Any character not a Unicode word character, a parenthesis, or a tilde is replaced with `_`.
+
+Generation and hooks:
+
+- `node tools/install-hooks.js` installs hooks that generate `BUILD` on `post-commit`, `post-merge`, and `post-checkout`.
+- You can also generate on demand: `node tools/generate-build.js`.
+- `BUILD` is ignored via `.gitignore`, so it never causes merge conflicts.
+
+Consumption:
+
+- App footer reads `public/BUILD` at runtime and shows the build string.
+- The visual test suite (`public/test-suite.html`) fetches `../BUILD` at load to show the build badge and includes it in exported logs. The tests manifest no longer embeds a version field, avoiding per-commit churn.
+
+Windows notes:
+
+- Hooks run via Node and work under Git Bash (no WSL required).
+
 ## Keyboard Shortcuts
 
 | Shortcut   | Action                                                       |

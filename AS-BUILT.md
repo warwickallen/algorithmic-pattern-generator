@@ -1594,6 +1594,37 @@ All files are self-contained and can be deployed to any static hosting service. 
 4. Update documentation
 5. Deploy with version control
 
+### Build/Versioning System
+
+To eliminate merge conflicts while retaining an always-current identifier, the system separates version and build:
+
+- `VERSION` (tracked): Manually updated Semantic Version (major.minor.patch).
+- `BUILD` (untracked): Generated string written to `BUILD` (repo root) and `public/BUILD`.
+
+Build format:
+
+`${VERSION}-${BRANCH}-${HASH}-${USER}-${HOST}-${TIMESTAMP}`
+
+- `VERSION`: from `VERSION`; `~.~.~` if missing
+- `BRANCH`: `git rev-parse --abbrev-ref HEAD`; `~` if unavailable
+- `HASH`: `git rev-parse --short HEAD`; `~` if unavailable
+- `USER`: `git config user.name` or OS username; `~` if unavailable
+- `HOST`: environment hostname or `os.hostname()`; `~` if unavailable
+- `TIMESTAMP`: UTC `yyyymmddThhMMss`
+- Non-word chars except parentheses and tilde are replaced with `_`.
+
+Hooked generation:
+
+- Installed via `node tools/install-hooks.js`.
+- Runs on `post-commit`, `post-merge`, and `post-checkout` using `node tools/generate-build.js`.
+- Manual generation: `node tools/generate-build.js`.
+
+Runtime consumption:
+
+- App (`src/app.js`) fetches `BUILD` at runtime and shows it in the footer.
+- Test suite (`public/test-suite.html`) fetches `../BUILD` for the badge and includes it in exported logs.
+- Test manifest no longer embeds version, reducing churn.
+
 ## Future Enhancements
 
 ### Potential Improvements
