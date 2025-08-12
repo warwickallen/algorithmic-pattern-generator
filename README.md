@@ -15,9 +15,9 @@ A sophisticated web application featuring three classic algorithmic simulations:
 
 - **Simulation Selector** - Switch between the three algorithms seamlessly
 - **Immersive Mode** - Hide controls for a full-screen experience
-- **Internationalisation** - Support for UK English and US English (easily extensible)
+- **Internationalisation** - Support for UK English and US English (easily extensible). Dynamic translations via `data-i18n-key` for text and `data-i18n-attr` for attributes (tooltips, ARIA).
 - **Interactive Controls** - Click to toggle cells in Conway's Game of Life; add ants under the pointer (Langton) and adjust actor counts via sliders; for Reaction–Diffusion, click/drag to seed V, adjust Feed/Kill sliders, and use Fill to reseed.
-- **Real-time Statistics** - Generation count, cell count, and FPS display
+- **Real-time Statistics** - Generation count, cell count, and FPS display (FPS shows `-` briefly until a stable window is measured)
 - **Keyboard Shortcuts** - Space to start/pause, Ctrl+R to reset, Ctrl+C to clear, Ctrl+I for immersive mode, 'A' to add an actor under the pointer (where supported)
 - **Dynamic Colour Scheme** - Time-based four-corner hue rotation with smooth interpolation (applies to Reaction–Diffusion rendering as well)
 - **Performance Optimised** - Hardware acceleration, debounced inputs, and efficient rendering
@@ -165,6 +165,13 @@ The application uses a modular architecture with clear separation of concerns:
 - **`simulations.js`** - Simulation algorithms, rendering utilities, and base classes
 - **`styles.css`** - Responsive styling with immersive mode support
 - **`i18n.js`** - Internationalisation system
+ - `logger.js` - Centralised logging
+ - `resource-manager.js` - Listener/timer/RAF tracking and cleanup
+ - `animation-manager.js` - Centralised RAF loop with target FPS control
+ - `statistics-collector.js` - Pluggable metrics (e.g., FPS)
+ - `canvas-manager.js` - Canvas/context setup and size management
+ - `keyboard-shortcut-manager.js` - Declarative keyboard shortcut mapping
+ - `type-guards.js` - Runtime type guards and helpers
 - **`dynamic-layout.js`** - Dynamic layout management
 - **`constants.js`** - Centralised application constants (browser global `AppConstants`)
 - **`config-validator.js`** - Rule-based configuration validator used by configuration and UI systems
