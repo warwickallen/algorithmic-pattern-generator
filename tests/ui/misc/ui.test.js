@@ -41,7 +41,8 @@
       if (!document.getElementById("canvas")) {
         return {
           passed: true,
-          details: "Skipped: required #canvas element not present",
+          details:
+            "Skipped: required #canvas element not present (the test-suite harness omits real app DOM). This is an integration smoke test kept for runs against the full app page.",
         };
       }
       const app = new AlgorithmicPatternGenerator();
@@ -50,7 +51,8 @@
       if (!el) {
         return {
           passed: true,
-          details: "Skipped: conway-controls element not present",
+          details:
+            "Skipped: conway-controls element not present (harness does not load full control markup). Retained as a real-page smoke test.",
         };
       }
       const visible = !!(el.classList && el.classList.contains("active"));

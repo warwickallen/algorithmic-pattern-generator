@@ -469,6 +469,20 @@ Tests the CSS-based control visibility management system:
 - Tests control group visibility validation
 - Verifies accurate visibility reporting
 
+### Notes on Skipped "Initial Controls Visibility" test
+
+The test named "Initial Controls Visibility" in `tests/ui/misc/ui.test.js` is an integration smoke test intended for runs against a full app page (e.g., `index.html`) where the real DOM exists, including `#canvas` and control containers such as `#conway-controls`. The visual harness page (`test-suite.html`) intentionally does not include the full application DOM, so this test detects the absence and marks itself as Skipped with an explanatory details string.
+
+Why we keep it:
+
+- It provides a quick sanity check when running against the actual app page to ensure controls are visible immediately after initialisation.
+- The behaviour itself is validated extensively by fixture-based tests under `tests/ui/controls/*`, which create minimal DOM in isolation. This smoke test complements them for real-page contexts.
+
+Why it’s okay to be skipped in the harness:
+
+- The harness is designed to load tests dynamically without the full app UI markup to keep the suite lightweight and isolated; forcing the app DOM into the harness would couple the runner to page layout.
+- The skipped state avoids false negatives while preserving the ability to run this check in environments that load the full app DOM.
+
 #### ✅ ControlVisibilityManager Extensibility
 
 - Tests adding new control groups and visibility states
