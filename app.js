@@ -1220,7 +1220,8 @@ class DynamicSpeedSlider {
       : null;
 
     if (!this.slider || !this.valueElement || !this.container) {
-      console.error("DynamicSpeedSlider: Required elements not found");
+      if (typeof Logger !== "undefined") Logger.error("DynamicSpeedSlider: Required elements not found");
+      else console.error("DynamicSpeedSlider: Required elements not found");
       return;
     }
 
@@ -2433,7 +2434,8 @@ class ModalTemplateManager {
   createModalContent(simType) {
     const template = this.contentTemplates.get(simType);
     if (!template) {
-      console.warn(`No content template found for simulation type: ${simType}`);
+      if (typeof Logger !== "undefined") Logger.warn(`No content template found for simulation type: ${simType}`);
+      else console.warn(`No content template found for simulation type: ${simType}`);
       return null;
     }
 
@@ -2491,7 +2493,8 @@ class ModalTemplateManager {
 
   addContentTemplate(simType, template) {
     if (!template.title || !template.content) {
-      console.error("Template must have title and content properties");
+      if (typeof Logger !== "undefined") Logger.error("Template must have title and content properties");
+      else console.error("Template must have title and content properties");
       return false;
     }
 
@@ -3121,7 +3124,7 @@ class EventFramework {
     // This method is called by AlgorithmicPatternGenerator but the actual
     // simulation-specific handlers are now registered in ControlManager
     // This maintains backward compatibility
-    console.log(
+    if (typeof Logger !== "undefined") Logger.debug(
       "EventFramework: registerAllHandlers called - simulation handlers managed by ControlManager"
     );
   }
@@ -3322,7 +3325,8 @@ class ModalManager {
   register(modalId, config = {}) {
     const modal = this.elementCache.get(`#${modalId}`);
     if (!modal) {
-      console.warn(`Modal with ID '${modalId}' not found`);
+      if (typeof Logger !== "undefined") Logger.warn(`Modal with ID '${modalId}' not found`);
+      else console.warn(`Modal with ID '${modalId}' not found`);
       return;
     }
 
@@ -3357,7 +3361,8 @@ class ModalManager {
   // Register dynamic modal for a specific simulation type
   registerDynamicModal(simType) {
     if (!this.modalTemplateManager.hasTemplate(simType)) {
-      console.warn(`No template found for simulation type: ${simType}`);
+      if (typeof Logger !== "undefined") Logger.warn(`No template found for simulation type: ${simType}`);
+      else console.warn(`No template found for simulation type: ${simType}`);
       return false;
     }
 
@@ -3372,7 +3377,8 @@ class ModalManager {
   show(modalId, simType = null) {
     const modalConfig = this.modals.get(modalId);
     if (!modalConfig) {
-      console.warn(`Modal '${modalId}' not registered`);
+      if (typeof Logger !== "undefined") Logger.warn(`Modal '${modalId}' not registered`);
+      else console.warn(`Modal '${modalId}' not registered`);
       return;
     }
 
@@ -3404,7 +3410,8 @@ class ModalManager {
   injectDynamicContent(simType) {
     const modalElement = this.modals.get(this.dynamicModalId)?.element;
     if (!modalElement) {
-      console.warn("Dynamic modal not found");
+      if (typeof Logger !== "undefined") Logger.warn("Dynamic modal not found");
+      else console.warn("Dynamic modal not found");
       return;
     }
 
@@ -3413,7 +3420,8 @@ class ModalManager {
       modalElement
     );
     if (!success) {
-      console.warn(`Failed to inject content for simulation type: ${simType}`);
+      if (typeof Logger !== "undefined") Logger.warn(`Failed to inject content for simulation type: ${simType}`);
+      else console.warn(`Failed to inject content for simulation type: ${simType}`);
       return;
     }
   }
@@ -3422,7 +3430,8 @@ class ModalManager {
   saveScrollPosition(simType) {
     const modalElement = this.modals.get(this.dynamicModalId)?.element;
     if (!modalElement) {
-      console.warn("Modal element not found for scroll position save");
+      if (typeof Logger !== "undefined") Logger.warn("Modal element not found for scroll position save");
+      else console.warn("Modal element not found for scroll position save");
       return;
     }
 
@@ -3431,7 +3440,8 @@ class ModalManager {
       const currentScrollTop = modalContent.scrollTop;
       this.scrollPositions.set(simType, currentScrollTop);
     } else {
-      console.warn("Modal content element not found for scroll position save");
+      if (typeof Logger !== "undefined") Logger.warn("Modal content element not found for scroll position save");
+      else console.warn("Modal content element not found for scroll position save");
     }
   }
 
@@ -3439,7 +3449,8 @@ class ModalManager {
   restoreScrollPosition(simType) {
     const modalElement = this.modals.get(this.dynamicModalId)?.element;
     if (!modalElement) {
-      console.warn("Modal element not found for scroll position restore");
+      if (typeof Logger !== "undefined") Logger.warn("Modal element not found for scroll position restore");
+      else console.warn("Modal element not found for scroll position restore");
       return;
     }
 
@@ -3453,7 +3464,10 @@ class ModalManager {
         modalContent.scrollTop = 0;
       }
     } else {
-      console.warn(
+      if (typeof Logger !== "undefined") Logger.warn(
+        "Modal content element not found for scroll position restore"
+      );
+      else console.warn(
         "Modal content element not found for scroll position restore"
       );
     }
@@ -3462,7 +3476,8 @@ class ModalManager {
   hide(modalId) {
     const modalConfig = this.modals.get(modalId);
     if (!modalConfig) {
-      console.warn(`Modal '${modalId}' not registered`);
+      if (typeof Logger !== "undefined") Logger.warn(`Modal '${modalId}' not registered`);
+      else console.warn(`Modal '${modalId}' not registered`);
       return;
     }
 

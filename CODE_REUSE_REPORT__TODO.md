@@ -37,12 +37,12 @@
   - Relevance: Still relevant. Global `keydown` handlers are attached in `app.js`; no declarative shortcut mapping or centralised manager detected.
   - Added `KeyboardShortcutManager` and registered shortcuts; preserved legacy handler fallback.
 
-- 23. Logging Consolidation
+- 23. Logging Consolidation ✅ IMPLEMENTED (initial pass)
 
   - Centralise logging to replace scattered `console.*` calls.
   - Relevance: Still relevant. Many `console.*` calls across the codebase; no unified logger. Could integrate with existing `ErrorHandler`.
 
-  - Progress: Introduced lightweight `Logger` with levels; not yet fully integrated across modules. To be completed in a later iteration.
+  - Implemented `Logger` routing for key logs in `app.js` (modal/system/perf) and `simulations.js` (lifecycle hooks, warnings). Included in test environment. Remaining scattered console usage in docs/tests intentionally left as-is.
 
 - 24. Type Checking Consolidation
 

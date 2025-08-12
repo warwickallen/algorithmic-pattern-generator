@@ -697,9 +697,9 @@ this.margin = 8;
 - **Code reduction achieved**: ~20 lines of scattered literals removed or centralised
 - **Testing**: Added tests in `test-runner.js` asserting `AppConstants` availability and speed clamping against constants
 
-### 23. **Logging Consolidation**
+### 23. **Logging Consolidation** ✅ **IMPLEMENTED (initial pass)**
 
-**Current State**: Console logging scattered:
+**Current State (before)**: Console logging scattered:
 
 ```javascript
 // Throughout codebase
@@ -708,6 +708,13 @@ console.error("Error occurred");
 ```
 
 **Estimated Reduction**: 10-20 lines
+**Change Implemented**: Introduced `Logger` with levels and routed key logs through it.
+
+- App: modal lifecycle, performance monitor start/stop/logs, UI component lifecycle, missing element warnings
+- Simulations: lifecycle hook defaults, resize warnings, grid warnings, legacy debug notes
+- Tests: `logger.js` loaded in `test-suite.html` for consistent environment
+
+Status: Initial pass complete; minor remaining console statements in docs/tests are intentionally preserved.
 
 ### 24. **Type Checking Consolidation**
 
