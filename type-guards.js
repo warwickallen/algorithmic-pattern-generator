@@ -12,9 +12,13 @@
   const isString = (v) => typeof v === "string";
   const isBoolean = (v) => typeof v === "boolean";
   const isFunction = (v) => typeof v === "function";
-  const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+  const isObject = (v) =>
+    v !== null && typeof v === "object" && !Array.isArray(v);
   const isArray = Array.isArray;
-  const isElement = (v) => (typeof Element !== "undefined" ? v instanceof Element : !!(v && v.nodeType === 1));
+  const isElement = (v) =>
+    typeof Element !== "undefined"
+      ? v instanceof Element
+      : !!(v && v.nodeType === 1);
 
   const toNumber = (v, fallback = 0) => {
     if (isNumber(v)) return v;
@@ -53,5 +57,3 @@
     hasProps,
   };
 });
-
-
