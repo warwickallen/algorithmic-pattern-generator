@@ -323,7 +323,20 @@
     <script src="../src/i18n.js"></script>
     <script src="../src/utils.js"></script>
     <script src="../src/actors.js"></script>
+    <!-- Core & Plug-in Registry (iteration 1: loaded alongside legacy monolith) -->
+    <script src="../src/core/error-handler.js"></script>
+    <script src="../src/core/lifecycle.js"></script>
+    <script src="../src/core/rendering-utils.js"></script>
+    <script src="../src/simulations/base-simulation.js"></script>
+    <script src="../src/simulations/registry.js"></script>
+    <!-- Simulation plug-ins self-register at load -->
+    <script src="../src/simulations/conway.js"></script>
+    <script src="../src/simulations/termite.js"></script>
+    <script src="../src/simulations/langton.js"></script>
+    <script src="../src/simulations/reaction.js"></script>
+    <!-- Legacy monolith kept for constructors & shimmed factory during transition -->
     <script src="../src/simulations.js"></script>
+    <script src="../src/simulations/factory-shim.js"></script>
     <script src="blinker-fade-test.js"></script>
     <script src="../src/app.js"></script>
   </body>

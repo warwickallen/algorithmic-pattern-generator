@@ -6,7 +6,7 @@
  * and can be safely loaded in both browser and test environments.
  */
 
-/** @typedef {('conway'|'termite'|'langton')} SimulationId */
+/** @typedef {string} SimulationId */
 
 /**
  * @typedef {Object} Point
@@ -78,5 +78,3 @@
 // Keep a tiny no-op to avoid being treated as an empty file when served
 // in some environments/tools that strip comment-only assets.
 (() => undefined)();
-
-
