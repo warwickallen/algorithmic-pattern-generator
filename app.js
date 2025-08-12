@@ -982,13 +982,34 @@ class UIComponentLibrary {
   // Lifecycle hook management
   registerLifecycleHooks(component) {
     const hooks = {
-      onMount: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} mounted`) : void 0),
-      onUnmount: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} unmounted`) : void 0),
-      onUpdate: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} updated`) : void 0),
-      onShow: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} shown`) : void 0),
-      onHide: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} hidden`) : void 0),
-      onEnable: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} enabled`) : void 0),
-      onDisable: () => (typeof Logger !== "undefined" ? Logger.debug(`Component ${component.id} disabled`) : void 0),
+      onMount: () =>
+        typeof Logger !== "undefined"
+          ? Logger.debug(`Component ${component.id} mounted`)
+          : void 0,
+      onUnmount: () =>
+        typeof Logger !== "undefined"
+          ? Logger.debug(`Component ${component.id} unmounted`)
+          : void 0,
+      onUpdate: () =>
+        typeof Logger !== "undefined"
+          ? Logger.debug(`Component ${component.id} updated`)
+          : void 0,
+      onShow: () =>
+        typeof Logger !== "undefined"
+          ? Logger.debug(`Component ${component.id} shown`)
+          : void 0,
+      onHide: () =>
+        typeof Logger !== "undefined"
+          ? Logger.debug(`Component ${component.id} hidden`)
+          : void 0,
+      onEnable: () =>
+        typeof Logger !== "undefined"
+          ? Logger.debug(`Component ${component.id} enabled`)
+          : void 0,
+      onDisable: () =>
+        typeof Logger !== "undefined"
+          ? Logger.debug(`Component ${component.id} disabled`)
+          : void 0,
     };
 
     this.lifecycleHooks.set(component.id, hooks);
@@ -1394,7 +1415,8 @@ class DynamicFillButton {
 
     this.button = this.eventFramework.getElement("#dynamic-fill-btn");
     if (!this.button) {
-      if (typeof Logger !== "undefined") Logger.warn("Dynamic fill button not found");
+      if (typeof Logger !== "undefined")
+        Logger.warn("Dynamic fill button not found");
       return;
     }
 
@@ -4313,12 +4335,14 @@ class PerformanceMonitor {
     this.monitorFPS();
     this.monitorMemory();
 
-    if (typeof Logger !== "undefined") Logger.info("Performance monitoring started");
+    if (typeof Logger !== "undefined")
+      Logger.info("Performance monitoring started");
   }
 
   stop() {
     this.isMonitoring = false;
-    if (typeof Logger !== "undefined") Logger.info("Performance monitoring stopped");
+    if (typeof Logger !== "undefined")
+      Logger.info("Performance monitoring stopped");
   }
 
   monitorFPS() {
@@ -4407,13 +4431,14 @@ class PerformanceMonitor {
 
   logMetrics() {
     const metrics = this.getMetrics();
-    if (typeof Logger !== "undefined") Logger.debug("Performance Metrics:", {
-      "Average FPS": Math.round(metrics.averageFPS),
-      "Average Memory (MB)": Math.round(metrics.averageMemory),
-      "Sample Count": Object.keys(metrics.samples).map((key) => ({
-        [key]: metrics.samples[key].length,
-      })),
-    });
+    if (typeof Logger !== "undefined")
+      Logger.debug("Performance Metrics:", {
+        "Average FPS": Math.round(metrics.averageFPS),
+        "Average Memory (MB)": Math.round(metrics.averageMemory),
+        "Sample Count": Object.keys(metrics.samples).map((key) => ({
+          [key]: metrics.samples[key].length,
+        })),
+      });
   }
 }
 
