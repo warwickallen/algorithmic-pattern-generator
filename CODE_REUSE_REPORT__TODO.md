@@ -37,6 +37,8 @@
   - Centralise logging to replace scattered `console.*` calls.
   - Relevance: Still relevant. Many `console.*` calls across the codebase; no unified logger. Could integrate with existing `ErrorHandler`.
 
+  - Progress: Introduced lightweight `Logger` with levels; not yet fully integrated across modules. To be completed in a later iteration.
+
 - 24. Type Checking Consolidation
 
   - Unify common runtime type checks/guards.

@@ -418,11 +418,15 @@ class PredefinedTestSuites {
         document.body.appendChild(container);
         try {
           i18n.updateElements();
-          const textOk = container.querySelector('#fps-label').textContent.trim().length > 0;
-          const btn = container.querySelector('#learn-btn');
-          const titleOk = !!btn.getAttribute('title');
-          const ariaOk = !!btn.getAttribute('aria-label');
-          return { passed: textOk && titleOk && ariaOk, details: `text=${textOk}, title=${titleOk}, aria=${ariaOk}` };
+          const textOk =
+            container.querySelector("#fps-label").textContent.trim().length > 0;
+          const btn = container.querySelector("#learn-btn");
+          const titleOk = !!btn.getAttribute("title");
+          const ariaOk = !!btn.getAttribute("aria-label");
+          return {
+            passed: textOk && titleOk && ariaOk,
+            details: `text=${textOk}, title=${titleOk}, aria=${ariaOk}`,
+          };
         } finally {
           document.body.removeChild(container);
         }
