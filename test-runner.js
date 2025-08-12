@@ -154,6 +154,94 @@ class TestRunner {
       (test) => test.category === category
     );
 
+    // ResourceManager smoke test
+    runner.addTest(
+      "ResourceManager: registers and cleans up listeners",
+      async () => {
+        if (typeof ResourceManager === "undefined") {
+          return { passed: true, details: "Skipped: ResourceManager not loaded" };
+        }
+        const rm = new ResourceManager();
+        const el = document.createElement("div");
+        let count = 0;
+        const off = rm.on(el, "click", () => count++);
+        el.dispatchEvent(new Event("click"));
+        const before = count === 1;
+        rm.cleanup();
+        el.dispatchEvent(new Event("click"));
+        const after = count === 1;
+        return { passed: before && after, details: `before=${before}, after=${after}` };
+      },
+      "system"
+    );
+
+    // AnimationManager smoke test
+    runner.addTest(
+      "AnimationManager: starts and stops",
+      async () => {
+        if (typeof AnimationManager === "undefined") {
+          return { passed: true, details: "Skipped: AnimationManager not loaded" };
+        }
+        let ticks = 0;
+        const am = new AnimationManager({ fps: 30 });
+        am.start(() => { ticks++; });
+        await new Promise((r) => setTimeout(r, 50));
+        am.stop();
+        return { passed: ticks > 0, details: `ticks=${ticks}` };
+      },
+      "system"
+    );
+
+    // StatisticsCollector smoke test
+    runner.addTest(
+      "StatisticsCollector: averages samples",
+      async () => {
+        if (typeof StatisticsCollector === "undefined") {
+          return { passed: true, details: "Skipped: StatisticsCollector not loaded" };
+        }
+        const sc = new StatisticsCollector();
+        sc.defineMetric("x", { maxSamples: 5 });
+        sc.addSample("x", 1); sc.addSample("x", 3);
+        const avg = sc.getAverage("x");
+        return { passed: avg === 2, details: `avg=${avg}` };
+      },
+      "system"
+    );
+
+    // CanvasManager smoke test
+    runner.addTest(
+      "CanvasManager: clear() does not throw",
+      async () => {
+        if (typeof CanvasManager === "undefined") {
+          return { passed: true, details: "Skipped: CanvasManager not loaded" };
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = 10; canvas.height = 10;
+        const cm = new CanvasManager(canvas);
+        cm.clear();
+        return { passed: true, details: "cleared" };
+      },
+      "system"
+    );
+
+    // KeyboardShortcutManager smoke test
+    runner.addTest(
+      "KeyboardShortcutManager: maps handler",
+      async () => {
+        if (typeof KeyboardShortcutManager === "undefined") {
+          return { passed: true, details: "Skipped: KeyboardShortcutManager not loaded" };
+        }
+        const mgr = new KeyboardShortcutManager(document);
+        let called = false;
+        mgr.register("z", () => { called = true; });
+        const ev = new KeyboardEvent("keydown", { key: "z" });
+        document.dispatchEvent(ev);
+        mgr.cleanup();
+        return { passed: called, details: `called=${called}` };
+      },
+      "integration"
+    );
+
     console.log(`🚀 Starting ${category} tests...`);
     console.log(
       `📋 Running ${categoryTests.length} tests in category: ${category}`

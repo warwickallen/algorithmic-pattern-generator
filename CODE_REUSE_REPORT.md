@@ -550,6 +550,8 @@ cleanup() {
 **Estimated Reduction**: 40-60 lines
 **Implementation**: `ResourceManager` class with automatic cleanup tracking.
 
+Status: Scaffold added (global `ResourceManager`); integration pending.
+
 ### 17. **Animation Frame Management**
 
 **Current State**: Animation logic mixed with simulation logic:
@@ -568,6 +570,8 @@ animate(currentTime = 0) {
 
 **Estimated Reduction**: 25-40 lines
 **Implementation**: `AnimationManager` class with frame rate control.
+
+Status: Scaffold added (global `AnimationManager`); wiring into simulation animate loops planned.
 
 ### 18. **Statistics Collection Consolidation**
 
@@ -589,6 +593,8 @@ getStats() {
 **Estimated Reduction**: 30-45 lines
 **Implementation**: `StatisticsCollector` class with pluggable metrics.
 
+Status: Added; to integrate with `PerformanceMonitor` and per-simulation stats sources.
+
 ### 19. **Canvas Management Consolidation**
 
 **Current State**: Canvas setup and management repeated:
@@ -607,6 +613,8 @@ constructor(canvas, ctx) {
 
 **Estimated Reduction**: 35-55 lines
 **Implementation**: `CanvasManager` class with common canvas operations.
+
+Status: Added; planned adoption in app initialisation and resize flows.
 
 ### 20. **Keyboard Shortcut Management**
 
@@ -628,6 +636,8 @@ handleKeydown(e) {
 
 **Estimated Reduction**: 25-40 lines
 **Implementation**: `KeyboardShortcutManager` with configuration-based shortcuts.
+
+Status: Added; consider replacing/wrapping current `KeyboardHandler` for declarative mapping.
 
 ---
 
