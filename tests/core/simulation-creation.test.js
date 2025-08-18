@@ -10,11 +10,7 @@
       canvas.height = 100;
       const ctx = canvas.getContext("2d");
 
-      const simulation = SimulationFactory.createSimulation(
-        "conway",
-        canvas,
-        ctx
-      );
+      const simulation = SimulationRegistry.create("conway", canvas, ctx);
       return {
         passed: simulation instanceof ConwayGameOfLife,
         details: `Created ${
@@ -33,11 +29,7 @@
       canvas.height = 100;
       const ctx = canvas.getContext("2d");
 
-      const simulation = SimulationFactory.createSimulation(
-        "termite",
-        canvas,
-        ctx
-      );
+      const simulation = SimulationRegistry.create("termite", canvas, ctx);
       return {
         passed: simulation instanceof TermiteAlgorithm,
         details: `Created ${
@@ -56,11 +48,7 @@
       canvas.height = 100;
       const ctx = canvas.getContext("2d");
 
-      const simulation = SimulationFactory.createSimulation(
-        "langton",
-        canvas,
-        ctx
-      );
+      const simulation = SimulationRegistry.create("langton", canvas, ctx);
       return {
         passed: simulation instanceof LangtonsAnt,
         details: `Created ${

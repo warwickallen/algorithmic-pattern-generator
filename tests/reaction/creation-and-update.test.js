@@ -10,7 +10,7 @@
       canvas.height = 80;
       const ctx = canvas.getContext("2d");
 
-      const sim = SimulationFactory.createSimulation("reaction", canvas, ctx);
+      const sim = SimulationRegistry.create("reaction", canvas, ctx);
       return {
         passed:
           sim &&
@@ -29,7 +29,7 @@
       canvas.width = 160;
       canvas.height = 120;
       const ctx = canvas.getContext("2d");
-      const sim = SimulationFactory.createSimulation("reaction", canvas, ctx);
+      const sim = SimulationRegistry.create("reaction", canvas, ctx);
       sim.init();
 
       // Run a few updates

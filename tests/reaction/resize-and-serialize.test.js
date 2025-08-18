@@ -10,7 +10,7 @@
       canvas.height = 100;
       const ctx = canvas.getContext("2d");
 
-      const sim = SimulationFactory.createSimulation("reaction", canvas, ctx);
+      const sim = SimulationRegistry.create("reaction", canvas, ctx);
       sim.init();
       // Make a distinctive seed at a corner and update a bit
       sim.toggleCell(1, 1);

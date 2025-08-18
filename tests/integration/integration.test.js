@@ -9,21 +9,9 @@
       canvas.width = 400;
       canvas.height = 300;
       const ctx = canvas.getContext("2d");
-      const conwaySim = SimulationFactory.createSimulation(
-        "conway",
-        canvas,
-        ctx
-      );
-      const termiteSim = SimulationFactory.createSimulation(
-        "termite",
-        canvas,
-        ctx
-      );
-      const langtonSim = SimulationFactory.createSimulation(
-        "langton",
-        canvas,
-        ctx
-      );
+      const conwaySim = SimulationRegistry.create("conway", canvas, ctx);
+      const termiteSim = SimulationRegistry.create("termite", canvas, ctx);
+      const langtonSim = SimulationRegistry.create("langton", canvas, ctx);
       const ok =
         conwaySim instanceof ConwayGameOfLife &&
         termiteSim instanceof TermiteAlgorithm &&

@@ -46,7 +46,7 @@ if (typeof window !== "undefined") {
         canvas.width = 400;
         canvas.height = 300;
         const ctx = canvas.getContext("2d");
-        const sim = SimulationFactory.createSimulation("langton", canvas, ctx);
+        const sim = SimulationRegistry.create("langton", canvas, ctx);
         sim.init();
         const before = sim.ants.length;
         sim.setAntCount(5);
@@ -68,7 +68,7 @@ if (typeof window !== "undefined") {
         canvas.width = 200;
         canvas.height = 200;
         const ctx = canvas.getContext("2d");
-        const sim = SimulationFactory.createSimulation("termite", canvas, ctx);
+        const sim = SimulationRegistry.create("termite", canvas, ctx);
         sim.init();
 
         // Prepare a known cell

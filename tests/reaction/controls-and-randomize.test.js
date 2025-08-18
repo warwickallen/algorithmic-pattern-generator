@@ -10,7 +10,7 @@
       canvas.height = 80;
       const ctx = canvas.getContext("2d");
 
-      const sim = SimulationFactory.createSimulation("reaction", canvas, ctx);
+      const sim = SimulationRegistry.create("reaction", canvas, ctx);
       sim.init();
 
       sim.setReactionParam("feed", 0.07);
@@ -35,7 +35,7 @@
       canvas.height = 80;
       const ctx = canvas.getContext("2d");
 
-      const sim = SimulationFactory.createSimulation("reaction", canvas, ctx);
+      const sim = SimulationRegistry.create("reaction", canvas, ctx);
       sim.init();
 
       sim.randomize(0.0);

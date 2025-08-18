@@ -5,13 +5,13 @@
  * - Real canvas in DOM for browser tests
  * - Convenience creators for simulations with provided mocks
  */
-(function(factory){
-  if (typeof module !== 'undefined' && module.exports) {
+(function (factory) {
+  if (typeof module !== "undefined" && module.exports) {
     module.exports = factory();
-  } else if (typeof window !== 'undefined') {
+  } else if (typeof window !== "undefined") {
     window.TestUtilityFactory = factory();
   }
-})(function() {
+})(function () {
   function createMockCanvas(width = 300, height = 300) {
     return {
       width,
@@ -24,8 +24,8 @@
 
   function createMockContext(overrides = {}) {
     const ctx = {
-      fillStyle: '',
-      shadowColor: 'transparent',
+      fillStyle: "",
+      shadowColor: "transparent",
       shadowBlur: 0,
       shadowOffsetX: 0,
       shadowOffsetY: 0,
@@ -50,17 +50,22 @@
   }
 
   function createDOMCanvas(width = 300, height = 300) {
-    if (typeof document === 'undefined') return null;
-    const canvas = document.createElement('canvas');
+    if (typeof document === "undefined") return null;
+    const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     return canvas;
   }
 
-  function createCanvasAndContext({ useDOM = false, width = 300, height = 300, ctxOverrides = {} } = {}) {
-    if (useDOM && typeof document !== 'undefined') {
+  function createCanvasAndContext({
+    useDOM = false,
+    width = 300,
+    height = 300,
+    ctxOverrides = {},
+  } = {}) {
+    if (useDOM && typeof document !== "undefined") {
       const canvas = createDOMCanvas(width, height);
-      const ctx = (canvas && canvas.getContext) ? canvas.getContext('2d') : null;
+      const ctx = canvas && canvas.getContext ? canvas.getContext("2d") : null;
       return { canvas, ctx };
     }
     const canvas = createMockCanvas(width, height);
@@ -70,15 +75,15 @@
 
   function createSimulationWithMocks(type, options = {}) {
     const { canvas, ctx } = createCanvasAndContext(options);
-    if (typeof SimulationFactory === 'undefined') {
-      throw new Error('SimulationFactory is not available in this environment');
+    if (typeof SimulationFactory === "undefined") {
+      throw new Error("SimulationFactory is not available in this environment");
     }
-    const sim = SimulationFactory.createSimulation(type, canvas, ctx);
+    const sim = SimulationRegistry.create(type, canvas, ctx);
     return { simulation: sim, canvas, ctx };
   }
 
   function withTempElement(tagName, attributes = {}, callback) {
-    if (typeof document === 'undefined') return null;
+    if (typeof document === "undefined") return null;
     const el = document.createElement(tagName);
     Object.entries(attributes).forEach(([k, v]) => el.setAttribute(k, v));
     document.body.appendChild(el);
@@ -98,5 +103,3 @@
     withTempElement,
   };
 });
-
-

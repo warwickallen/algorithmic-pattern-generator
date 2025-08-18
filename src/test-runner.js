@@ -404,7 +404,7 @@ class PredefinedTestSuites {
     runner.addTest(
       "Conway Game of Life Creation",
       async () => {
-        const simulation = SimulationFactory.createSimulation(
+        const simulation = SimulationRegistry.create(
           "conway",
           dependencies.canvas,
           dependencies.ctx
@@ -420,7 +420,7 @@ class PredefinedTestSuites {
     runner.addTest(
       "Termite Algorithm Creation",
       async () => {
-        const simulation = SimulationFactory.createSimulation(
+        const simulation = SimulationRegistry.create(
           "termite",
           dependencies.canvas,
           dependencies.ctx
@@ -436,7 +436,7 @@ class PredefinedTestSuites {
     runner.addTest(
       "Langton's Ant Creation",
       async () => {
-        const simulation = SimulationFactory.createSimulation(
+        const simulation = SimulationRegistry.create(
           "langton",
           dependencies.canvas,
           dependencies.ctx
@@ -452,7 +452,7 @@ class PredefinedTestSuites {
     runner.addTest(
       "Termite Slider Functionality",
       async () => {
-        const simulation = SimulationFactory.createSimulation(
+        const simulation = SimulationRegistry.create(
           "termite",
           dependencies.canvas,
           dependencies.ctx
@@ -702,11 +702,7 @@ class PredefinedTestSuites {
         canvas.height = 300;
         const ctx = canvas.getContext("2d");
 
-        const simulation = SimulationFactory.createSimulation(
-          "termite",
-          canvas,
-          ctx
-        );
+        const simulation = SimulationRegistry.create("termite", canvas, ctx);
         simulation.init();
 
         // Get initial termite count
@@ -888,7 +884,7 @@ class PredefinedTestSuites {
     runner.addTest(
       "Basic Simulation Creation",
       async () => {
-        const simulation = SimulationFactory.createSimulation(
+        const simulation = SimulationRegistry.create(
           "conway",
           dependencies.canvas,
           dependencies.ctx
@@ -943,7 +939,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
             return { passed: false, details: "errorHandler not initialised" };
           const initial = window.errorHandler.getMetrics();
           // Simulate an event handler error via lifecycle event handler
-          const sim = SimulationFactory.createSimulation("conway", canvas, ctx);
+          const sim = SimulationRegistry.create("conway", canvas, ctx);
           sim.eventHandler.on("test", () => {
             throw new Error("boom");
           });
@@ -970,7 +966,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
         try {
           if (!window.errorHandler)
             return { passed: false, details: "errorHandler not initialised" };
-          const sim = SimulationFactory.createSimulation("conway", canvas, ctx);
+          const sim = SimulationRegistry.create("conway", canvas, ctx);
           // Inject a serializer that throws
           sim.stateManager.registerSerializer({
             capture: () => {

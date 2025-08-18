@@ -3934,7 +3934,7 @@ class AlgorithmicPatternGenerator {
     }
 
     this.currentType = type;
-    this.currentSimulation = SimulationFactory.createSimulation(
+    this.currentSimulation = SimulationRegistry.create(
       type,
       this.canvas,
       this.ctx
