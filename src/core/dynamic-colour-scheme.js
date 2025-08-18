@@ -9,18 +9,46 @@ class DynamicColourScheme {
       bottomLeft: { startHue: 315, period: 105000 }, // 105 seconds
     };
     this.startTime = Date.now();
+    // Frame-based cache
+    this._cache = {
+      time: null,
+      hues: {},
+      vectors: {},
+    };
   }
 
-  // Get current hue for a specific corner
+  // Get current hue for a specific corner (optionally using cache)
   getCornerHue(corner, currentTime = Date.now()) {
     const config = this.corners[corner];
-    // For static rendering (currentTime = 0), use the starting hue directly
     if (currentTime === 0) {
       return config.startHue;
     }
     const elapsed = currentTime - this.startTime;
     const hue = (config.startHue + (elapsed / config.period) * 360) % 360;
     return hue;
+  }
+
+  // Internal: update cache for a given currentTime
+  _updateFrameCache(currentTime) {
+    if (this._cache.time === currentTime) return;
+    this._cache.time = currentTime;
+    // Compute and cache hues
+    this._cache.hues.topLeft = this.getCornerHue("topLeft", currentTime);
+    this._cache.hues.topRight = this.getCornerHue("topRight", currentTime);
+    this._cache.hues.bottomRight = this.getCornerHue(
+      "bottomRight",
+      currentTime
+    );
+    this._cache.hues.bottomLeft = this.getCornerHue("bottomLeft", currentTime);
+    // Compute and cache vectors
+    this._cache.vectors.topLeft = this.hueToVector(this._cache.hues.topLeft);
+    this._cache.vectors.topRight = this.hueToVector(this._cache.hues.topRight);
+    this._cache.vectors.bottomRight = this.hueToVector(
+      this._cache.hues.bottomRight
+    );
+    this._cache.vectors.bottomLeft = this.hueToVector(
+      this._cache.hues.bottomLeft
+    );
   }
 
   // Get interpolated hue for any position on the canvas
@@ -31,33 +59,27 @@ class DynamicColourScheme {
     // Normalize position to 0-1 range
     const normX = clampedX / canvasWidth;
     const normY = clampedY / canvasHeight;
-    // For static rendering, use starting hues directly
     if (currentTime === null) {
-      const topLeftHue = this.corners.topLeft.startHue;
-      const topRightHue = this.corners.topRight.startHue;
-      const bottomRightHue = this.corners.bottomRight.startHue;
-      const bottomLeftHue = this.corners.bottomLeft.startHue;
+      // Static rendering: use starting hues
       return this.getBilinearHue(
         normX,
         normY,
-        topLeftHue,
-        topRightHue,
-        bottomRightHue,
-        bottomLeftHue
+        this.corners.topLeft.startHue,
+        this.corners.topRight.startHue,
+        this.corners.bottomRight.startHue,
+        this.corners.bottomLeft.startHue
       );
     }
-    // For dynamic rendering, use time-based hues
-    const topLeftHue = this.getCornerHue("topLeft", currentTime);
-    const topRightHue = this.getCornerHue("topRight", currentTime);
-    const bottomRightHue = this.getCornerHue("bottomRight", currentTime);
-    const bottomLeftHue = this.getCornerHue("bottomLeft", currentTime);
+    // Dynamic rendering: use cached hues/vectors for this frame
+    this._updateFrameCache(currentTime);
     return this.getBilinearHue(
       normX,
       normY,
-      topLeftHue,
-      topRightHue,
-      bottomRightHue,
-      bottomLeftHue
+      this._cache.hues.topLeft,
+      this._cache.hues.topRight,
+      this._cache.hues.bottomRight,
+      this._cache.hues.bottomLeft,
+      this._cache.vectors // pass cached vectors for optimisation
     );
   }
 
@@ -68,13 +90,22 @@ class DynamicColourScheme {
     topLeftHue,
     topRightHue,
     bottomRightHue,
-    bottomLeftHue
+    bottomLeftHue,
+    cachedVectors = null
   ) {
-    // Convert all hues to unit vectors on the colour wheel
-    const topLeftVector = this.hueToVector(topLeftHue);
-    const topRightVector = this.hueToVector(topRightHue);
-    const bottomRightVector = this.hueToVector(bottomRightHue);
-    const bottomLeftVector = this.hueToVector(bottomLeftHue);
+    // Use cached vectors if provided (from frame cache)
+    const topLeftVector = cachedVectors
+      ? cachedVectors.topLeft
+      : this.hueToVector(topLeftHue);
+    const topRightVector = cachedVectors
+      ? cachedVectors.topRight
+      : this.hueToVector(topRightHue);
+    const bottomRightVector = cachedVectors
+      ? cachedVectors.bottomRight
+      : this.hueToVector(bottomRightHue);
+    const bottomLeftVector = cachedVectors
+      ? cachedVectors.bottomLeft
+      : this.hueToVector(bottomLeftHue);
     // Interpolate vectors instead of angles
     const topVector = this.interpolateVector(
       topLeftVector,
